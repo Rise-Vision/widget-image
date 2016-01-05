@@ -232,15 +232,6 @@
     _totalFiles: 0,
 
     /**
-     * The total number of files in a folder from the last request.
-     *
-     * @property _totalFilesBefore
-     * @type number
-     * @default 0
-     */
-    _totalFilesBefore: 0,
-
-    /**
      * The list of items in a folder to request from Rise Cache.
      *
      * @property _folderFilesToRequest
@@ -257,15 +248,6 @@
      * @default []
      */
     _folderFilesRequested: 0,
-
-    /**
-     * Whether or not any of the files in a folder have changed.
-     *
-     * @property _isChanged
-     * @type boolean
-     * @default false
-     */
-    _isChanged: false,
 
     /**
      * Whether or not a file is throttled.
@@ -450,8 +432,36 @@
      * Fires when an error is received from the Storage request.
      */
     _handleStorageError: function(e, resp) {
-      this._startTimer();
-      this.fire("rise-storage-error", resp);
+      var fireError = true;
+
+      if (!this._isLoading && this._isCacheRunning && !this._fileThrottled) {
+        // storage request initiated from a refresh, Rise Cache is running, and no flag of previous file being throttled
+
+        if (this._isFile) {
+          fireError = false;
+
+          // proceed with getting file from Rise Cache
+          this._getFileFromCache();
+        }
+        else {
+          // folder files
+          if (this._folderFilesToRequest.length > 0) {
+            fireError = false;
+
+            // reset the request list/count
+            this._folderFilesRequested = 0;
+
+            // request the first folder file in the list to get cycle started
+            this._requestCacheFolderFile(this._folderFilesToRequest[0]);
+          }
+        }
+
+      }
+
+      if (fireError) {
+        this._startTimer();
+        this.fire("rise-storage-error", resp);
+      }
     },
 
     /**
@@ -485,9 +495,7 @@
       else {
         // File hasn't changed.
         if (this._files[0].etag === etag) {
-          this._startTimer();
-
-          return;
+          file.changed = false;
         }
         else {
           this._files[0].etag = etag;
@@ -601,7 +609,7 @@
                       file.url = previousItem.url;
                     }
 
-                    file.unchanged = true;
+                    file.changed = false;
                   }
                   // File has changed.
                   else {
@@ -617,11 +625,9 @@
                 delete file.sortBy;
               }
 
-              if (!file.unchanged) {
-                file.name = self._getFileNameFromUrl(file.url);
+              file.name = self._getFileNameFromUrl(file.url);
 
-                self.fire("rise-storage-response", file);
-              }
+              self.fire("rise-storage-response", file);
             }
           }
         });
@@ -666,8 +672,6 @@
 
       if (resp.files) {
         this._numFiles = 0;
-        this._isChanged = false;
-        this._totalFilesBefore = this._totalFiles;
 
         // Only count actual files (ignore folders)
         this._totalFiles = resp.files.filter(function(item) {
@@ -757,14 +761,10 @@
         else {
           // Rise Cache file hasn't changed.
           if (this._files[0].lastModified === lastModified) {
-            file.unchanged = true;
-            this._startTimer();
-
-            return;
+            file.changed = false;
           }
           else {
             this._files[0].lastModified = lastModified;
-            this.changed = true;
             file.changed = true;
           }
         }
@@ -837,34 +837,25 @@
             if (lastModified === previousItem.lastModified) {
               // Use the same URL as before in order to leverage browser caching.
               file.url = previousItem.fullUrl;
-              file.unchanged = true;
+              file.changed = false;
             }
             // File has changed.
             else {
               previousItem.lastModified = lastModified;
               previousItem.fullUrl = file.url;
-              this._isChanged = true;
               file.changed = true;
             }
           }
         }
 
-        if(!file.unchanged) {
-          file.name = this._getFileNameFromUrl(file.url);
+        file.name = this._getFileNameFromUrl(file.url);
 
-          this.fire("rise-storage-response", file);
-        }
+        this.fire("rise-storage-response", file);
       }
 
       this._numFiles++;
 
       if (this._numFiles === this._totalFiles) {
-        // If number of files in the folder has changed, then file(s) have either been added
-        // or removed.
-        if (this._totalFiles !== this._totalFilesBefore) {
-          this._isChanged = true;
-        }
-
         this._startTimer();
         this._isLoading = false;
       }
@@ -1239,12 +1230,11 @@
       this._pingReceived = false;
       this._numFiles = 0;
       this._totalFiles = 0;
-      this._totalFilesBefore = 0;
-      this._isChanged = false;
       this._cacheRequestMethod = "HEAD";
       this._hasAttemptedGetRequest = false;
       this._folderFilesToRequest = [];
       this._folderFilesRequested = 0;
+      this._fileThrottled = false;
     }
   });
 </script>

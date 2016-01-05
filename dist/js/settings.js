@@ -2258,6 +2258,686 @@ angular.module('pascalprecht.translate')
   return translateFilter;
 }]);
 
+/**
+ * @license AngularJS v1.3.20
+ * (c) 2010-2014 Google, Inc. http://angularjs.org
+ * License: MIT
+ */
+(function(window, angular, undefined) {'use strict';
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *     Any commits to this file should be reviewed with security in mind.  *
+ *   Changes to this file can potentially create security vulnerabilities. *
+ *          An approval from 2 Core members with history of modifying      *
+ *                         this file is required.                          *
+ *                                                                         *
+ *  Does the change somehow allow for arbitrary javascript to be executed? *
+ *    Or allows for someone to change the prototype of built-in objects?   *
+ *     Or gives undesired access to variables likes document or window?    *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+var $sanitizeMinErr = angular.$$minErr('$sanitize');
+
+/**
+ * @ngdoc module
+ * @name ngSanitize
+ * @description
+ *
+ * # ngSanitize
+ *
+ * The `ngSanitize` module provides functionality to sanitize HTML.
+ *
+ *
+ * <div doc-module-components="ngSanitize"></div>
+ *
+ * See {@link ngSanitize.$sanitize `$sanitize`} for usage.
+ */
+
+/*
+ * HTML Parser By Misko Hevery (misko@hevery.com)
+ * based on:  HTML Parser By John Resig (ejohn.org)
+ * Original code by Erik Arvidsson, Mozilla Public License
+ * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
+ *
+ * // Use like so:
+ * htmlParser(htmlString, {
+ *     start: function(tag, attrs, unary) {},
+ *     end: function(tag) {},
+ *     chars: function(text) {},
+ *     comment: function(text) {}
+ * });
+ *
+ */
+
+
+/**
+ * @ngdoc service
+ * @name $sanitize
+ * @kind function
+ *
+ * @description
+ *   The input is sanitized by parsing the HTML into tokens. All safe tokens (from a whitelist) are
+ *   then serialized back to properly escaped html string. This means that no unsafe input can make
+ *   it into the returned string, however, since our parser is more strict than a typical browser
+ *   parser, it's possible that some obscure input, which would be recognized as valid HTML by a
+ *   browser, won't make it through the sanitizer. The input may also contain SVG markup.
+ *   The whitelist is configured using the functions `aHrefSanitizationWhitelist` and
+ *   `imgSrcSanitizationWhitelist` of {@link ng.$compileProvider `$compileProvider`}.
+ *
+ * @param {string} html HTML input.
+ * @returns {string} Sanitized HTML.
+ *
+ * @example
+   <example module="sanitizeExample" deps="angular-sanitize.js">
+   <file name="index.html">
+     <script>
+         angular.module('sanitizeExample', ['ngSanitize'])
+           .controller('ExampleController', ['$scope', '$sce', function($scope, $sce) {
+             $scope.snippet =
+               '<p style="color:blue">an html\n' +
+               '<em onmouseover="this.textContent=\'PWN3D!\'">click here</em>\n' +
+               'snippet</p>';
+             $scope.deliberatelyTrustDangerousSnippet = function() {
+               return $sce.trustAsHtml($scope.snippet);
+             };
+           }]);
+     </script>
+     <div ng-controller="ExampleController">
+        Snippet: <textarea ng-model="snippet" cols="60" rows="3"></textarea>
+       <table>
+         <tr>
+           <td>Directive</td>
+           <td>How</td>
+           <td>Source</td>
+           <td>Rendered</td>
+         </tr>
+         <tr id="bind-html-with-sanitize">
+           <td>ng-bind-html</td>
+           <td>Automatically uses $sanitize</td>
+           <td><pre>&lt;div ng-bind-html="snippet"&gt;<br/>&lt;/div&gt;</pre></td>
+           <td><div ng-bind-html="snippet"></div></td>
+         </tr>
+         <tr id="bind-html-with-trust">
+           <td>ng-bind-html</td>
+           <td>Bypass $sanitize by explicitly trusting the dangerous value</td>
+           <td>
+           <pre>&lt;div ng-bind-html="deliberatelyTrustDangerousSnippet()"&gt;
+&lt;/div&gt;</pre>
+           </td>
+           <td><div ng-bind-html="deliberatelyTrustDangerousSnippet()"></div></td>
+         </tr>
+         <tr id="bind-default">
+           <td>ng-bind</td>
+           <td>Automatically escapes</td>
+           <td><pre>&lt;div ng-bind="snippet"&gt;<br/>&lt;/div&gt;</pre></td>
+           <td><div ng-bind="snippet"></div></td>
+         </tr>
+       </table>
+       </div>
+   </file>
+   <file name="protractor.js" type="protractor">
+     it('should sanitize the html snippet by default', function() {
+       expect(element(by.css('#bind-html-with-sanitize div')).getInnerHtml()).
+         toBe('<p>an html\n<em>click here</em>\nsnippet</p>');
+     });
+
+     it('should inline raw snippet if bound to a trusted value', function() {
+       expect(element(by.css('#bind-html-with-trust div')).getInnerHtml()).
+         toBe("<p style=\"color:blue\">an html\n" +
+              "<em onmouseover=\"this.textContent='PWN3D!'\">click here</em>\n" +
+              "snippet</p>");
+     });
+
+     it('should escape snippet without any filter', function() {
+       expect(element(by.css('#bind-default div')).getInnerHtml()).
+         toBe("&lt;p style=\"color:blue\"&gt;an html\n" +
+              "&lt;em onmouseover=\"this.textContent='PWN3D!'\"&gt;click here&lt;/em&gt;\n" +
+              "snippet&lt;/p&gt;");
+     });
+
+     it('should update', function() {
+       element(by.model('snippet')).clear();
+       element(by.model('snippet')).sendKeys('new <b onclick="alert(1)">text</b>');
+       expect(element(by.css('#bind-html-with-sanitize div')).getInnerHtml()).
+         toBe('new <b>text</b>');
+       expect(element(by.css('#bind-html-with-trust div')).getInnerHtml()).toBe(
+         'new <b onclick="alert(1)">text</b>');
+       expect(element(by.css('#bind-default div')).getInnerHtml()).toBe(
+         "new &lt;b onclick=\"alert(1)\"&gt;text&lt;/b&gt;");
+     });
+   </file>
+   </example>
+ */
+function $SanitizeProvider() {
+  this.$get = ['$$sanitizeUri', function($$sanitizeUri) {
+    return function(html) {
+      var buf = [];
+      htmlParser(html, htmlSanitizeWriter(buf, function(uri, isImage) {
+        return !/^unsafe/.test($$sanitizeUri(uri, isImage));
+      }));
+      return buf.join('');
+    };
+  }];
+}
+
+function sanitizeText(chars) {
+  var buf = [];
+  var writer = htmlSanitizeWriter(buf, angular.noop);
+  writer.chars(chars);
+  return buf.join('');
+}
+
+
+// Regular Expressions for parsing tags and attributes
+var START_TAG_REGEXP =
+       /^<((?:[a-zA-Z])[\w:-]*)((?:\s+[\w:-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)\s*(>?)/,
+  END_TAG_REGEXP = /^<\/\s*([\w:-]+)[^>]*>/,
+  ATTR_REGEXP = /([\w:-]+)(?:\s*=\s*(?:(?:"((?:[^"])*)")|(?:'((?:[^'])*)')|([^>\s]+)))?/g,
+  BEGIN_TAG_REGEXP = /^</,
+  BEGING_END_TAGE_REGEXP = /^<\//,
+  COMMENT_REGEXP = /<!--(.*?)-->/g,
+  DOCTYPE_REGEXP = /<!DOCTYPE([^>]*?)>/i,
+  CDATA_REGEXP = /<!\[CDATA\[(.*?)]]>/g,
+  SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+  // Match everything outside of normal chars and " (quote character)
+  NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g;
+
+
+// Good source of info about elements and attributes
+// http://dev.w3.org/html5/spec/Overview.html#semantics
+// http://simon.html5.org/html-elements
+
+// Safe Void Elements - HTML5
+// http://dev.w3.org/html5/spec/Overview.html#void-elements
+var voidElements = makeMap("area,br,col,hr,img,wbr");
+
+// Elements that you can, intentionally, leave open (and which close themselves)
+// http://dev.w3.org/html5/spec/Overview.html#optional-tags
+var optionalEndTagBlockElements = makeMap("colgroup,dd,dt,li,p,tbody,td,tfoot,th,thead,tr"),
+    optionalEndTagInlineElements = makeMap("rp,rt"),
+    optionalEndTagElements = angular.extend({},
+                                            optionalEndTagInlineElements,
+                                            optionalEndTagBlockElements);
+
+// Safe Block Elements - HTML5
+var blockElements = angular.extend({}, optionalEndTagBlockElements, makeMap("address,article," +
+        "aside,blockquote,caption,center,del,dir,div,dl,figure,figcaption,footer,h1,h2,h3,h4,h5," +
+        "h6,header,hgroup,hr,ins,map,menu,nav,ol,pre,script,section,table,ul"));
+
+// Inline Elements - HTML5
+var inlineElements = angular.extend({}, optionalEndTagInlineElements, makeMap("a,abbr,acronym,b," +
+        "bdi,bdo,big,br,cite,code,del,dfn,em,font,i,img,ins,kbd,label,map,mark,q,ruby,rp,rt,s," +
+        "samp,small,span,strike,strong,sub,sup,time,tt,u,var"));
+
+// SVG Elements
+// https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Elements
+var svgElements = makeMap("animate,animateColor,animateMotion,animateTransform,circle,defs," +
+        "desc,ellipse,font-face,font-face-name,font-face-src,g,glyph,hkern,image,linearGradient," +
+        "line,marker,metadata,missing-glyph,mpath,path,polygon,polyline,radialGradient,rect,set," +
+        "stop,svg,switch,text,title,tspan,use");
+
+// Special Elements (can contain anything)
+var specialElements = makeMap("script,style");
+
+var validElements = angular.extend({},
+                                   voidElements,
+                                   blockElements,
+                                   inlineElements,
+                                   optionalEndTagElements,
+                                   svgElements);
+
+//Attributes that have href and hence need to be sanitized
+var uriAttrs = makeMap("background,cite,href,longdesc,src,usemap,xlink:href");
+
+var htmlAttrs = makeMap('abbr,align,alt,axis,bgcolor,border,cellpadding,cellspacing,class,clear,' +
+    'color,cols,colspan,compact,coords,dir,face,headers,height,hreflang,hspace,' +
+    'ismap,lang,language,nohref,nowrap,rel,rev,rows,rowspan,rules,' +
+    'scope,scrolling,shape,size,span,start,summary,target,title,type,' +
+    'valign,value,vspace,width');
+
+// SVG attributes (without "id" and "name" attributes)
+// https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Attributes
+var svgAttrs = makeMap('accent-height,accumulate,additive,alphabetic,arabic-form,ascent,' +
+    'attributeName,attributeType,baseProfile,bbox,begin,by,calcMode,cap-height,class,color,' +
+    'color-rendering,content,cx,cy,d,dx,dy,descent,display,dur,end,fill,fill-rule,font-family,' +
+    'font-size,font-stretch,font-style,font-variant,font-weight,from,fx,fy,g1,g2,glyph-name,' +
+    'gradientUnits,hanging,height,horiz-adv-x,horiz-origin-x,ideographic,k,keyPoints,' +
+    'keySplines,keyTimes,lang,marker-end,marker-mid,marker-start,markerHeight,markerUnits,' +
+    'markerWidth,mathematical,max,min,offset,opacity,orient,origin,overline-position,' +
+    'overline-thickness,panose-1,path,pathLength,points,preserveAspectRatio,r,refX,refY,' +
+    'repeatCount,repeatDur,requiredExtensions,requiredFeatures,restart,rotate,rx,ry,slope,stemh,' +
+    'stemv,stop-color,stop-opacity,strikethrough-position,strikethrough-thickness,stroke,' +
+    'stroke-dasharray,stroke-dashoffset,stroke-linecap,stroke-linejoin,stroke-miterlimit,' +
+    'stroke-opacity,stroke-width,systemLanguage,target,text-anchor,to,transform,type,u1,u2,' +
+    'underline-position,underline-thickness,unicode,unicode-range,units-per-em,values,version,' +
+    'viewBox,visibility,width,widths,x,x-height,x1,x2,xlink:actuate,xlink:arcrole,xlink:role,' +
+    'xlink:show,xlink:title,xlink:type,xml:base,xml:lang,xml:space,xmlns,xmlns:xlink,y,y1,y2,' +
+    'zoomAndPan');
+
+var validAttrs = angular.extend({},
+                                uriAttrs,
+                                svgAttrs,
+                                htmlAttrs);
+
+function makeMap(str) {
+  var obj = {}, items = str.split(','), i;
+  for (i = 0; i < items.length; i++) obj[items[i]] = true;
+  return obj;
+}
+
+
+/**
+ * @example
+ * htmlParser(htmlString, {
+ *     start: function(tag, attrs, unary) {},
+ *     end: function(tag) {},
+ *     chars: function(text) {},
+ *     comment: function(text) {}
+ * });
+ *
+ * @param {string} html string
+ * @param {object} handler
+ */
+function htmlParser(html, handler) {
+  if (typeof html !== 'string') {
+    if (html === null || typeof html === 'undefined') {
+      html = '';
+    } else {
+      html = '' + html;
+    }
+  }
+  var index, chars, match, stack = [], last = html, text;
+  stack.last = function() { return stack[stack.length - 1]; };
+
+  while (html) {
+    text = '';
+    chars = true;
+
+    // Make sure we're not in a script or style element
+    if (!stack.last() || !specialElements[stack.last()]) {
+
+      // Comment
+      if (html.indexOf("<!--") === 0) {
+        // comments containing -- are not allowed unless they terminate the comment
+        index = html.indexOf("--", 4);
+
+        if (index >= 0 && html.lastIndexOf("-->", index) === index) {
+          if (handler.comment) handler.comment(html.substring(4, index));
+          html = html.substring(index + 3);
+          chars = false;
+        }
+      // DOCTYPE
+      } else if (DOCTYPE_REGEXP.test(html)) {
+        match = html.match(DOCTYPE_REGEXP);
+
+        if (match) {
+          html = html.replace(match[0], '');
+          chars = false;
+        }
+      // end tag
+      } else if (BEGING_END_TAGE_REGEXP.test(html)) {
+        match = html.match(END_TAG_REGEXP);
+
+        if (match) {
+          html = html.substring(match[0].length);
+          match[0].replace(END_TAG_REGEXP, parseEndTag);
+          chars = false;
+        }
+
+      // start tag
+      } else if (BEGIN_TAG_REGEXP.test(html)) {
+        match = html.match(START_TAG_REGEXP);
+
+        if (match) {
+          // We only have a valid start-tag if there is a '>'.
+          if (match[4]) {
+            html = html.substring(match[0].length);
+            match[0].replace(START_TAG_REGEXP, parseStartTag);
+          }
+          chars = false;
+        } else {
+          // no ending tag found --- this piece should be encoded as an entity.
+          text += '<';
+          html = html.substring(1);
+        }
+      }
+
+      if (chars) {
+        index = html.indexOf("<");
+
+        text += index < 0 ? html : html.substring(0, index);
+        html = index < 0 ? "" : html.substring(index);
+
+        if (handler.chars) handler.chars(decodeEntities(text));
+      }
+
+    } else {
+      // IE versions 9 and 10 do not understand the regex '[^]', so using a workaround with [\W\w].
+      html = html.replace(new RegExp("([\\W\\w]*)<\\s*\\/\\s*" + stack.last() + "[^>]*>", 'i'),
+        function(all, text) {
+          text = text.replace(COMMENT_REGEXP, "$1").replace(CDATA_REGEXP, "$1");
+
+          if (handler.chars) handler.chars(decodeEntities(text));
+
+          return "";
+      });
+
+      parseEndTag("", stack.last());
+    }
+
+    if (html == last) {
+      throw $sanitizeMinErr('badparse', "The sanitizer was unable to parse the following block " +
+                                        "of html: {0}", html);
+    }
+    last = html;
+  }
+
+  // Clean up any remaining tags
+  parseEndTag();
+
+  function parseStartTag(tag, tagName, rest, unary) {
+    tagName = angular.lowercase(tagName);
+    if (blockElements[tagName]) {
+      while (stack.last() && inlineElements[stack.last()]) {
+        parseEndTag("", stack.last());
+      }
+    }
+
+    if (optionalEndTagElements[tagName] && stack.last() == tagName) {
+      parseEndTag("", tagName);
+    }
+
+    unary = voidElements[tagName] || !!unary;
+
+    if (!unary)
+      stack.push(tagName);
+
+    var attrs = {};
+
+    rest.replace(ATTR_REGEXP,
+      function(match, name, doubleQuotedValue, singleQuotedValue, unquotedValue) {
+        var value = doubleQuotedValue
+          || singleQuotedValue
+          || unquotedValue
+          || '';
+
+        attrs[name] = decodeEntities(value);
+    });
+    if (handler.start) handler.start(tagName, attrs, unary);
+  }
+
+  function parseEndTag(tag, tagName) {
+    var pos = 0, i;
+    tagName = angular.lowercase(tagName);
+    if (tagName)
+      // Find the closest opened tag of the same type
+      for (pos = stack.length - 1; pos >= 0; pos--)
+        if (stack[pos] == tagName)
+          break;
+
+    if (pos >= 0) {
+      // Close all the open elements, up the stack
+      for (i = stack.length - 1; i >= pos; i--)
+        if (handler.end) handler.end(stack[i]);
+
+      // Remove the open elements from the stack
+      stack.length = pos;
+    }
+  }
+}
+
+var hiddenPre=document.createElement("pre");
+/**
+ * decodes all entities into regular string
+ * @param value
+ * @returns {string} A string with decoded entities.
+ */
+function decodeEntities(value) {
+  if (!value) { return ''; }
+
+  hiddenPre.innerHTML = value.replace(/</g,"&lt;");
+  // innerText depends on styling as it doesn't display hidden elements.
+  // Therefore, it's better to use textContent not to cause unnecessary reflows.
+  return hiddenPre.textContent;
+}
+
+/**
+ * Escapes all potentially dangerous characters, so that the
+ * resulting string can be safely inserted into attribute or
+ * element text.
+ * @param value
+ * @returns {string} escaped text
+ */
+function encodeEntities(value) {
+  return value.
+    replace(/&/g, '&amp;').
+    replace(SURROGATE_PAIR_REGEXP, function(value) {
+      var hi = value.charCodeAt(0);
+      var low = value.charCodeAt(1);
+      return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+    }).
+    replace(NON_ALPHANUMERIC_REGEXP, function(value) {
+      return '&#' + value.charCodeAt(0) + ';';
+    }).
+    replace(/</g, '&lt;').
+    replace(/>/g, '&gt;');
+}
+
+/**
+ * create an HTML/XML writer which writes to buffer
+ * @param {Array} buf use buf.jain('') to get out sanitized html string
+ * @returns {object} in the form of {
+ *     start: function(tag, attrs, unary) {},
+ *     end: function(tag) {},
+ *     chars: function(text) {},
+ *     comment: function(text) {}
+ * }
+ */
+function htmlSanitizeWriter(buf, uriValidator) {
+  var ignore = false;
+  var out = angular.bind(buf, buf.push);
+  return {
+    start: function(tag, attrs, unary) {
+      tag = angular.lowercase(tag);
+      if (!ignore && specialElements[tag]) {
+        ignore = tag;
+      }
+      if (!ignore && validElements[tag] === true) {
+        out('<');
+        out(tag);
+        angular.forEach(attrs, function(value, key) {
+          var lkey=angular.lowercase(key);
+          var isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
+          if (validAttrs[lkey] === true &&
+            (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
+            out(' ');
+            out(key);
+            out('="');
+            out(encodeEntities(value));
+            out('"');
+          }
+        });
+        out(unary ? '/>' : '>');
+      }
+    },
+    end: function(tag) {
+        tag = angular.lowercase(tag);
+        if (!ignore && validElements[tag] === true) {
+          out('</');
+          out(tag);
+          out('>');
+        }
+        if (tag == ignore) {
+          ignore = false;
+        }
+      },
+    chars: function(chars) {
+        if (!ignore) {
+          out(encodeEntities(chars));
+        }
+      }
+  };
+}
+
+
+// define ngSanitize module and register $sanitize service
+angular.module('ngSanitize', []).provider('$sanitize', $SanitizeProvider);
+
+/* global sanitizeText: false */
+
+/**
+ * @ngdoc filter
+ * @name linky
+ * @kind function
+ *
+ * @description
+ * Finds links in text input and turns them into html links. Supports http/https/ftp/mailto and
+ * plain email address links.
+ *
+ * Requires the {@link ngSanitize `ngSanitize`} module to be installed.
+ *
+ * @param {string} text Input text.
+ * @param {string} target Window (_blank|_self|_parent|_top) or named frame to open links in.
+ * @returns {string} Html-linkified text.
+ *
+ * @usage
+   <span ng-bind-html="linky_expression | linky"></span>
+ *
+ * @example
+   <example module="linkyExample" deps="angular-sanitize.js">
+     <file name="index.html">
+       <script>
+         angular.module('linkyExample', ['ngSanitize'])
+           .controller('ExampleController', ['$scope', function($scope) {
+             $scope.snippet =
+               'Pretty text with some links:\n'+
+               'http://angularjs.org/,\n'+
+               'mailto:us@somewhere.org,\n'+
+               'another@somewhere.org,\n'+
+               'and one more: ftp://127.0.0.1/.';
+             $scope.snippetWithTarget = 'http://angularjs.org/';
+           }]);
+       </script>
+       <div ng-controller="ExampleController">
+       Snippet: <textarea ng-model="snippet" cols="60" rows="3"></textarea>
+       <table>
+         <tr>
+           <td>Filter</td>
+           <td>Source</td>
+           <td>Rendered</td>
+         </tr>
+         <tr id="linky-filter">
+           <td>linky filter</td>
+           <td>
+             <pre>&lt;div ng-bind-html="snippet | linky"&gt;<br>&lt;/div&gt;</pre>
+           </td>
+           <td>
+             <div ng-bind-html="snippet | linky"></div>
+           </td>
+         </tr>
+         <tr id="linky-target">
+          <td>linky target</td>
+          <td>
+            <pre>&lt;div ng-bind-html="snippetWithTarget | linky:'_blank'"&gt;<br>&lt;/div&gt;</pre>
+          </td>
+          <td>
+            <div ng-bind-html="snippetWithTarget | linky:'_blank'"></div>
+          </td>
+         </tr>
+         <tr id="escaped-html">
+           <td>no filter</td>
+           <td><pre>&lt;div ng-bind="snippet"&gt;<br>&lt;/div&gt;</pre></td>
+           <td><div ng-bind="snippet"></div></td>
+         </tr>
+       </table>
+     </file>
+     <file name="protractor.js" type="protractor">
+       it('should linkify the snippet with urls', function() {
+         expect(element(by.id('linky-filter')).element(by.binding('snippet | linky')).getText()).
+             toBe('Pretty text with some links: http://angularjs.org/, us@somewhere.org, ' +
+                  'another@somewhere.org, and one more: ftp://127.0.0.1/.');
+         expect(element.all(by.css('#linky-filter a')).count()).toEqual(4);
+       });
+
+       it('should not linkify snippet without the linky filter', function() {
+         expect(element(by.id('escaped-html')).element(by.binding('snippet')).getText()).
+             toBe('Pretty text with some links: http://angularjs.org/, mailto:us@somewhere.org, ' +
+                  'another@somewhere.org, and one more: ftp://127.0.0.1/.');
+         expect(element.all(by.css('#escaped-html a')).count()).toEqual(0);
+       });
+
+       it('should update', function() {
+         element(by.model('snippet')).clear();
+         element(by.model('snippet')).sendKeys('new http://link.');
+         expect(element(by.id('linky-filter')).element(by.binding('snippet | linky')).getText()).
+             toBe('new http://link.');
+         expect(element.all(by.css('#linky-filter a')).count()).toEqual(1);
+         expect(element(by.id('escaped-html')).element(by.binding('snippet')).getText())
+             .toBe('new http://link.');
+       });
+
+       it('should work with the target property', function() {
+        expect(element(by.id('linky-target')).
+            element(by.binding("snippetWithTarget | linky:'_blank'")).getText()).
+            toBe('http://angularjs.org/');
+        expect(element(by.css('#linky-target a')).getAttribute('target')).toEqual('_blank');
+       });
+     </file>
+   </example>
+ */
+angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
+  var LINKY_URL_REGEXP =
+        /((ftp|https?):\/\/|(www\.)|(mailto:)?[A-Za-z0-9._%+-]+@)\S*[^\s.;,(){}<>"”’]/i,
+      MAILTO_REGEXP = /^mailto:/i;
+
+  return function(text, target) {
+    if (!text) return text;
+    var match;
+    var raw = text;
+    var html = [];
+    var url;
+    var i;
+    while ((match = raw.match(LINKY_URL_REGEXP))) {
+      // We can not end in these as they are sometimes found at the end of the sentence
+      url = match[0];
+      // if we did not match ftp/http/www/mailto then assume mailto
+      if (!match[2] && !match[4]) {
+        url = (match[3] ? 'http://' : 'mailto:') + url;
+      }
+      i = match.index;
+      addText(raw.substr(0, i));
+      addLink(url, match[0].replace(MAILTO_REGEXP, ''));
+      raw = raw.substring(i + match[0].length);
+    }
+    addText(raw);
+    return $sanitize(html.join(''));
+
+    function addText(text) {
+      if (!text) {
+        return;
+      }
+      html.push(sanitizeText(text));
+    }
+
+    function addLink(url, text) {
+      html.push('<a ');
+      if (angular.isDefined(target)) {
+        html.push('target="',
+                  target,
+                  '" ');
+      }
+      html.push('href="',
+                url.replace(/"/g, '&quot;'),
+                '">');
+      addText(text);
+      html.push('</a>');
+    }
+  };
+}]);
+
+
+})(window, window.angular);
+
 /*!
  * angular-translate - v2.5.2 - 2014-12-10
  * http://github.com/angular-translate/angular-translate
@@ -6535,6 +7215,22 @@ angular.module("template/typeahead/typeahead-popup.html", []).run(["$templateCac
     "");
 }]);
 
+(function () {
+  "use strict";
+
+  angular.module("risevision.widget.common.tooltip", ["ui.bootstrap"])
+    .directive("rvTooltip", [function () {
+      return {
+        restrict: "A",
+        link: function($scope, element) {
+          element.addClass("fa");
+          element.addClass("fa-question-circle");
+          element.addClass("fa-lg");
+        }
+      };
+    }]);
+}());
+
 if (typeof angular !== "undefined") {
   angular.module("risevision.widget.common.storage-selector.config", [])
     .value("STORAGE_MODAL", "https://storage.risevision.com/files/");
@@ -6554,7 +7250,9 @@ if (typeof angular !== "undefined") {
         restrict: "EA",
         scope : {
           companyId : "@",
-          type: "@"
+          type: "@",
+          label: "@",
+          selected: "="
         },
         template: $templateCache.get("storage-selector.html"),
         link: function (scope) {
@@ -6575,7 +7273,7 @@ if (typeof angular !== "undefined") {
             scope.modalInstance = $modal.open({
               templateUrl: "storage.html",
               controller: "StorageCtrl",
-              size: "lg",
+              size: "md",
               backdrop: true,
               resolve: {
                 storageUrl: function () {
@@ -6588,8 +7286,8 @@ if (typeof angular !== "undefined") {
               // for unit test purposes
               scope.files = files;
 
-              // emit an event with name "files", passing the array of files selected from storage
-              scope.$emit("picked", files);
+              // emit an event with name "files", passing the array of files selected from storage and the selector type
+              scope.$emit("picked", files, scope.type);
 
             }, function () {
               // for unit test purposes
@@ -6652,12 +7350,15 @@ angular.module("risevision.widget.common.storage-selector")
   }]);
 
 (function(module) {
-try { app = angular.module("risevision.widget.common.storage-selector"); }
-catch(err) { app = angular.module("risevision.widget.common.storage-selector", []); }
-app.run(["$templateCache", function($templateCache) {
+try { module = angular.module("risevision.widget.common.storage-selector"); }
+catch(err) { module = angular.module("risevision.widget.common.storage-selector", []); }
+module.run(["$templateCache", function($templateCache) {
   "use strict";
   $templateCache.put("storage-selector.html",
-    "<button class=\"btn btn-widget-icon-storage\" ng-click=\"open()\" type=\"button\" />\n" +
+    "<button class=\"btn btn-default\" ng-class=\"{active: selected}\" ng-click=\"open()\" type=\"button\" >\n" +
+    "  {{ label }}<img src=\"http://s3.amazonaws.com/Rise-Images/Icons/storage.png\" class=\"storage-selector-icon\" ng-class=\"{'icon-right': label}\">\n" +
+    "</button>\n" +
+    "\n" +
     "<script type=\"text/ng-template\" id=\"storage.html\">\n" +
     "        <iframe class=\"modal-dialog\" scrolling=\"no\" marginwidth=\"0\" src=\"{{ storageUrl.url }}\"></iframe>\n" +
     "</script>\n" +
@@ -6668,26 +7369,655 @@ app.run(["$templateCache", function($templateCache) {
 (function () {
   "use strict";
 
-  angular.module("risevision.widget.common.tooltip", ["ui.bootstrap"])
-    .directive("rvTooltip", [function () {
+  try {
+  	angular.module("risevision.common.config");
+  }
+  catch(err) {
+  	angular.module("risevision.common.config", []);
+  }
+
+  angular.module("risevision.common.config")
+    .value("STORE_URL", "https://store.risevision.com/")
+    .value("STORE_SERVER_URL", "https://store-dot-rvaserver2.appspot.com/")
+  ;
+
+  angular.module("risevision.widget.common.subscription-status.config", [])
+    .value("IN_RVA_PATH", "/product/productId/?up_id=iframeId&parent=parentUrl&inRVA=true&cid=companyId")
+    .value("IN_RVA_ACCOUNT_PATH", "/account?up_id=iframeId&parent=parentUrl&inRVA=true")
+    .value("PATH_URL", "v1/company/companyId/product/status?pc=")
+  ;
+
+}());
+
+(function () {
+  "use strict";
+
+  angular.module("risevision.widget.common.subscription-status",
+    ["risevision.common.config",
+     "risevision.widget.common.subscription-status.config",
+     "risevision.widget.common.subscription-status.service",
+     "risevision.widget.common",
+     "risevision.common.i18n",
+     "ngSanitize"]);
+  }());
+
+(function () {
+  "use strict";
+
+  angular.module("risevision.widget.common.subscription-status")
+    .directive("appSubscriptionStatus", ["$templateCache", "subscriptionStatusService",
+    "$document", "$compile",
+      function ($templateCache, subscriptionStatusService, $document, $compile) {
       return {
-        restrict: "A",
-        link: function($scope, element) {
-          element.addClass("fa");
-          element.addClass("fa-question-circle");
-          element.addClass("fa-lg");
+        restrict: "AE",
+        require: "?ngModel",
+        scope: {
+          productId: "@",
+          productCode: "@",
+          companyId: "@",
+          productPrice: "@"
+        },
+        template: $templateCache.get("app-subscription-status-template.html"),
+        link: function($scope, elm, attrs, ctrl) {
+          var storeModalInitialized = false;
+          var storeAccountModalInitialized = false;
+
+          $scope.subscriptionStatus = {"status": "N/A", "statusCode": "na", "subscribed": false, "expiry": null};
+
+          $scope.$watch("companyId", function() {
+            checkSubscriptionStatus();
+          });
+
+          function checkSubscriptionStatus() {
+            if ($scope.productCode && $scope.productId && $scope.companyId) {
+              subscriptionStatusService.get($scope.productCode, $scope.companyId).then(function(subscriptionStatus) {
+                if (subscriptionStatus) {
+                  $scope.subscriptionStatus = subscriptionStatus;
+                }
+              },
+              function () {
+                // TODO: catch error here
+              });
+            }
+          }
+
+          if (ctrl) {
+            $scope.$watch("subscriptionStatus", function(subscriptionStatus) {
+              ctrl.$setViewValue(subscriptionStatus);
+            });
+          }
+
+          var watch = $scope.$watch("showStoreModal", function(show) {
+            if (show) {
+              initStoreModal();
+
+              watch();
+            }
+          });
+
+          var watchAccount = $scope.$watch("showStoreAccountModal", function(show) {
+            if (show) {
+              initStoreAccountModal();
+
+              watchAccount();
+            }
+          });
+
+          $scope.$on("store-dialog-save", function() {
+            checkSubscriptionStatus();
+          });
+
+          function initStoreModal() {
+            if (!storeModalInitialized) {
+              var body = $document.find("body").eq(0);
+
+              var angularDomEl = angular.element("<div store-modal></div>");
+              angularDomEl.attr({
+                "id": "store-modal",
+                "animate": "animate",
+                "show-store-modal": "showStoreModal",
+                "company-id": "{{companyId}}",
+                "product-id": "{{productId}}"
+              });
+
+              var modalDomEl = $compile(angularDomEl)($scope);
+              body.append(modalDomEl);
+
+              storeModalInitialized = true;
+            }
+          }
+
+          function initStoreAccountModal() {
+            if (!storeAccountModalInitialized) {
+              var body = $document.find("body").eq(0);
+
+              var angularDomEl = angular.element("<div store-account-modal></div>");
+              angularDomEl.attr({
+                "id": "store-account-modal",
+                "animate": "animate",
+                "show-store-account-modal": "showAccountStoreModal",
+                "company-id": "{{companyId}}",
+                "product-id": "{{productId}}"
+              });
+
+              var modalDomEl = $compile(angularDomEl)($scope);
+              body.append(modalDomEl);
+
+              storeAccountModalInitialized = true;
+            }
+          }
         }
       };
+    }])
+    .directive("ngDisableRightClick", function() {
+      return function(scope, element) {
+        element.bind("contextmenu", function(event) {
+          scope.$apply(function() {
+            event.preventDefault();
+          });
+        });
+      };
+    });
+}());
+
+(function () {
+  "use strict";
+
+  angular.module("risevision.widget.common.subscription-status")
+    .directive("storeAccountModal", ["$templateCache", "$location", "gadgetsApi", "STORE_URL", "IN_RVA_ACCOUNT_PATH",
+      function ($templateCache, $location, gadgetsApi, STORE_URL, IN_RVA_ACCOUNT_PATH) {
+        return {
+          restrict: "AE",
+          scope: {
+            showStoreAccountModal: "=",
+            productId: "@",
+            companyId: "@"
+          },
+          template: $templateCache.get("store-account-modal-template.html"),
+          link: function($scope, elm) {
+            var $elm = $(elm);
+            $scope.showStoreAccountModal = true;
+            
+            function registerRPC() {
+              if (!$scope.rpcRegistered && gadgetsApi) {
+                $scope.rpcRegistered = true;
+                
+                gadgetsApi.rpc.register("rscmd_saveSettings", saveSettings);
+                gadgetsApi.rpc.register("rscmd_closeSettings", closeSettings);
+
+                gadgetsApi.rpc.setupReceiver("store-account-modal-frame");
+              }
+            }
+            
+            function saveSettings() {
+              $scope.$emit("store-dialog-save");
+              
+              closeSettings();
+            }
+
+            function closeSettings() {
+              $scope.$apply(function() {
+                $scope.showStoreAccountModal = false;
+              });        
+            }
+            
+            $scope.$watch("showStoreAccountModal", function(showStoreAccountModal) {
+              if (showStoreAccountModal) {
+                registerRPC();
+                
+                var url = STORE_URL + IN_RVA_ACCOUNT_PATH
+                  .replace("productId", $scope.productId)
+                  .replace("companyId", $scope.companyId)
+                  .replace("iframeId", "store-account-modal-frame")
+                  .replace("parentUrl", encodeURIComponent($location.$$absUrl));
+                                
+                $elm.find("#store-account-modal-frame").attr("src", url);
+                
+              }
+            });
+          }
+        };
     }]);
 }());
 
 (function () {
   "use strict";
 
+  angular.module("risevision.widget.common.subscription-status")
+    .directive("storeModal", ["$templateCache", "$location", "gadgetsApi", "STORE_URL", "IN_RVA_PATH",
+      function ($templateCache, $location, gadgetsApi, STORE_URL, IN_RVA_PATH) {
+        return {
+          restrict: "AE",
+          scope: {
+            showStoreModal: "=",
+            productId: "@",
+            companyId: "@"
+          },
+          template: $templateCache.get("store-modal-template.html"),
+          link: function($scope, elm) {
+            var $elm = $(elm);
+            $scope.showStoreModal = true;
+            
+            function registerRPC() {
+              if (!$scope.rpcRegistered && gadgetsApi) {
+                $scope.rpcRegistered = true;
+                
+                gadgetsApi.rpc.register("rscmd_saveSettings", saveSettings);
+                gadgetsApi.rpc.register("rscmd_closeSettings", closeSettings);
+
+                gadgetsApi.rpc.setupReceiver("store-modal-frame");
+              }
+            }
+            
+            function saveSettings() {
+              $scope.$emit("store-dialog-save");
+              
+              closeSettings();
+            }
+
+            function closeSettings() {
+              $scope.$emit("store-dialog-close");
+
+              $scope.$apply(function() {
+                $scope.showStoreModal = false;
+              });
+            }
+            
+            $scope.$watch("showStoreModal", function(showStoreModal) {
+              if (showStoreModal) {
+                registerRPC();
+                
+                var url = STORE_URL + IN_RVA_PATH
+                  .replace("productId", $scope.productId)
+                  .replace("companyId", $scope.companyId)
+                  .replace("iframeId", "store-modal-frame")
+                  .replace("parentUrl", encodeURIComponent($location.$$absUrl));
+                                
+                $elm.find("#store-modal-frame").attr("src", url);
+                
+              }
+            });            
+          }
+        };
+    }]);
+}());
+  
+
+(function () {
+  "use strict";
+
+  angular.module("risevision.widget.common.subscription-status")
+    .directive("subscriptionStatus", ["$templateCache", "subscriptionStatusService",
+    "$document", "$compile", "$rootScope",
+      function ($templateCache, subscriptionStatusService, $document, $compile, $rootScope) {
+      return {
+        restrict: "AE",
+        require: "?ngModel",
+        scope: {
+          productId: "@",
+          productCode: "@",
+          companyId: "@",
+          expandedFormat: "@",
+          showStoreModal: "=?"
+        },
+        template: $templateCache.get("subscription-status-template.html"),
+        link: function($scope, elm, attrs, ctrl) {
+          var storeModalInitialized = false;
+          var storeAccountModalInitialized = false;
+
+          $scope.subscriptionStatus = {"status": "N/A", "statusCode": "na", "subscribed": false, "expiry": null};
+
+          $scope.$watch("companyId", function() {
+            checkSubscriptionStatus();
+          });
+
+          $rootScope.$on("refreshSubscriptionStatus", function(event, data) {
+            // Only refresh if currentStatus code matches the provided value, or value is null
+            if(data === null || $scope.subscriptionStatus.statusCode === data) {
+              checkSubscriptionStatus();
+            }
+          });
+
+          function checkSubscriptionStatus() {
+            if ($scope.productCode && $scope.productId && $scope.companyId) {
+              subscriptionStatusService.get($scope.productCode, $scope.companyId).then(function(subscriptionStatus) {
+                if (subscriptionStatus) {
+                  if(!$scope.subscriptionStatus || $scope.subscriptionStatus.status !== subscriptionStatus.status) {
+                    $rootScope.$emit("subscription-status:changed", subscriptionStatus);
+                  }
+                  
+                  $scope.subscriptionStatus = subscriptionStatus;
+                }
+              },
+              function () {
+                // TODO: catch error here
+              });
+            }
+          }
+
+          if (ctrl) {
+            $scope.$watch("subscriptionStatus", function(subscriptionStatus) {
+              ctrl.$setViewValue(subscriptionStatus);
+            });
+          }
+
+          var watch = $scope.$watch("showStoreModal", function(show) {
+            if (show) {
+              initStoreModal();
+
+              watch();
+            }
+          });
+
+          var watchAccount = $scope.$watch("showStoreAccountModal", function(show) {
+            if (show) {
+              initStoreAccountModal();
+
+              watchAccount();
+            }
+          });
+
+          $scope.$on("store-dialog-save", function() {
+            checkSubscriptionStatus();
+          });
+
+          $scope.$on("store-dialog-close", function() {
+            checkSubscriptionStatus();
+          });
+
+          function initStoreModal() {
+            if (!storeModalInitialized) {
+              var body = $document.find("body").eq(0);
+              
+              var angularDomEl = angular.element("<div store-modal></div>");
+              angularDomEl.attr({
+                "id": "store-modal",
+                "animate": "animate",
+                "show-store-modal": "showStoreModal",
+                "company-id": "{{companyId}}",
+                "product-id": "{{productId}}"
+              });
+              
+              var modalDomEl = $compile(angularDomEl)($scope);
+              body.append(modalDomEl);
+              
+              storeModalInitialized = true;
+            }
+          }
+
+          function initStoreAccountModal() {
+            if (!storeAccountModalInitialized) {
+              var body = $document.find("body").eq(0);
+
+              var angularDomEl = angular.element("<div store-account-modal></div>");
+              angularDomEl.attr({
+                "id": "store-account-modal",
+                "animate": "animate",
+                "show-store-account-modal": "showAccountStoreModal",
+                "company-id": "{{companyId}}",
+                "product-id": "{{productId}}"
+              });
+
+              var modalDomEl = $compile(angularDomEl)($scope);
+              body.append(modalDomEl);
+
+              storeAccountModalInitialized = true;
+            }
+          }
+        }
+      };
+    }])
+    .filter("to_trusted", ["$sce", function($sce) {
+      return function(text) {
+        return $sce.trustAsHtml(text);
+      };
+    }]);
+}());
+
+"use strict";
+
+angular.module("risevision.widget.common.subscription-status")
+  .filter("productTrialDaysToExpiry", ["$interpolate", "$translate", function($interpolate, $translate) {
+    var expiresToday = null;
+    var expiresIn = null;
+
+    $translate(["subscription-status.expires-today", "subscription-status.expires-in"],
+        { days: "{{days}}" }).then(function(values) {
+      expiresToday = $interpolate(values["subscription-status.expires-today"]);
+      expiresIn = $interpolate(values["subscription-status.expires-in"]);
+    });
+
+    return function(subscriptionExpiry) {
+      var msg = "";
+      try {
+        var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+        var timeInMs = new Date(subscriptionExpiry).getTime() - new Date().getTime();
+        var days = Math.floor(timeInMs/oneDay);
+        var params = { days: days };
+
+        if (days === 0) {
+          msg = expiresToday !== null ? expiresToday(params) : "";
+        }
+        else if (days > 0) {
+          msg = expiresIn !== null ? expiresIn(params) : "";
+        }
+        else {
+          msg = expiresToday !== null ? expiresToday(params) : "";
+        }
+      } catch (e) {
+        msg = expiresToday !== null ? expiresToday(params) : "";
+      }
+
+      return msg;
+    };
+  }]);
+
+(function () {
+  "use strict";
+
+  angular.module("risevision.widget.common.subscription-status.service",
+    ["risevision.common.config",
+     "risevision.widget.common.subscription-status.config"])
+    .service("subscriptionStatusService", ["$http", "$q", "STORE_SERVER_URL", "PATH_URL",
+    function ($http, $q, STORE_SERVER_URL, PATH_URL) {
+      var responseType = ["On Trial", "Trial Expired", "Subscribed", "Suspended", "Cancelled", "Free", "Not Subscribed", "Product Not Found", "Company Not Found", "Error"];
+      var responseCode = ["on-trial", "trial-expired", "subscribed", "suspended", "cancelled", "free", "not-subscribed", "product-not-found", "company-not-found", "error"];
+      var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+      // a and b are javascript Date objects
+      function dateDiffInDays(a, b) {
+        return Math.floor((b.getTime() - a.getTime()) / _MS_PER_DAY);
+      }
+
+      this.get = function (productCode, companyId) {
+        var deferred = $q.defer();
+
+        var url = STORE_SERVER_URL +
+          PATH_URL.replace("companyId", companyId) +
+          productCode;
+
+        $http.get(url).then(function (response) {
+          if (response && response.data && response.data.length) {
+            var subscriptionStatus = response.data[0];
+
+            subscriptionStatus.plural = "";
+
+            var statusIndex = responseType.indexOf(subscriptionStatus.status);
+            
+            if(statusIndex >= 0) {
+              subscriptionStatus.statusCode = responseCode[statusIndex];
+            }
+            
+            if (subscriptionStatus.status === "") {
+              subscriptionStatus.status = "N/A";
+              subscriptionStatus.statusCode = "na";
+              subscriptionStatus.subscribed = false;
+            }
+            else if (subscriptionStatus.status === responseType[0] ||
+              subscriptionStatus.status === responseType[2] ||
+              subscriptionStatus.status === responseType[5]) {
+              subscriptionStatus.subscribed = true;
+            }
+            else {
+              subscriptionStatus.subscribed = false;
+            }
+
+            if(subscriptionStatus.statusCode === "not-subscribed" && 
+              subscriptionStatus.trialPeriod && subscriptionStatus.trialPeriod > 0) {
+              subscriptionStatus.statusCode = "trial-available";
+              subscriptionStatus.subscribed = true;
+            }
+
+            if(subscriptionStatus.expiry && subscriptionStatus.statusCode === "on-trial") {
+              subscriptionStatus.expiry = new Date(subscriptionStatus.expiry);
+
+              if(subscriptionStatus.expiry instanceof Date && !isNaN(subscriptionStatus.expiry.valueOf())) {
+                subscriptionStatus.expiry = dateDiffInDays(new Date(), subscriptionStatus.expiry);
+              }
+
+              if(subscriptionStatus.expiry === 0) {
+                subscriptionStatus.plural = "-zero";
+              }
+              else if(subscriptionStatus.expiry > 1) {
+                subscriptionStatus.plural = "-many";
+              }
+            }
+
+            deferred.resolve(subscriptionStatus);
+          }
+          else {
+            deferred.reject("No response");
+          }
+        });
+
+        return deferred.promise;
+      };
+
+    }]);
+}());
+
+(function(module) {
+try { module = angular.module("risevision.widget.common.subscription-status"); }
+catch(err) { module = angular.module("risevision.widget.common.subscription-status", []); }
+module.run(["$templateCache", function($templateCache) {
+  "use strict";
+  $templateCache.put("app-subscription-status-template.html",
+    "<a id=\"app-subscription-status\" href=\"\"\n" +
+    "  ng-click=\"showStoreModal = true\" class=\"store-link\">\n" +
+    "    <div class=\"rate\">\n" +
+    "      <strong>${{productPrice}}</strong>\n" +
+    "    </div>\n" +
+    "    <div class=\"subscribe\">\n" +
+    "      <strong ng-if=\"!subscriptionStatus.subscribed\"><span translate=\"subscription-status.get-subscription\"></span></strong>\n" +
+    "      <strong ng-if=\"subscriptionStatus.subscribed\"><span translate=\"subscription-status.continue-to-app\"></span></strong>\n" +
+    "    </div>\n" +
+    "</a>\n" +
+    "");
+}]);
+})();
+
+(function(module) {
+try { module = angular.module("risevision.widget.common.subscription-status"); }
+catch(err) { module = angular.module("risevision.widget.common.subscription-status", []); }
+module.run(["$templateCache", function($templateCache) {
+  "use strict";
+  $templateCache.put("store-account-modal-template.html",
+    "<div class=\"widget\" ng-show=\"showStoreAccountModal\">\n" +
+    "  <div class=\"overlay\" ng-click=\"showStoreAccountModal = false\"></div>\n" +
+    "  <div class=\"settings-center\">\n" +
+    "    <div class=\"wrapper container modal-content\">\n" +
+    "      <iframe id=\"store-account-modal-frame\" name=\"store-account-modal-frame\" class=\"modal-content full-screen-modal\">\n" +
+    "        \n" +
+    "      </iframe>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>");
+}]);
+})();
+
+(function(module) {
+try { module = angular.module("risevision.widget.common.subscription-status"); }
+catch(err) { module = angular.module("risevision.widget.common.subscription-status", []); }
+module.run(["$templateCache", function($templateCache) {
+  "use strict";
+  $templateCache.put("store-modal-template.html",
+    "<div class=\"widget\" ng-show=\"showStoreModal\">\n" +
+    "  <div class=\"overlay\" ng-click=\"showStoreModal = false\"></div>\n" +
+    "  <div class=\"settings-center\">\n" +
+    "    <div class=\"wrapper container modal-content\">\n" +
+    "      <iframe id=\"store-modal-frame\" name=\"store-modal-frame\" class=\"full-screen-modal\">\n" +
+    "        \n" +
+    "      </iframe>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>");
+}]);
+})();
+
+(function(module) {
+try { module = angular.module("risevision.widget.common.subscription-status"); }
+catch(err) { module = angular.module("risevision.widget.common.subscription-status", []); }
+module.run(["$templateCache", function($templateCache) {
+  "use strict";
+  $templateCache.put("subscription-status-template.html",
+    "<div ng-show=\"!expandedFormat\">\n" +
+    "  <h3 ng-disable-right-click>\n" +
+    "    <span ng-show=\"subscriptionStatus.statusCode !== 'not-subscribed'\" ng-bind-html=\"'subscription-status.' + subscriptionStatus.statusCode + subscriptionStatus.plural | translate:subscriptionStatus | to_trusted\"></span>\n" +
+    "  </h3>\n" +
+    "  \n" +
+    "  <span ng-show=\"subscriptionStatus.statusCode === 'trial-available'\">\n" +
+    "    <button class=\"btn btn-primary btn-xs\" ng-click=\"showStoreModal = true;\">\n" +
+    "      <span translate=\"subscription-status.start-trial\"></span>\n" +
+    "    </button>\n" +
+    "  </span>\n" +
+    "  <span ng-show=\"['on-trial', 'trial-expired', 'cancelled', 'not-subscribed'].indexOf(subscriptionStatus.statusCode) >= 0\">\n" +
+    "    <button class=\"btn btn-primary btn-xs\" ng-click=\"showStoreModal = true;\">\n" +
+    "      <span translate=\"subscription-status.subscribe\"></span>\n" +
+    "    </button>\n" +
+    "  </span>\n" +
+    "  <span ng-show=\"['suspended'].indexOf(subscriptionStatus.statusCode) >= 0\">\n" +
+    "    <button class=\"btn btn-primary btn-xs\" ng-click=\"showStoreAccountModal = true;\">\n" +
+    "      <span translate=\"subscription-status.view-account\"></span>\n" +
+    "    </button>\n" +
+    "  </span>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div ng-show=\"expandedFormat\">\n" +
+    "  <div class=\"subscription-status trial\" ng-show=\"subscriptionStatus.statusCode === 'on-trial'\">\n" +
+    "    <span ng-bind-html=\"'subscription-status.expanded-' + subscriptionStatus.statusCode + subscriptionStatus.plural | translate:subscriptionStatus | to_trusted\"></span>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary add-left\" ng-click=\"showStoreModal = true;\">\n" +
+    "      <span translate=\"subscription-status.subscribe-now\"></span>\n" +
+    "    </button>\n" +
+    "  </div>\n" +
+    "  <div class=\"subscription-status expired\" ng-show=\"subscriptionStatus.statusCode === 'trial-expired'\">\n" +
+    "    <span translate=\"subscription-status.expanded-expired\"></span>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary add-left\" ng-click=\"showStoreModal = true;\">\n" +
+    "      <span translate=\"subscription-status.subscribe-now\"></span>\n" +
+    "    </button>\n" +
+    "  </div>\n" +
+    "  <div class=\"subscription-status cancelled\" ng-show=\"subscriptionStatus.statusCode === 'cancelled'\">\n" +
+    "   <span translate=\"subscription-status.expanded-cancelled\"></span>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary add-left\" ng-click=\"showStoreModal = true;\">\n" +
+    "      <span translate=\"subscription-status.subscribe-now\"></span>\n" +
+    "    </button>\n" +
+    "  </div>\n" +
+    "  <div class=\"subscription-status suspended\" ng-show=\"subscriptionStatus.statusCode === 'suspended'\">\n" +
+    "    <span translate=\"subscription-status.expanded-suspended\"></span>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary add-left\" ng-click=\"showStoreAccountModal = true;\">\n" +
+    "      <span translate=\"subscription-status.view-invoices\"></span>\n" +
+    "    </button>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "");
+}]);
+})();
+
+(function () {
+  "use strict";
+
   angular.module("risevision.widget.common.url-field", [
     "risevision.common.i18n",
-    "risevision.widget.common.tooltip",
-    "risevision.widget.common.storage-selector"
+    "risevision.widget.common.tooltip"
   ])
     .directive("urlField", ["$templateCache", "$log", function ($templateCache, $log) {
       return {
@@ -6696,10 +8026,7 @@ app.run(["$templateCache", function($templateCache) {
         scope: {
           url: "=",
           hideLabel: "@",
-          hideStorage: "@",
-          companyId: "@",
-          fileType: "@",
-          storageType: "@"
+          fileType: "@"
         },
         template: $templateCache.get("_angular/url-field/url-field.html"),
         link: function (scope, element, attrs, ctrl) {
@@ -6728,6 +8055,27 @@ app.run(["$templateCache", function($templateCache) {
             return false;
           }
 
+          // Check that the URL points to a valid image file.
+          function testImage() {
+            if ((scope.fileType !== "undefined") && (scope.url !== "undefined")) {
+              if (scope.fileType === "image") {
+                var image = new Image();
+
+                image.onload = function() {
+                  scope.valid = true;
+                  scope.$apply();
+                };
+
+                image.onerror = function() {
+                  scope.valid = false;
+                  scope.invalidType = scope.fileType;
+                  scope.$apply();
+                };
+
+                image.src = scope.url;
+              }
+            }
+          }
 
           function testUrl(value) {
             var urlRegExp,
@@ -6760,6 +8108,10 @@ app.run(["$templateCache", function($templateCache) {
               scope.invalidType = "url";
             }
 
+            if (isValid) {
+              testImage();
+            }
+
             return isValid;
           }
 
@@ -6774,17 +8126,12 @@ app.run(["$templateCache", function($templateCache) {
 
           scope.allowInitEmpty = (typeof attrs.initEmpty !== "undefined");
 
-          if (!scope.hideStorage) {
-            scope.$on("picked", function (event, data) {
-              scope.url = data[0];
-            });
-          }
-
           scope.blur = function() {
             scope.$emit("urlFieldBlur");
           };
 
           scope.$watch("url", function (url) {
+
             if (typeof url !== "undefined" && url !== null) {
 
               if (url !== "" && scope.allowInitEmpty) {
@@ -6833,9 +8180,8 @@ module.run(["$templateCache", function($templateCache) {
   $templateCache.put("_angular/url-field/url-field.html",
     "<div class=\"form-group\" >\n" +
     "  <label ng-if=\"!hideLabel\">{{ \"url.label\" | translate }}</label>\n" +
-    "  <div ng-class=\"{'input-group':!hideStorage}\">\n" +
+    "  <div>\n" +
     "    <input name=\"url\" type=\"text\" ng-model=\"url\" ng-blur=\"blur()\" class=\"form-control\" placeholder=\"http://\">\n" +
-    "    <span class=\"input-url-addon\" ng-if=\"!hideStorage\"><storage-selector company-id=\"{{companyId}}\" type=\"{{storageType}}\"></storage-selector></span>\n" +
     "  </div>\n" +
     "  <p ng-if=\"!valid && invalidType === 'url'\" class=\"text-danger\">{{ \"url.errors.url\" | translate }}</p>\n" +
     "  <p ng-if=\"!valid && invalidType === 'image'\" class=\"text-danger\">{{ \"url.errors.image\" | translate }}</p>\n" +
@@ -6854,13 +8200,318 @@ module.run(["$templateCache", function($templateCache) {
 (function () {
   "use strict";
 
+  angular.module("risevision.widget.common.file-selector", [
+      "risevision.common.i18n",
+      "risevision.widget.common.storage-selector",
+      "risevision.widget.common.url-field",
+      "risevision.widget.common.subscription-status"
+    ])
+    .directive("fileSelector", ["$templateCache", "$log", "$window", "$rootScope", function ($templateCache, $log, $window, $rootScope) {
+      return {
+        restrict: "E",
+        require: "?ngModel",
+        scope: {
+          title: "@",
+          fileLabel: "@",
+          folderLabel: "@",
+          companyId: "@",
+          fileType: "@",
+          selector: "="
+        },
+        template: $templateCache.get("_angular/file-selector/file-selector.html"),
+        link: function (scope, element, attrs, ctrl) {
+
+          function hasValidExtension(url, fileType) {
+            var testUrl = url.toLowerCase(),
+              extensions;
+
+            switch(fileType) {
+              case "image":
+                extensions = [".jpg", ".jpeg", ".png", ".bmp", ".svg", ".gif"];
+                break;
+              case "video":
+                extensions = [".webm", ".mp4", ".ogv", ".ogg"];
+                break;
+              default:
+                extensions = [];
+            }
+
+            for (var i = 0, len = extensions.length; i < len; i++) {
+              if (testUrl.indexOf(extensions[i]) !== -1) {
+                return true;
+              }
+            }
+
+            return false;
+          }
+
+          function toggleButtons(selectedType) {
+
+            switch (selectedType) {
+              case "single-file":
+                scope.fileBtnSelected = true;
+                scope.folderBtnSelected = false;
+                scope.customBtnSelected = false;
+                break;
+              case "single-folder":
+                scope.fileBtnSelected = false;
+                scope.folderBtnSelected = true;
+                scope.customBtnSelected = false;
+                break;
+              case "custom":
+                scope.fileBtnSelected = false;
+                scope.folderBtnSelected = false;
+                scope.customBtnSelected = true;
+                break;
+              default:
+                scope.fileBtnSelected = false;
+                scope.folderBtnSelected = false;
+                scope.customBtnSelected = false;
+                break;
+            }
+
+          }
+
+          function getStorageName(url, type) {
+            var str, arr, params, pair, fileName, folder, name;
+
+            if (type === "single-file") {
+              // example single storage file url
+              // https://storage.googleapis.com/risemedialibrary-abc123/test%2Fvideos%2Ftest.webm
+
+              // get the second part of the split
+              str = url.split("storage.googleapis.com/risemedialibrary-")[1];
+              // extract everything starting after the company id
+              str = decodeURIComponent(str.slice(str.indexOf("/") + 1));
+              // split up based on folder separator
+              arr = str.split("/");
+
+              // assign the last index of array split as the file name
+              fileName = arr.pop();
+              // join the remaining array to form the folder name/path
+              folder = arr.length > 0 ? arr.join("/") : "";
+
+              if (folder !== "") {
+                // add ending "/" to the folder path
+                folder += "/";
+              }
+
+              name = folder + fileName;
+            }
+            else if (type === "single-folder") {
+              // example single storage folder url
+              // https://www.googleapis.com/storage/v1/b/risemedialibrary-abc123/o?prefix=test%2Fvideos%2F
+
+              // everything after "?" will involve the folder name/path
+              params = url.split("?");
+
+              for (var i = 0; i < params.length; i++) {
+                // "prefix" will be the param name and the folder name/path will be the value
+                pair = params[i].split("=");
+
+                if (pair[0] === "prefix" && typeof pair[1] !== "undefined" && pair[1] !== "") {
+                  name = decodeURIComponent(pair[1]);
+                  break;
+                }
+              }
+
+            }
+
+            return name;
+          }
+
+          scope.defaultSetting = {
+            selection: "", // "single-file", "single-folder", or "custom"
+            storageName: "", // name of file or folder path
+            url: ""
+          };
+
+          // set default button states
+          toggleButtons();
+
+          // default to false so it will set validity on parent to false initially
+          scope.selectorValid = false;
+          // a flag to check if custom url is in an initial empty state
+          scope.customInit = false;
+          // default to false so the subscription-status component doesn't show itself until it receives its status
+          scope.isSubscribed = true;
+          // will hide subscription status permanently if attr was used
+          scope.hideSubscription = (typeof attrs.hideSubscription !== "undefined");
+          // a flag to toggle subscription status visibility (depends on selection type)
+          scope.subscriptionOff = true;
+
+          scope.defaults = function(obj) {
+            if (obj) {
+              for (var i = 1, length = arguments.length; i < length; i++) {
+                var source = arguments[i];
+
+                for (var prop in source) {
+                  if (obj[prop] === void 0) {
+                    obj[prop] = source[prop];
+                  }
+                }
+              }
+            }
+            return obj;
+          };
+
+          scope.onCustomBtnHandler = function() {
+            scope.selector.selection = "custom";
+            scope.selector.url = "";
+            scope.selector.storageName = "";
+          };
+
+          scope.previewFile = function () {
+            $window.open(scope.selector.url, "_blank");
+          };
+
+          scope.$on("picked", function (event, data, type) {
+            scope.selector.selection = type;
+            scope.selector.storageName = getStorageName(data[0], scope.selector.selection);
+            scope.selector.url = data[0];
+
+            if (!scope.isSubscribed) {
+              // ensure subscription-status component does a refresh in case user subscribed from in-app storage
+              $rootScope.$broadcast("refreshSubscriptionStatus", null);
+            }
+
+          });
+
+          scope.$watch("selectorValid", function (valid) {
+            if (ctrl) {
+              ctrl.$setValidity("selectorValid", valid);
+            }
+          });
+
+          scope.$watch("selector", function(selector) {
+            scope.defaults(selector, scope.defaultSetting);
+          });
+
+          scope.$watch("selector.selection", function (selection) {
+            if (typeof selection !== "undefined") {
+              toggleButtons(selection);
+
+              scope.subscriptionOff = (selection === "" || selection === "custom");
+
+              if (selection === "single-folder") {
+                // validity is fine when choosing a single-folder from storage
+                scope.selectorValid = true;
+              }
+              else if (selection === "custom") {
+                scope.customInit = true;
+                // set selector validity to false to account for allowing an initial empty value for url-field
+                scope.selectorValid = false;
+              }
+
+              $rootScope.$broadcast("fileSelectorClick", selection);
+            }
+          });
+
+          scope.$watch("selector.url", function (url) {
+            if (typeof url !== "undefined" && url !== null) {
+              if (scope.selector.selection === "single-file" && typeof scope.fileType !== "undefined") {
+                // set validity from the single-file storage selection
+                scope.selectorValid = hasValidExtension(url, scope.fileType);
+              }
+              else if (scope.selector.selection === "custom" && scope.customInit && url !== "") {
+                // an entry was made in url-field
+                scope.customInit = false;
+                scope.selectorValid = true;
+              }
+            }
+          });
+
+          scope.$watch("subscribed", function (subscription) {
+            if (typeof subscription !== "undefined" && subscription.statusCode !== "na") {
+              scope.isSubscribed = subscription.subscribed;
+            }
+          });
+
+        }
+      };
+    }]);
+}());
+
+(function(module) {
+try { module = angular.module("risevision.widget.common.file-selector"); }
+catch(err) { module = angular.module("risevision.widget.common.file-selector", []); }
+module.run(["$templateCache", function($templateCache) {
+  "use strict";
+  $templateCache.put("_angular/file-selector/file-selector.html",
+    "<div class=\"form-group file-selector\">\n" +
+    "  <label ng-if=\"title\" class=\"control-label remove-bottom\">{{ title }}</label>\n" +
+    "\n" +
+    "  <div class=\"row half-top half-bottom\">\n" +
+    "    <div class=\"col-md-12\">\n" +
+    "      <!-- Storage Single File - Button -->\n" +
+    "      <storage-selector selected=\"fileBtnSelected\"\n" +
+    "                        company-id=\"{{companyId}}\"\n" +
+    "                        type=\"single-file\"\n" +
+    "                        label=\"{{ fileLabel }}\"></storage-selector>\n" +
+    "      <!-- Storage Single Folder - Button -->\n" +
+    "      <storage-selector ng-if=\"folderLabel\"\n" +
+    "                        selected=\"folderBtnSelected\"\n" +
+    "                        company-id=\"{{companyId}}\"\n" +
+    "                        type=\"single-folder\"\n" +
+    "                        label=\"{{ folderLabel }}\"></storage-selector>\n" +
+    "      <!-- Custom File - Button -->\n" +
+    "      <button name=\"customBtn\" type=\"button\" class=\"btn btn-default\"\n" +
+    "              ng-class=\"{active: customBtnSelected}\"\n" +
+    "              ng-click=\"onCustomBtnHandler()\">{{ 'file-selector.buttons.custom' | translate }}\n" +
+    "        <i class=\"fa fa-link fa-large\"></i></button>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <!-- Storage Single File - Input -->\n" +
+    "  <div class=\"form-group\" ng-if=\"selector.selection === 'single-file'\">\n" +
+    "    <div class=\"input-group custom-addon\">\n" +
+    "      <input name=\"storage-file-name\" type=\"text\" class=\"form-control\" ng-model=\"selector.storageName\" readonly>\n" +
+    "      <span class=\"input-group-addon\">\n" +
+    "        <button name=\"previewBtn\" class=\"btn btn-default\" ng-click=\"previewFile()\">{{ 'file-selector.buttons.preview' | translate }}\n" +
+    "          <img src=\"http://s3.amazonaws.com/Rise-Images/Icons/newtab-icon.png\" class=\"storage-selector-icon icon-right\">\n" +
+    "        </button>\n" +
+    "      </span>\n" +
+    "    </div>\n" +
+    "    <p ng-if=\"!selectorValid && fileType === 'image'\" class=\"text-danger\">{{ \"file-selector.errors.storage.image\" | translate }}</p>\n" +
+    "    <p ng-if=\"!selectorValid && fileType === 'video'\" class=\"text-danger\">{{ \"file-selector.errors.storage.video\" | translate }}</p>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <!-- Storage Single Folder - Input -->\n" +
+    "  <div ng-if=\"selector.selection === 'single-folder'\">\n" +
+    "    <input name=\"storage-folder-name\" type=\"text\" class=\"form-control\" ng-model=\"selector.storageName\" readonly>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <!-- Custom File - Input -->\n" +
+    "  <div ng-if=\"selector.selection === 'custom'\">\n" +
+    "    <url-field id=\"customUrl\" name=\"customUrl\" url=\"selector.url\"\n" +
+    "               file-type=\"{{fileType}}\"\n" +
+    "               hide-label=\"true\"\n" +
+    "               ng-model=\"customurlentry\" valid init-empty></url-field>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <!-- Storage Subscription Status -->\n" +
+    "  <div ng-show=\"!isSubscribed && !hideSubscription && !subscriptionOff\" subscription-status expanded-format=\"true\"\n" +
+    "       product-id=\"24\" product-code=\"b0cba08a4baa0c62b8cdc621b6f6a124f89a03db\" company-id=\"{{companyId}}\"\n" +
+    "       ng-model=\"subscribed\">\n" +
+    "  </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+}]);
+})();
+
+(function () {
+  "use strict";
+
   angular.module("risevision.widget.common.position-setting", ["risevision.common.i18n"])
     .directive("positionSetting", ["$templateCache", "$log", function ($templateCache/*, $log*/) {
       return {
         restrict: "E",
         scope: {
           position: "=",
-          hideLabel: "@"
+          hideLabel: "@",
+          parentContainerClass: "=",
+          containerClass: "="
         },
         template: $templateCache.get("_angular/position-setting/position-setting.html"),
         link: function ($scope) {
@@ -6881,8 +8532,8 @@ catch(err) { module = angular.module("risevision.widget.common.position-setting"
 module.run(["$templateCache", function($templateCache) {
   "use strict";
   $templateCache.put("_angular/position-setting/position-setting.html",
-    "<div class=\"row\">\n" +
-    "  <div class=\"col-md-3\">\n" +
+    "<div class=\"{{parentContainerClass || 'row'}}\">\n" +
+    "  <div class=\"{{containerClass || 'col-md-4'}}\">\n" +
     "    <label ng-if=\"!hideLabel\"> {{'widgets.alignment' | translate}}</label>\n" +
     "    <select name=\"position\" ng-model=\"position\" class=\"form-control\">\n" +
     "      <option value=\"top-left\">{{'position.top.left' | translate}}</option>\n" +
@@ -6901,2306 +8552,6 @@ module.run(["$templateCache", function($templateCache) {
 }]);
 })();
 
-// Spectrum Colorpicker v1.3.4
-// https://github.com/bgrins/spectrum
-// Author: Brian Grinstead
-// License: MIT
-
-(function (window, $, undefined) {
-    "use strict";
-
-    var defaultOpts = {
-
-        // Callbacks
-        beforeShow: noop,
-        move: noop,
-        change: noop,
-        show: noop,
-        hide: noop,
-
-        // Options
-        color: false,
-        flat: false,
-        showInput: false,
-        allowEmpty: false,
-        showButtons: true,
-        clickoutFiresChange: false,
-        showInitial: false,
-        showPalette: false,
-        showPaletteOnly: false,
-        showSelectionPalette: true,
-        localStorageKey: false,
-        appendTo: "body",
-        maxSelectionSize: 7,
-        cancelText: "cancel",
-        chooseText: "choose",
-        clearText: "Clear Color Selection",
-        noColorSelectedText: "No Color Selected",
-        preferredFormat: false,
-        className: "", // Deprecated - use containerClassName and replacerClassName instead.
-        containerClassName: "",
-        replacerClassName: "",
-        type: "text", // Donna
-        showAlpha: false,
-        theme: "sp-light",
-        palette: [["#ffffff", "#000000", "#ff0000", "#ff8000", "#ffff00", "#008000", "#0000ff", "#4b0082", "#9400d3"]],
-        selectionPalette: [],
-        disabled: false
-    },
-    spectrums = [],
-    replaceInput,
-    IE = !!/msie/i.exec( window.navigator.userAgent ),
-    rgbaSupport = (function() {
-        function contains( str, substr ) {
-            return !!~('' + str).indexOf(substr);
-        }
-
-        var elem = document.createElement('div');
-        var style = elem.style;
-        style.cssText = 'background-color:rgba(0,0,0,.5)';
-        return contains(style.backgroundColor, 'rgba') || contains(style.backgroundColor, 'hsla');
-    })(),
-    inputTypeColorSupport = (function() {
-        var colorInput = $("<input type='color' value='!' />")[0];
-        return colorInput.type === "color" && colorInput.value !== "!";
-    })(),
-    /* Donna Start - Moved this elsewhere. */
-    // replaceInput = [
-    //     "<div class='sp-replacer'>",
-    //         "<div class='sp-preview'><div class='sp-preview-inner'></div></div>",
-    //         "<div class='sp-dd'>&#9660;</div>",
-    //     "</div>"
-    // ].join(''),
-    /* Donna End */
-    markup = (function () {
-
-        // IE does not support gradients with multiple stops, so we need to simulate
-        //  that for the rainbow slider with 8 divs that each have a single gradient
-        var gradientFix = "";
-        if (IE) {
-            for (var i = 1; i <= 6; i++) {
-                gradientFix += "<div class='sp-" + i + "'></div>";
-            }
-        }
-
-        /* Donna Start - Changed sp-choose and sp-cancel HTML. */
-        return [
-            "<div class='sp-container sp-hidden'>",
-                "<div class='sp-palette-container'>",
-                    "<div class='sp-palette sp-thumb sp-cf'></div>",
-                "</div>",
-                "<div class='sp-picker-container'>",
-                    "<div class='sp-top sp-cf'>",
-                        "<div class='sp-fill'></div>",
-                        "<div class='sp-top-inner'>",
-                            "<div class='sp-color'>",
-                                "<div class='sp-sat'>",
-                                    "<div class='sp-val'>",
-                                        "<div class='sp-dragger'></div>",
-                                    "</div>",
-                                "</div>",
-                            "</div>",
-                            "<div class='sp-clear sp-clear-display'>",
-                            "</div>",
-                            "<div class='sp-hue'>",
-                                "<div class='sp-slider'></div>",
-                                gradientFix,
-                            "</div>",
-                        "</div>",
-                        "<div class='sp-alpha'><div class='sp-alpha-inner'><div class='sp-alpha-handle'></div></div></div>",
-                    "</div>",
-                    "<div class='sp-input-container sp-cf'>",
-                        "<input class='sp-input' type='text' spellcheck='false'  />",
-                    "</div>",
-                    "<div class='sp-initial sp-thumb sp-cf'></div>",
-                    "<div class='sp-button-container sp-cf'>",
-                        "<button type='button' class='sp-choose'><i class='fa fa-check fa-white '></i></button>",
-                        "<span class='sp-btn-spacer'/>",
-                        "<button type='button' class='sp-cancel'><i class='fa fa-times fa-white '></i></button>",
-                    "</div>",
-                "</div>",
-            "</div>"
-        ].join("");
-        /* Donna End */
-    })();
-
-    function paletteTemplate (p, color, className, opts) {
-        var html = [];
-        for (var i = 0; i < p.length; i++) {
-            var current = p[i];
-            if(current) {
-                var tiny = tinycolor(current);
-                var c = tiny.toHsl().l < 0.5 ? "sp-thumb-el sp-thumb-dark" : "sp-thumb-el sp-thumb-light";
-                c += (tinycolor.equals(color, current)) ? " sp-thumb-active" : "";
-                var formattedString = tiny.toString(opts.preferredFormat || "rgb");
-                var swatchStyle = rgbaSupport ? ("background-color:" + tiny.toRgbString()) : "filter:" + tiny.toFilter();
-                html.push('<span title="' + formattedString + '" data-color="' + tiny.toRgbString() + '" class="' + c + '"><span class="sp-thumb-inner" style="' + swatchStyle + ';" /></span>');
-            } else {
-                var cls = 'sp-clear-display';
-                html.push($('<div />')
-                    .append($('<span data-color="" style="background-color:transparent;" class="' + cls + '"></span>')
-                        .attr('title', opts.noColorSelectedText)
-                    )
-                    .html()
-                );
-            }
-        }
-        return "<div class='sp-cf " + className + "'>" + html.join('') + "</div>";
-    }
-
-    function hideAll() {
-        for (var i = 0; i < spectrums.length; i++) {
-            if (spectrums[i]) {
-                spectrums[i].hide();
-            }
-        }
-    }
-
-    function instanceOptions(o, callbackContext) {
-        var opts = $.extend({}, defaultOpts, o);
-        opts.callbacks = {
-            'move': bind(opts.move, callbackContext),
-            'change': bind(opts.change, callbackContext),
-            'show': bind(opts.show, callbackContext),
-            'hide': bind(opts.hide, callbackContext),
-            'beforeShow': bind(opts.beforeShow, callbackContext)
-        };
-
-        /* Donna Start - Render different markup for text color picker. */
-        if (opts.type === "text") {
-          replaceInput = [
-            "<div class='sp-replacer text-color-picker'>",
-              "<div class='sp-preview'>",
-                "<div class='sp-preview-inner'>",
-                  "<div class='sp-preview-char'>A</div>",
-                "</div>",
-              "</div>",
-              "<b class='caret'></b>",
-            "</div>"
-          ].join('');
-        }
-        else if (opts.type === "highlight") {
-          replaceInput = [
-            "<div class='sp-replacer highlight-color-picker'>",
-              "<div class='sp-preview'>",
-                "<div class='sp-preview-inner'>",
-                  "<img src='http://s3.amazonaws.com/rise-common-test/scripts/spectrum/images/text-highlight.png'>",
-                "</div>",
-              "</div>",
-              "<b class='caret'></b>",
-            "</div>"
-          ].join('');
-        }
-        else if (opts.type === "background") {
-          replaceInput = [
-            "<div class='sp-replacer background-color-picker'>",
-                "<div class='sp-preview'>",
-                  "<div class='sp-preview-inner'></div>",
-                  "</div>",
-                "<b class='caret'></b>",
-            "</div>"
-          ].join('');
-        }
-        /* Donna End */
-
-        return opts;
-    }
-
-    function spectrum(element, o) {
-
-        var opts = instanceOptions(o, element),
-            flat = opts.flat,
-            showSelectionPalette = opts.showSelectionPalette,
-            localStorageKey = opts.localStorageKey,
-            theme = opts.theme,
-            callbacks = opts.callbacks,
-            resize = throttle(reflow, 10),
-            visible = false,
-            dragWidth = 0,
-            dragHeight = 0,
-            dragHelperHeight = 0,
-            slideHeight = 0,
-            slideWidth = 0,
-            alphaWidth = 0,
-            alphaSlideHelperWidth = 0,
-            slideHelperHeight = 0,
-            currentHue = 0,
-            currentSaturation = 0,
-            currentValue = 0,
-            currentAlpha = 1,
-            palette = [],
-            paletteArray = [],
-            paletteLookup = {},
-            selectionPalette = opts.selectionPalette.slice(0),
-            maxSelectionSize = opts.maxSelectionSize,
-            draggingClass = "sp-dragging",
-            shiftMovementDirection = null;
-
-        var doc = element.ownerDocument,
-            body = doc.body,
-            boundElement = $(element),
-            disabled = false,
-            container = $(markup, doc).addClass(theme),
-            dragger = container.find(".sp-color"),
-            dragHelper = container.find(".sp-dragger"),
-            slider = container.find(".sp-hue"),
-            slideHelper = container.find(".sp-slider"),
-            alphaSliderInner = container.find(".sp-alpha-inner"),
-            alphaSlider = container.find(".sp-alpha"),
-            alphaSlideHelper = container.find(".sp-alpha-handle"),
-            textInput = container.find(".sp-input"),
-            paletteContainer = container.find(".sp-palette"),
-            initialColorContainer = container.find(".sp-initial"),
-            cancelButton = container.find(".sp-cancel"),
-            clearButton = container.find(".sp-clear"),
-            chooseButton = container.find(".sp-choose"),
-            isInput = boundElement.is("input"),
-            isInputTypeColor = isInput && inputTypeColorSupport && boundElement.attr("type") === "color",
-            shouldReplace = isInput && !flat,
-            replacer = (shouldReplace) ? $(replaceInput).addClass(theme).addClass(opts.className).addClass(opts.replacerClassName) : $([]),
-            offsetElement = (shouldReplace) ? replacer : boundElement,
-            previewElement = opts.type === "text" ? replacer.find(".sp-preview") : replacer.find(".sp-preview-inner"),  //Donna
-            initialColor = opts.color || (isInput && boundElement.val()),
-            colorOnShow = false,
-            preferredFormat = opts.preferredFormat,
-            currentPreferredFormat = preferredFormat,
-            clickoutFiresChange = !opts.showButtons || opts.clickoutFiresChange,
-            isEmpty = !initialColor,
-            allowEmpty = opts.allowEmpty && !isInputTypeColor;
-
-        function applyOptions() {
-
-            if (opts.showPaletteOnly) {
-                opts.showPalette = true;
-            }
-
-            if (opts.palette) {
-                palette = opts.palette.slice(0);
-                paletteArray = $.isArray(palette[0]) ? palette : [palette];
-                paletteLookup = {};
-                for (var i = 0; i < paletteArray.length; i++) {
-                    for (var j = 0; j < paletteArray[i].length; j++) {
-                        var rgb = tinycolor(paletteArray[i][j]).toRgbString();
-                        paletteLookup[rgb] = true;
-                    }
-                }
-            }
-
-            container.toggleClass("sp-flat", flat);
-            container.toggleClass("sp-input-disabled", !opts.showInput);
-            container.toggleClass("sp-alpha-enabled", opts.showAlpha);
-            container.toggleClass("sp-clear-enabled", allowEmpty);
-            container.toggleClass("sp-buttons-disabled", !opts.showButtons);
-            container.toggleClass("sp-palette-disabled", !opts.showPalette);
-            container.toggleClass("sp-palette-only", opts.showPaletteOnly);
-            container.toggleClass("sp-initial-disabled", !opts.showInitial);
-            container.addClass(opts.className).addClass(opts.containerClassName);
-
-            reflow();
-        }
-
-        function initialize() {
-
-            if (IE) {
-                container.find("*:not(input)").attr("unselectable", "on");
-            }
-
-            applyOptions();
-
-            if (shouldReplace) {
-                boundElement.after(replacer).hide();
-            }
-
-            if (!allowEmpty) {
-                clearButton.hide();
-            }
-
-            if (flat) {
-                boundElement.after(container).hide();
-            }
-            else {
-
-                var appendTo = opts.appendTo === "parent" ? boundElement.parent() : $(opts.appendTo);
-                if (appendTo.length !== 1) {
-                    appendTo = $("body");
-                }
-
-                appendTo.append(container);
-            }
-
-            updateSelectionPaletteFromStorage();
-
-            offsetElement.bind("click.spectrum touchstart.spectrum", function (e) {
-                if (!disabled) {
-                    toggle();
-                }
-
-                e.stopPropagation();
-
-                if (!$(e.target).is("input")) {
-                    e.preventDefault();
-                }
-            });
-
-            if(boundElement.is(":disabled") || (opts.disabled === true)) {
-                disable();
-            }
-
-            // Prevent clicks from bubbling up to document.  This would cause it to be hidden.
-            container.click(stopPropagation);
-
-            // Handle user typed input
-            textInput.change(setFromTextInput);
-            textInput.bind("paste", function () {
-                setTimeout(setFromTextInput, 1);
-            });
-            textInput.keydown(function (e) { if (e.keyCode == 13) { setFromTextInput(); } });
-
-            cancelButton[0].innerHTML=opts.cancelText+' '+cancelButton[0].innerHTML;
-            cancelButton.bind("click.spectrum", function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                hide("cancel");
-            });
-
-            clearButton.attr("title", opts.clearText);
-            clearButton.bind("click.spectrum", function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                isEmpty = true;
-                move();
-
-                if(flat) {
-                    //for the flat style, this is a change event
-                    updateOriginalInput(true);
-                }
-            });
-
-            //chooseButton.text(opts.chooseText);
-
-            chooseButton[0].innerHTML=opts.chooseText+' '+chooseButton[0].innerHTML;
-            chooseButton.bind("click.spectrum", function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-
-                if (isValid()) {
-                    updateOriginalInput(true);
-                    hide();
-                }
-            });
-
-            draggable(alphaSlider, function (dragX, dragY, e) {
-                currentAlpha = (dragX / alphaWidth);
-                isEmpty = false;
-                if (e.shiftKey) {
-                    currentAlpha = Math.round(currentAlpha * 10) / 10;
-                }
-
-                move();
-            }, dragStart, dragStop);
-
-            draggable(slider, function (dragX, dragY) {
-                currentHue = parseFloat(dragY / slideHeight);
-                isEmpty = false;
-                if (!opts.showAlpha) {
-                    currentAlpha = 1;
-                }
-                move();
-            }, dragStart, dragStop);
-
-            draggable(dragger, function (dragX, dragY, e) {
-
-                // shift+drag should snap the movement to either the x or y axis.
-                if (!e.shiftKey) {
-                    shiftMovementDirection = null;
-                }
-                else if (!shiftMovementDirection) {
-                    var oldDragX = currentSaturation * dragWidth;
-                    var oldDragY = dragHeight - (currentValue * dragHeight);
-                    var furtherFromX = Math.abs(dragX - oldDragX) > Math.abs(dragY - oldDragY);
-
-                    shiftMovementDirection = furtherFromX ? "x" : "y";
-                }
-
-                var setSaturation = !shiftMovementDirection || shiftMovementDirection === "x";
-                var setValue = !shiftMovementDirection || shiftMovementDirection === "y";
-
-                if (setSaturation) {
-                    currentSaturation = parseFloat(dragX / dragWidth);
-                }
-                if (setValue) {
-                    currentValue = parseFloat((dragHeight - dragY) / dragHeight);
-                }
-
-                isEmpty = false;
-                if (!opts.showAlpha) {
-                    currentAlpha = 1;
-                }
-
-                move();
-
-            }, dragStart, dragStop);
-
-            if (!!initialColor) {
-                set(initialColor);
-
-                // In case color was black - update the preview UI and set the format
-                // since the set function will not run (default color is black).
-                updateUI();
-                currentPreferredFormat = preferredFormat || tinycolor(initialColor).format;
-
-                addColorToSelectionPalette(initialColor);
-            }
-            else {
-                updateUI();
-            }
-
-            if (flat) {
-                show();
-            }
-
-            function paletteElementClick(e) {
-                if (e.data && e.data.ignore) {
-                    set($(e.target).closest(".sp-thumb-el").data("color"));
-                    move();
-                }
-                else {
-                    set($(e.target).closest(".sp-thumb-el").data("color"));
-                    move();
-                    updateOriginalInput(true);
-                    hide();
-                }
-
-                return false;
-            }
-
-            var paletteEvent = IE ? "mousedown.spectrum" : "click.spectrum touchstart.spectrum";
-            paletteContainer.delegate(".sp-thumb-el", paletteEvent, paletteElementClick);
-            initialColorContainer.delegate(".sp-thumb-el:nth-child(1)", paletteEvent, { ignore: true }, paletteElementClick);
-        }
-
-        function updateSelectionPaletteFromStorage() {
-
-            if (localStorageKey && window.localStorage) {
-
-                // Migrate old palettes over to new format.  May want to remove this eventually.
-                try {
-                    var oldPalette = window.localStorage[localStorageKey].split(",#");
-                    if (oldPalette.length > 1) {
-                        delete window.localStorage[localStorageKey];
-                        $.each(oldPalette, function(i, c) {
-                             addColorToSelectionPalette(c);
-                        });
-                    }
-                }
-                catch(e) { }
-
-                try {
-                    selectionPalette = window.localStorage[localStorageKey].split(";");
-                }
-                catch (e) { }
-            }
-        }
-
-        function addColorToSelectionPalette(color) {
-            if (showSelectionPalette) {
-                var rgb = tinycolor(color).toRgbString();
-                if (!paletteLookup[rgb] && $.inArray(rgb, selectionPalette) === -1) {
-                    selectionPalette.push(rgb);
-                    while(selectionPalette.length > maxSelectionSize) {
-                        selectionPalette.shift();
-                    }
-                }
-
-                if (localStorageKey && window.localStorage) {
-                    try {
-                        window.localStorage[localStorageKey] = selectionPalette.join(";");
-                    }
-                    catch(e) { }
-                }
-            }
-        }
-
-        function getUniqueSelectionPalette() {
-            var unique = [];
-            if (opts.showPalette) {
-                for (var i = 0; i < selectionPalette.length; i++) {
-                    var rgb = tinycolor(selectionPalette[i]).toRgbString();
-
-                    if (!paletteLookup[rgb]) {
-                        unique.push(selectionPalette[i]);
-                    }
-                }
-            }
-
-            return unique.reverse().slice(0, opts.maxSelectionSize);
-        }
-
-        function drawPalette() {
-
-            var currentColor = get();
-
-            var html = $.map(paletteArray, function (palette, i) {
-                return paletteTemplate(palette, currentColor, "sp-palette-row sp-palette-row-" + i, opts);
-            });
-
-            updateSelectionPaletteFromStorage();
-
-            if (selectionPalette) {
-                html.push(paletteTemplate(getUniqueSelectionPalette(), currentColor, "sp-palette-row sp-palette-row-selection", opts));
-            }
-
-            paletteContainer.html(html.join(""));
-        }
-
-        function drawInitial() {
-            if (opts.showInitial) {
-                var initial = colorOnShow;
-                var current = get();
-                initialColorContainer.html(paletteTemplate([initial, current], current, "sp-palette-row-initial", opts));
-            }
-        }
-
-        function dragStart() {
-            if (dragHeight <= 0 || dragWidth <= 0 || slideHeight <= 0) {
-                reflow();
-            }
-            container.addClass(draggingClass);
-            shiftMovementDirection = null;
-            boundElement.trigger('dragstart.spectrum', [ get() ]);
-        }
-
-        function dragStop() {
-            container.removeClass(draggingClass);
-            boundElement.trigger('dragstop.spectrum', [ get() ]);
-        }
-
-        function setFromTextInput() {
-
-            var value = textInput.val();
-
-            if ((value === null || value === "") && allowEmpty) {
-                set(null);
-                updateOriginalInput(true);
-            }
-            else {
-                var tiny = tinycolor(value);
-                if (tiny.isValid()) {
-                    set(tiny);
-                    updateOriginalInput(true);
-                }
-                else {
-                    textInput.addClass("sp-validation-error");
-                }
-            }
-        }
-
-        function toggle() {
-            if (visible) {
-                hide();
-            }
-            else {
-                show();
-            }
-        }
-
-        function show() {
-            var event = $.Event('beforeShow.spectrum');
-
-            if (visible) {
-                reflow();
-                return;
-            }
-
-            boundElement.trigger(event, [ get() ]);
-
-            if (callbacks.beforeShow(get()) === false || event.isDefaultPrevented()) {
-                return;
-            }
-
-            hideAll();
-            visible = true;
-
-            $(doc).bind("click.spectrum", hide);
-            $(window).bind("resize.spectrum", resize);
-            replacer.addClass("sp-active");
-            container.removeClass("sp-hidden");
-
-            reflow();
-            updateUI();
-
-            colorOnShow = get();
-
-            drawInitial();
-            callbacks.show(colorOnShow);
-            boundElement.trigger('show.spectrum', [ colorOnShow ]);
-        }
-
-        function hide(e) {
-
-            // Return on right click
-            if (e && e.type == "click" && e.button == 2) { return; }
-
-            // Return if hiding is unnecessary
-            if (!visible || flat) { return; }
-            visible = false;
-
-            $(doc).unbind("click.spectrum", hide);
-            $(window).unbind("resize.spectrum", resize);
-
-            replacer.removeClass("sp-active");
-            container.addClass("sp-hidden");
-
-            var colorHasChanged = !tinycolor.equals(get(), colorOnShow);
-
-            if (colorHasChanged) {
-                if (clickoutFiresChange && e !== "cancel") {
-                    updateOriginalInput(true);
-                }
-                else {
-                    revert();
-                }
-            }
-
-            callbacks.hide(get());
-            boundElement.trigger('hide.spectrum', [ get() ]);
-        }
-
-        function revert() {
-            set(colorOnShow, true);
-        }
-
-        function set(color, ignoreFormatChange) {
-            if (tinycolor.equals(color, get())) {
-                // Update UI just in case a validation error needs
-                // to be cleared.
-                updateUI();
-                return;
-            }
-
-            var newColor, newHsv;
-            if (!color && allowEmpty) {
-                isEmpty = true;
-            } else {
-                isEmpty = false;
-                newColor = tinycolor(color);
-                newHsv = newColor.toHsv();
-
-                currentHue = (newHsv.h % 360) / 360;
-                currentSaturation = newHsv.s;
-                currentValue = newHsv.v;
-                currentAlpha = newHsv.a;
-            }
-            updateUI();
-
-            if (newColor && newColor.isValid() && !ignoreFormatChange) {
-                currentPreferredFormat = preferredFormat || newColor.getFormat();
-            }
-        }
-
-        function get(opts) {
-            opts = opts || { };
-
-            if (allowEmpty && isEmpty) {
-                return null;
-            }
-
-            return tinycolor.fromRatio({
-                h: currentHue,
-                s: currentSaturation,
-                v: currentValue,
-                a: Math.round(currentAlpha * 100) / 100
-            }, { format: opts.format || currentPreferredFormat });
-        }
-
-        function isValid() {
-            return !textInput.hasClass("sp-validation-error");
-        }
-
-        function move() {
-            updateUI();
-
-            callbacks.move(get());
-            boundElement.trigger('move.spectrum', [ get() ]);
-        }
-
-        function updateUI() {
-
-            textInput.removeClass("sp-validation-error");
-
-            updateHelperLocations();
-
-            // Update dragger background color (gradients take care of saturation and value).
-            var flatColor = tinycolor.fromRatio({ h: currentHue, s: 1, v: 1 });
-            dragger.css("background-color", flatColor.toHexString());
-
-            // Get a format that alpha will be included in (hex and names ignore alpha)
-            var format = currentPreferredFormat;
-            if (currentAlpha < 1 && !(currentAlpha === 0 && format === "name")) {
-                if (format === "hex" || format === "hex3" || format === "hex6" || format === "name") {
-                    format = "rgb";
-                }
-            }
-
-            var realColor = get({ format: format }),
-                displayColor = '';
-
-             //reset background info for preview element
-            previewElement.removeClass("sp-clear-display");
-
-            /* Donna Start */
-            if (opts.type === "text") {
-              previewElement.css('border-color', 'transparent');
-            }
-            else {
-              previewElement.css('background-color', 'transparent');
-            }
-            /* Donna End */
-
-            if (!realColor && allowEmpty) {
-                // Update the replaced elements background with icon indicating no color selection
-                previewElement.addClass("sp-clear-display");
-            }
-            else {
-                var realHex = realColor.toHexString(),
-                    realRgb = realColor.toRgbString();
-
-                // Update the replaced elements background color (with actual selected color)
-                if (rgbaSupport || realColor.alpha === 1) {
-                  /* Donna Start */
-                  if (opts.type === "text") {
-                    previewElement.css("border-color", realRgb);
-                  }
-                  else {
-                    previewElement.css("background-color", realRgb);
-                  }
-                  /* Donna End */
-                }
-                else {
-                  /* Donna Start */
-                  if (opts.type === "text") {
-                    previewElement.css("border-color", "transparent");
-                  }
-                  else {
-                    previewElement.css("background-color", "transparent");
-                  }
-                  /* Donna End */
-
-                  previewElement.css("filter", realColor.toFilter());
-                }
-
-                if (opts.showAlpha) {
-                    var rgb = realColor.toRgb();
-                    rgb.a = 0;
-                    var realAlpha = tinycolor(rgb).toRgbString();
-                    var gradient = "linear-gradient(left, " + realAlpha + ", " + realHex + ")";
-
-                    if (IE) {
-                        alphaSliderInner.css("filter", tinycolor(realAlpha).toFilter({ gradientType: 1 }, realHex));
-                    }
-                    else {
-                        alphaSliderInner.css("background", "-webkit-" + gradient);
-                        alphaSliderInner.css("background", "-moz-" + gradient);
-                        alphaSliderInner.css("background", "-ms-" + gradient);
-                        // Use current syntax gradient on unprefixed property.
-                        alphaSliderInner.css("background",
-                            "linear-gradient(to right, " + realAlpha + ", " + realHex + ")");
-                    }
-                }
-
-                displayColor = realColor.toString(format);
-            }
-
-            // Update the text entry input as it changes happen
-            if (opts.showInput) {
-                textInput.val(displayColor);
-            }
-
-            if (opts.showPalette) {
-                drawPalette();
-            }
-
-            drawInitial();
-        }
-
-        function updateHelperLocations() {
-            var s = currentSaturation;
-            var v = currentValue;
-
-            if(allowEmpty && isEmpty) {
-                //if selected color is empty, hide the helpers
-                alphaSlideHelper.hide();
-                slideHelper.hide();
-                dragHelper.hide();
-            }
-            else {
-                //make sure helpers are visible
-                alphaSlideHelper.show();
-                slideHelper.show();
-                dragHelper.show();
-
-                // Where to show the little circle in that displays your current selected color
-                var dragX = s * dragWidth;
-                var dragY = dragHeight - (v * dragHeight);
-                dragX = Math.max(
-                    -dragHelperHeight,
-                    Math.min(dragWidth - dragHelperHeight, dragX - dragHelperHeight)
-                );
-                dragY = Math.max(
-                    -dragHelperHeight,
-                    Math.min(dragHeight - dragHelperHeight, dragY - dragHelperHeight)
-                );
-                dragHelper.css({
-                    "top": dragY + "px",
-                    "left": dragX + "px"
-                });
-
-                var alphaX = currentAlpha * alphaWidth;
-                alphaSlideHelper.css({
-                    "left": (alphaX - (alphaSlideHelperWidth / 2)) + "px"
-                });
-
-                // Where to show the bar that displays your current selected hue
-                var slideY = (currentHue) * slideHeight;
-                slideHelper.css({
-                    "top": (slideY - slideHelperHeight) + "px"
-                });
-            }
-        }
-
-        function updateOriginalInput(fireCallback) {
-            var color = get(),
-                displayColor = '',
-                hasChanged = !tinycolor.equals(color, colorOnShow);
-
-            if (color) {
-                displayColor = color.toString(currentPreferredFormat);
-                // Update the selection palette with the current color
-                addColorToSelectionPalette(color);
-            }
-
-            if (isInput) {
-                boundElement.val(displayColor);
-            }
-
-            colorOnShow = color;
-
-            if (fireCallback && hasChanged) {
-                callbacks.change(color);
-                boundElement.trigger('change', [ color ]);
-            }
-        }
-
-        function reflow() {
-            dragWidth = dragger.width();
-            dragHeight = dragger.height();
-            dragHelperHeight = dragHelper.height();
-            slideWidth = slider.width();
-            slideHeight = slider.height();
-            slideHelperHeight = slideHelper.height();
-            alphaWidth = alphaSlider.width();
-            alphaSlideHelperWidth = alphaSlideHelper.width();
-
-            if (!flat) {
-                container.css("position", "absolute");
-                container.offset(getOffset(container, offsetElement));
-            }
-
-            updateHelperLocations();
-
-            if (opts.showPalette) {
-                drawPalette();
-            }
-
-            boundElement.trigger('reflow.spectrum');
-        }
-
-        function destroy() {
-            boundElement.show();
-            offsetElement.unbind("click.spectrum touchstart.spectrum");
-            container.remove();
-            replacer.remove();
-            spectrums[spect.id] = null;
-        }
-
-        function option(optionName, optionValue) {
-            if (optionName === undefined) {
-                return $.extend({}, opts);
-            }
-            if (optionValue === undefined) {
-                return opts[optionName];
-            }
-
-            opts[optionName] = optionValue;
-            applyOptions();
-        }
-
-        function enable() {
-            disabled = false;
-            boundElement.attr("disabled", false);
-            offsetElement.removeClass("sp-disabled");
-        }
-
-        function disable() {
-            hide();
-            disabled = true;
-            boundElement.attr("disabled", true);
-            offsetElement.addClass("sp-disabled");
-        }
-
-        initialize();
-
-        var spect = {
-            show: show,
-            hide: hide,
-            toggle: toggle,
-            reflow: reflow,
-            option: option,
-            enable: enable,
-            disable: disable,
-            set: function (c) {
-                set(c);
-                updateOriginalInput();
-            },
-            get: get,
-            destroy: destroy,
-            container: container
-        };
-
-        spect.id = spectrums.push(spect) - 1;
-
-        return spect;
-    }
-
-    /**
-    * checkOffset - get the offset below/above and left/right element depending on screen position
-    * Thanks https://github.com/jquery/jquery-ui/blob/master/ui/jquery.ui.datepicker.js
-    */
-    function getOffset(picker, input) {
-        var extraY = 0;
-        var dpWidth = picker.outerWidth();
-        var dpHeight = picker.outerHeight();
-        var inputHeight = input.outerHeight();
-        var doc = picker[0].ownerDocument;
-        var docElem = doc.documentElement;
-        var viewWidth = docElem.clientWidth + $(doc).scrollLeft();
-        var viewHeight = docElem.clientHeight + $(doc).scrollTop();
-        var offset = input.offset();
-        offset.top += inputHeight;
-
-        offset.left -=
-            Math.min(offset.left, (offset.left + dpWidth > viewWidth && viewWidth > dpWidth) ?
-            Math.abs(offset.left + dpWidth - viewWidth) : 0);
-
-        offset.top -=
-            Math.min(offset.top, ((offset.top + dpHeight > viewHeight && viewHeight > dpHeight) ?
-            Math.abs(dpHeight + inputHeight - extraY) : extraY));
-
-        return offset;
-    }
-
-    /**
-    * noop - do nothing
-    */
-    function noop() {
-
-    }
-
-    /**
-    * stopPropagation - makes the code only doing this a little easier to read in line
-    */
-    function stopPropagation(e) {
-        e.stopPropagation();
-    }
-
-    /**
-    * Create a function bound to a given object
-    * Thanks to underscore.js
-    */
-    function bind(func, obj) {
-        var slice = Array.prototype.slice;
-        var args = slice.call(arguments, 2);
-        return function () {
-            return func.apply(obj, args.concat(slice.call(arguments)));
-        };
-    }
-
-    /**
-    * Lightweight drag helper.  Handles containment within the element, so that
-    * when dragging, the x is within [0,element.width] and y is within [0,element.height]
-    */
-    function draggable(element, onmove, onstart, onstop) {
-        onmove = onmove || function () { };
-        onstart = onstart || function () { };
-        onstop = onstop || function () { };
-        var doc = element.ownerDocument || document;
-        var dragging = false;
-        var offset = {};
-        var maxHeight = 0;
-        var maxWidth = 0;
-        var hasTouch = ('ontouchstart' in window);
-
-        var duringDragEvents = {};
-        duringDragEvents["selectstart"] = prevent;
-        duringDragEvents["dragstart"] = prevent;
-        duringDragEvents["touchmove mousemove"] = move;
-        duringDragEvents["touchend mouseup"] = stop;
-
-        function prevent(e) {
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
-            if (e.preventDefault) {
-                e.preventDefault();
-            }
-            e.returnValue = false;
-        }
-
-        function move(e) {
-            if (dragging) {
-                // Mouseup happened outside of window
-                if (IE && document.documentMode < 9 && !e.button) {
-                    return stop();
-                }
-
-                var touches = e.originalEvent.touches;
-                var pageX = touches ? touches[0].pageX : e.pageX;
-                var pageY = touches ? touches[0].pageY : e.pageY;
-
-                var dragX = Math.max(0, Math.min(pageX - offset.left, maxWidth));
-                var dragY = Math.max(0, Math.min(pageY - offset.top, maxHeight));
-
-                if (hasTouch) {
-                    // Stop scrolling in iOS
-                    prevent(e);
-                }
-
-                onmove.apply(element, [dragX, dragY, e]);
-            }
-        }
-
-        function start(e) {
-            var rightclick = (e.which) ? (e.which == 3) : (e.button == 2);
-            var touches = e.originalEvent.touches;
-
-            if (!rightclick && !dragging) {
-                if (onstart.apply(element, arguments) !== false) {
-                    dragging = true;
-                    maxHeight = $(element).height();
-                    maxWidth = $(element).width();
-                    offset = $(element).offset();
-
-                    $(doc).bind(duringDragEvents);
-                    $(doc.body).addClass("sp-dragging");
-
-                    if (!hasTouch) {
-                        move(e);
-                    }
-
-                    prevent(e);
-                }
-            }
-        }
-
-        function stop() {
-            if (dragging) {
-                $(doc).unbind(duringDragEvents);
-                $(doc.body).removeClass("sp-dragging");
-                onstop.apply(element, arguments);
-            }
-            dragging = false;
-        }
-
-        $(element).bind("touchstart mousedown", start);
-    }
-
-    function throttle(func, wait, debounce) {
-        var timeout;
-        return function () {
-            var context = this, args = arguments;
-            var throttler = function () {
-                timeout = null;
-                func.apply(context, args);
-            };
-            if (debounce) clearTimeout(timeout);
-            if (debounce || !timeout) timeout = setTimeout(throttler, wait);
-        };
-    }
-
-    /**
-    * Define a jQuery plugin
-    */
-    var dataID = "spectrum.id";
-    $.fn.spectrum = function (opts, extra) {
-
-        if (typeof opts == "string") {
-
-            var returnValue = this;
-            var args = Array.prototype.slice.call( arguments, 1 );
-
-            this.each(function () {
-                var spect = spectrums[$(this).data(dataID)];
-                if (spect) {
-                    var method = spect[opts];
-                    if (!method) {
-                        throw new Error( "Spectrum: no such method: '" + opts + "'" );
-                    }
-
-                    if (opts == "get") {
-                        returnValue = spect.get();
-                    }
-                    else if (opts == "container") {
-                        returnValue = spect.container;
-                    }
-                    else if (opts == "option") {
-                        returnValue = spect.option.apply(spect, args);
-                    }
-                    else if (opts == "destroy") {
-                        spect.destroy();
-                        $(this).removeData(dataID);
-                    }
-                    else {
-                        method.apply(spect, args);
-                    }
-                }
-            });
-
-            return returnValue;
-        }
-
-        // Initializing a new instance of spectrum
-        return this.spectrum("destroy").each(function () {
-            var options = $.extend({}, opts, $(this).data());
-            var spect = spectrum(this, options);
-            $(this).data(dataID, spect.id);
-        });
-    };
-
-    $.fn.spectrum.load = true;
-    $.fn.spectrum.loadOpts = {};
-    $.fn.spectrum.draggable = draggable;
-    $.fn.spectrum.defaults = defaultOpts;
-
-    $.spectrum = { };
-    $.spectrum.localization = { };
-    $.spectrum.palettes = { };
-
-    $.fn.spectrum.processNativeColorInputs = function () {
-        if (!inputTypeColorSupport) {
-            $("input[type=color]").spectrum({
-                preferredFormat: "hex6"
-            });
-        }
-    };
-
-    // TinyColor v0.10.0
-    // https://github.com/bgrins/TinyColor
-    // 2013-08-10, Brian Grinstead, MIT License
-
-    (function() {
-
-    var trimLeft = /^[\s,#]+/,
-        trimRight = /\s+$/,
-        tinyCounter = 0,
-        math = Math,
-        mathRound = math.round,
-        mathMin = math.min,
-        mathMax = math.max,
-        mathRandom = math.random;
-
-    var tinycolor = function tinycolor (color, opts) {
-
-        color = (color) ? color : '';
-        opts = opts || { };
-
-        // If input is already a tinycolor, return itself
-        if (color instanceof tinycolor) {
-           return color;
-        }
-        // If we are called as a function, call using new instead
-        if (!(this instanceof tinycolor)) {
-            return new tinycolor(color, opts);
-        }
-
-        var rgb = inputToRGB(color);
-        this._r = rgb.r,
-        this._g = rgb.g,
-        this._b = rgb.b,
-        this._a = rgb.a,
-        this._roundA = mathRound(100*this._a) / 100,
-        this._format = opts.format || rgb.format;
-        this._gradientType = opts.gradientType;
-
-        // Don't let the range of [0,255] come back in [0,1].
-        // Potentially lose a little bit of precision here, but will fix issues where
-        // .5 gets interpreted as half of the total, instead of half of 1
-        // If it was supposed to be 128, this was already taken care of by `inputToRgb`
-        if (this._r < 1) { this._r = mathRound(this._r); }
-        if (this._g < 1) { this._g = mathRound(this._g); }
-        if (this._b < 1) { this._b = mathRound(this._b); }
-
-        this._ok = rgb.ok;
-        this._tc_id = tinyCounter++;
-    };
-
-    tinycolor.prototype = {
-        isValid: function() {
-            return this._ok;
-        },
-        getFormat: function() {
-            return this._format;
-        },
-        getAlpha: function() {
-            return this._a;
-        },
-        setAlpha: function(value) {
-            this._a = boundAlpha(value);
-            this._roundA = mathRound(100*this._a) / 100;
-        },
-        toHsv: function() {
-            var hsv = rgbToHsv(this._r, this._g, this._b);
-            return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this._a };
-        },
-        toHsvString: function() {
-            var hsv = rgbToHsv(this._r, this._g, this._b);
-            var h = mathRound(hsv.h * 360), s = mathRound(hsv.s * 100), v = mathRound(hsv.v * 100);
-            return (this._a == 1) ?
-              "hsv("  + h + ", " + s + "%, " + v + "%)" :
-              "hsva(" + h + ", " + s + "%, " + v + "%, "+ this._roundA + ")";
-        },
-        toHsl: function() {
-            var hsl = rgbToHsl(this._r, this._g, this._b);
-            return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this._a };
-        },
-        toHslString: function() {
-            var hsl = rgbToHsl(this._r, this._g, this._b);
-            var h = mathRound(hsl.h * 360), s = mathRound(hsl.s * 100), l = mathRound(hsl.l * 100);
-            return (this._a == 1) ?
-              "hsl("  + h + ", " + s + "%, " + l + "%)" :
-              "hsla(" + h + ", " + s + "%, " + l + "%, "+ this._roundA + ")";
-        },
-        toHex: function(allow3Char) {
-            return rgbToHex(this._r, this._g, this._b, allow3Char);
-        },
-        toHexString: function(allow3Char) {
-            return '#' + this.toHex(allow3Char);
-        },
-        toHex8: function() {
-            return rgbaToHex(this._r, this._g, this._b, this._a);
-        },
-        toHex8String: function() {
-            return '#' + this.toHex8();
-        },
-        toRgb: function() {
-            return { r: mathRound(this._r), g: mathRound(this._g), b: mathRound(this._b), a: this._a };
-        },
-        toRgbString: function() {
-            return (this._a == 1) ?
-              "rgb("  + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ")" :
-              "rgba(" + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ", " + this._roundA + ")";
-        },
-        toPercentageRgb: function() {
-            return { r: mathRound(bound01(this._r, 255) * 100) + "%", g: mathRound(bound01(this._g, 255) * 100) + "%", b: mathRound(bound01(this._b, 255) * 100) + "%", a: this._a };
-        },
-        toPercentageRgbString: function() {
-            return (this._a == 1) ?
-              "rgb("  + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%)" :
-              "rgba(" + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%, " + this._roundA + ")";
-        },
-        toName: function() {
-            if (this._a === 0) {
-                return "transparent";
-            }
-
-            if (this._a < 1) {
-                return false;
-            }
-
-            return hexNames[rgbToHex(this._r, this._g, this._b, true)] || false;
-        },
-        toFilter: function(secondColor) {
-            var hex8String = '#' + rgbaToHex(this._r, this._g, this._b, this._a);
-            var secondHex8String = hex8String;
-            var gradientType = this._gradientType ? "GradientType = 1, " : "";
-
-            if (secondColor) {
-                var s = tinycolor(secondColor);
-                secondHex8String = s.toHex8String();
-            }
-
-            return "progid:DXImageTransform.Microsoft.gradient("+gradientType+"startColorstr="+hex8String+",endColorstr="+secondHex8String+")";
-        },
-        toString: function(format) {
-            var formatSet = !!format;
-            format = format || this._format;
-
-            var formattedString = false;
-            var hasAlpha = this._a < 1 && this._a >= 0;
-            var needsAlphaFormat = !formatSet && hasAlpha && (format === "hex" || format === "hex6" || format === "hex3" || format === "name");
-
-            if (needsAlphaFormat) {
-                // Special case for "transparent", all other non-alpha formats
-                // will return rgba when there is transparency.
-                if (format === "name" && this._a === 0) {
-                    return this.toName();
-                }
-                return this.toRgbString();
-            }
-            if (format === "rgb") {
-                formattedString = this.toRgbString();
-            }
-            if (format === "prgb") {
-                formattedString = this.toPercentageRgbString();
-            }
-            if (format === "hex" || format === "hex6") {
-                formattedString = this.toHexString();
-            }
-            if (format === "hex3") {
-                formattedString = this.toHexString(true);
-            }
-            if (format === "hex8") {
-                formattedString = this.toHex8String();
-            }
-            if (format === "name") {
-                formattedString = this.toName();
-            }
-            if (format === "hsl") {
-                formattedString = this.toHslString();
-            }
-            if (format === "hsv") {
-                formattedString = this.toHsvString();
-            }
-
-            return formattedString || this.toHexString();
-        }
-    };
-
-    // If input is an object, force 1 into "1.0" to handle ratios properly
-    // String input requires "1.0" as input, so 1 will be treated as 1
-    tinycolor.fromRatio = function(color, opts) {
-        if (typeof color == "object") {
-            var newColor = {};
-            for (var i in color) {
-                if (color.hasOwnProperty(i)) {
-                    if (i === "a") {
-                        newColor[i] = color[i];
-                    }
-                    else {
-                        newColor[i] = convertToPercentage(color[i]);
-                    }
-                }
-            }
-            color = newColor;
-        }
-
-        return tinycolor(color, opts);
-    };
-
-    // Given a string or object, convert that input to RGB
-    // Possible string inputs:
-    //
-    //     "red"
-    //     "#f00" or "f00"
-    //     "#ff0000" or "ff0000"
-    //     "#ff000000" or "ff000000"
-    //     "rgb 255 0 0" or "rgb (255, 0, 0)"
-    //     "rgb 1.0 0 0" or "rgb (1, 0, 0)"
-    //     "rgba (255, 0, 0, 1)" or "rgba 255, 0, 0, 1"
-    //     "rgba (1.0, 0, 0, 1)" or "rgba 1.0, 0, 0, 1"
-    //     "hsl(0, 100%, 50%)" or "hsl 0 100% 50%"
-    //     "hsla(0, 100%, 50%, 1)" or "hsla 0 100% 50%, 1"
-    //     "hsv(0, 100%, 100%)" or "hsv 0 100% 100%"
-    //
-    function inputToRGB(color) {
-
-        var rgb = { r: 0, g: 0, b: 0 };
-        var a = 1;
-        var ok = false;
-        var format = false;
-
-        if (typeof color == "string") {
-            color = stringInputToObject(color);
-        }
-
-        if (typeof color == "object") {
-            if (color.hasOwnProperty("r") && color.hasOwnProperty("g") && color.hasOwnProperty("b")) {
-                rgb = rgbToRgb(color.r, color.g, color.b);
-                ok = true;
-                format = String(color.r).substr(-1) === "%" ? "prgb" : "rgb";
-            }
-            else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("v")) {
-                color.s = convertToPercentage(color.s);
-                color.v = convertToPercentage(color.v);
-                rgb = hsvToRgb(color.h, color.s, color.v);
-                ok = true;
-                format = "hsv";
-            }
-            else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("l")) {
-                color.s = convertToPercentage(color.s);
-                color.l = convertToPercentage(color.l);
-                rgb = hslToRgb(color.h, color.s, color.l);
-                ok = true;
-                format = "hsl";
-            }
-
-            if (color.hasOwnProperty("a")) {
-                a = color.a;
-            }
-        }
-
-        a = boundAlpha(a);
-
-        return {
-            ok: ok,
-            format: color.format || format,
-            r: mathMin(255, mathMax(rgb.r, 0)),
-            g: mathMin(255, mathMax(rgb.g, 0)),
-            b: mathMin(255, mathMax(rgb.b, 0)),
-            a: a
-        };
-    }
-
-
-    // Conversion Functions
-    // --------------------
-
-    // `rgbToHsl`, `rgbToHsv`, `hslToRgb`, `hsvToRgb` modified from:
-    // <http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript>
-
-    // `rgbToRgb`
-    // Handle bounds / percentage checking to conform to CSS color spec
-    // <http://www.w3.org/TR/css3-color/>
-    // *Assumes:* r, g, b in [0, 255] or [0, 1]
-    // *Returns:* { r, g, b } in [0, 255]
-    function rgbToRgb(r, g, b){
-        return {
-            r: bound01(r, 255) * 255,
-            g: bound01(g, 255) * 255,
-            b: bound01(b, 255) * 255
-        };
-    }
-
-    // `rgbToHsl`
-    // Converts an RGB color value to HSL.
-    // *Assumes:* r, g, and b are contained in [0, 255] or [0, 1]
-    // *Returns:* { h, s, l } in [0,1]
-    function rgbToHsl(r, g, b) {
-
-        r = bound01(r, 255);
-        g = bound01(g, 255);
-        b = bound01(b, 255);
-
-        var max = mathMax(r, g, b), min = mathMin(r, g, b);
-        var h, s, l = (max + min) / 2;
-
-        if(max == min) {
-            h = s = 0; // achromatic
-        }
-        else {
-            var d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            switch(max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-
-            h /= 6;
-        }
-
-        return { h: h, s: s, l: l };
-    }
-
-    // `hslToRgb`
-    // Converts an HSL color value to RGB.
-    // *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are contained [0, 1] or [0, 100]
-    // *Returns:* { r, g, b } in the set [0, 255]
-    function hslToRgb(h, s, l) {
-        var r, g, b;
-
-        h = bound01(h, 360);
-        s = bound01(s, 100);
-        l = bound01(l, 100);
-
-        function hue2rgb(p, q, t) {
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        }
-
-        if(s === 0) {
-            r = g = b = l; // achromatic
-        }
-        else {
-            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            var p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1/3);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1/3);
-        }
-
-        return { r: r * 255, g: g * 255, b: b * 255 };
-    }
-
-    // `rgbToHsv`
-    // Converts an RGB color value to HSV
-    // *Assumes:* r, g, and b are contained in the set [0, 255] or [0, 1]
-    // *Returns:* { h, s, v } in [0,1]
-    function rgbToHsv(r, g, b) {
-
-        r = bound01(r, 255);
-        g = bound01(g, 255);
-        b = bound01(b, 255);
-
-        var max = mathMax(r, g, b), min = mathMin(r, g, b);
-        var h, s, v = max;
-
-        var d = max - min;
-        s = max === 0 ? 0 : d / max;
-
-        if(max == min) {
-            h = 0; // achromatic
-        }
-        else {
-            switch(max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-        return { h: h, s: s, v: v };
-    }
-
-    // `hsvToRgb`
-    // Converts an HSV color value to RGB.
-    // *Assumes:* h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
-    // *Returns:* { r, g, b } in the set [0, 255]
-     function hsvToRgb(h, s, v) {
-
-        h = bound01(h, 360) * 6;
-        s = bound01(s, 100);
-        v = bound01(v, 100);
-
-        var i = math.floor(h),
-            f = h - i,
-            p = v * (1 - s),
-            q = v * (1 - f * s),
-            t = v * (1 - (1 - f) * s),
-            mod = i % 6,
-            r = [v, q, p, p, t, v][mod],
-            g = [t, v, v, q, p, p][mod],
-            b = [p, p, t, v, v, q][mod];
-
-        return { r: r * 255, g: g * 255, b: b * 255 };
-    }
-
-    // `rgbToHex`
-    // Converts an RGB color to hex
-    // Assumes r, g, and b are contained in the set [0, 255]
-    // Returns a 3 or 6 character hex
-    function rgbToHex(r, g, b, allow3Char) {
-
-        var hex = [
-            pad2(mathRound(r).toString(16)),
-            pad2(mathRound(g).toString(16)),
-            pad2(mathRound(b).toString(16))
-        ];
-
-        // Return a 3 character hex if possible
-        if (allow3Char && hex[0].charAt(0) == hex[0].charAt(1) && hex[1].charAt(0) == hex[1].charAt(1) && hex[2].charAt(0) == hex[2].charAt(1)) {
-            return hex[0].charAt(0) + hex[1].charAt(0) + hex[2].charAt(0);
-        }
-
-        return hex.join("");
-    }
-        // `rgbaToHex`
-        // Converts an RGBA color plus alpha transparency to hex
-        // Assumes r, g, b and a are contained in the set [0, 255]
-        // Returns an 8 character hex
-        function rgbaToHex(r, g, b, a) {
-
-            var hex = [
-                pad2(convertDecimalToHex(a)),
-                pad2(mathRound(r).toString(16)),
-                pad2(mathRound(g).toString(16)),
-                pad2(mathRound(b).toString(16))
-            ];
-
-            return hex.join("");
-        }
-
-    // `equals`
-    // Can be called with any tinycolor input
-    tinycolor.equals = function (color1, color2) {
-        if (!color1 || !color2) { return false; }
-        return tinycolor(color1).toRgbString() == tinycolor(color2).toRgbString();
-    };
-    tinycolor.random = function() {
-        return tinycolor.fromRatio({
-            r: mathRandom(),
-            g: mathRandom(),
-            b: mathRandom()
-        });
-    };
-
-
-    // Modification Functions
-    // ----------------------
-    // Thanks to less.js for some of the basics here
-    // <https://github.com/cloudhead/less.js/blob/master/lib/less/functions.js>
-
-    tinycolor.desaturate = function (color, amount) {
-        amount = (amount === 0) ? 0 : (amount || 10);
-        var hsl = tinycolor(color).toHsl();
-        hsl.s -= amount / 100;
-        hsl.s = clamp01(hsl.s);
-        return tinycolor(hsl);
-    };
-    tinycolor.saturate = function (color, amount) {
-        amount = (amount === 0) ? 0 : (amount || 10);
-        var hsl = tinycolor(color).toHsl();
-        hsl.s += amount / 100;
-        hsl.s = clamp01(hsl.s);
-        return tinycolor(hsl);
-    };
-    tinycolor.greyscale = function(color) {
-        return tinycolor.desaturate(color, 100);
-    };
-    tinycolor.lighten = function(color, amount) {
-        amount = (amount === 0) ? 0 : (amount || 10);
-        var hsl = tinycolor(color).toHsl();
-        hsl.l += amount / 100;
-        hsl.l = clamp01(hsl.l);
-        return tinycolor(hsl);
-    };
-    tinycolor.brighten = function(color, amount) {
-        amount = (amount === 0) ? 0 : (amount || 10);
-        var rgb = tinycolor(color).toRgb();
-        rgb.r = mathMax(0, mathMin(255, rgb.r - mathRound(255 * - (amount / 100))));
-        rgb.g = mathMax(0, mathMin(255, rgb.g - mathRound(255 * - (amount / 100))));
-        rgb.b = mathMax(0, mathMin(255, rgb.b - mathRound(255 * - (amount / 100))));
-        return tinycolor(rgb);
-    };
-    tinycolor.darken = function (color, amount) {
-        amount = (amount === 0) ? 0 : (amount || 10);
-        var hsl = tinycolor(color).toHsl();
-        hsl.l -= amount / 100;
-        hsl.l = clamp01(hsl.l);
-        return tinycolor(hsl);
-    };
-    tinycolor.complement = function(color) {
-        var hsl = tinycolor(color).toHsl();
-        hsl.h = (hsl.h + 180) % 360;
-        return tinycolor(hsl);
-    };
-
-
-    // Combination Functions
-    // ---------------------
-    // Thanks to jQuery xColor for some of the ideas behind these
-    // <https://github.com/infusion/jQuery-xcolor/blob/master/jquery.xcolor.js>
-
-    tinycolor.triad = function(color) {
-        var hsl = tinycolor(color).toHsl();
-        var h = hsl.h;
-        return [
-            tinycolor(color),
-            tinycolor({ h: (h + 120) % 360, s: hsl.s, l: hsl.l }),
-            tinycolor({ h: (h + 240) % 360, s: hsl.s, l: hsl.l })
-        ];
-    };
-    tinycolor.tetrad = function(color) {
-        var hsl = tinycolor(color).toHsl();
-        var h = hsl.h;
-        return [
-            tinycolor(color),
-            tinycolor({ h: (h + 90) % 360, s: hsl.s, l: hsl.l }),
-            tinycolor({ h: (h + 180) % 360, s: hsl.s, l: hsl.l }),
-            tinycolor({ h: (h + 270) % 360, s: hsl.s, l: hsl.l })
-        ];
-    };
-    tinycolor.splitcomplement = function(color) {
-        var hsl = tinycolor(color).toHsl();
-        var h = hsl.h;
-        return [
-            tinycolor(color),
-            tinycolor({ h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
-            tinycolor({ h: (h + 216) % 360, s: hsl.s, l: hsl.l})
-        ];
-    };
-    tinycolor.analogous = function(color, results, slices) {
-        results = results || 6;
-        slices = slices || 30;
-
-        var hsl = tinycolor(color).toHsl();
-        var part = 360 / slices;
-        var ret = [tinycolor(color)];
-
-        for (hsl.h = ((hsl.h - (part * results >> 1)) + 720) % 360; --results; ) {
-            hsl.h = (hsl.h + part) % 360;
-            ret.push(tinycolor(hsl));
-        }
-        return ret;
-    };
-    tinycolor.monochromatic = function(color, results) {
-        results = results || 6;
-        var hsv = tinycolor(color).toHsv();
-        var h = hsv.h, s = hsv.s, v = hsv.v;
-        var ret = [];
-        var modification = 1 / results;
-
-        while (results--) {
-            ret.push(tinycolor({ h: h, s: s, v: v}));
-            v = (v + modification) % 1;
-        }
-
-        return ret;
-    };
-
-
-    // Readability Functions
-    // ---------------------
-    // <http://www.w3.org/TR/AERT#color-contrast>
-
-    // `readability`
-    // Analyze the 2 colors and returns an object with the following properties:
-    //    `brightness`: difference in brightness between the two colors
-    //    `color`: difference in color/hue between the two colors
-    tinycolor.readability = function(color1, color2) {
-        var a = tinycolor(color1).toRgb();
-        var b = tinycolor(color2).toRgb();
-        var brightnessA = (a.r * 299 + a.g * 587 + a.b * 114) / 1000;
-        var brightnessB = (b.r * 299 + b.g * 587 + b.b * 114) / 1000;
-        var colorDiff = (
-            Math.max(a.r, b.r) - Math.min(a.r, b.r) +
-            Math.max(a.g, b.g) - Math.min(a.g, b.g) +
-            Math.max(a.b, b.b) - Math.min(a.b, b.b)
-        );
-
-        return {
-            brightness: Math.abs(brightnessA - brightnessB),
-            color: colorDiff
-        };
-    };
-
-    // `readable`
-    // http://www.w3.org/TR/AERT#color-contrast
-    // Ensure that foreground and background color combinations provide sufficient contrast.
-    // *Example*
-    //    tinycolor.readable("#000", "#111") => false
-    tinycolor.readable = function(color1, color2) {
-        var readability = tinycolor.readability(color1, color2);
-        return readability.brightness > 125 && readability.color > 500;
-    };
-
-    // `mostReadable`
-    // Given a base color and a list of possible foreground or background
-    // colors for that base, returns the most readable color.
-    // *Example*
-    //    tinycolor.mostReadable("#123", ["#fff", "#000"]) => "#000"
-    tinycolor.mostReadable = function(baseColor, colorList) {
-        var bestColor = null;
-        var bestScore = 0;
-        var bestIsReadable = false;
-        for (var i=0; i < colorList.length; i++) {
-
-            // We normalize both around the "acceptable" breaking point,
-            // but rank brightness constrast higher than hue.
-
-            var readability = tinycolor.readability(baseColor, colorList[i]);
-            var readable = readability.brightness > 125 && readability.color > 500;
-            var score = 3 * (readability.brightness / 125) + (readability.color / 500);
-
-            if ((readable && ! bestIsReadable) ||
-                (readable && bestIsReadable && score > bestScore) ||
-                ((! readable) && (! bestIsReadable) && score > bestScore)) {
-                bestIsReadable = readable;
-                bestScore = score;
-                bestColor = tinycolor(colorList[i]);
-            }
-        }
-        return bestColor;
-    };
-
-
-    // Big List of Colors
-    // ------------------
-    // <http://www.w3.org/TR/css3-color/#svg-color>
-    var names = tinycolor.names = {
-        aliceblue: "f0f8ff",
-        antiquewhite: "faebd7",
-        aqua: "0ff",
-        aquamarine: "7fffd4",
-        azure: "f0ffff",
-        beige: "f5f5dc",
-        bisque: "ffe4c4",
-        black: "000",
-        blanchedalmond: "ffebcd",
-        blue: "00f",
-        blueviolet: "8a2be2",
-        brown: "a52a2a",
-        burlywood: "deb887",
-        burntsienna: "ea7e5d",
-        cadetblue: "5f9ea0",
-        chartreuse: "7fff00",
-        chocolate: "d2691e",
-        coral: "ff7f50",
-        cornflowerblue: "6495ed",
-        cornsilk: "fff8dc",
-        crimson: "dc143c",
-        cyan: "0ff",
-        darkblue: "00008b",
-        darkcyan: "008b8b",
-        darkgoldenrod: "b8860b",
-        darkgray: "a9a9a9",
-        darkgreen: "006400",
-        darkgrey: "a9a9a9",
-        darkkhaki: "bdb76b",
-        darkmagenta: "8b008b",
-        darkolivegreen: "556b2f",
-        darkorange: "ff8c00",
-        darkorchid: "9932cc",
-        darkred: "8b0000",
-        darksalmon: "e9967a",
-        darkseagreen: "8fbc8f",
-        darkslateblue: "483d8b",
-        darkslategray: "2f4f4f",
-        darkslategrey: "2f4f4f",
-        darkturquoise: "00ced1",
-        darkviolet: "9400d3",
-        deeppink: "ff1493",
-        deepskyblue: "00bfff",
-        dimgray: "696969",
-        dimgrey: "696969",
-        dodgerblue: "1e90ff",
-        firebrick: "b22222",
-        floralwhite: "fffaf0",
-        forestgreen: "228b22",
-        fuchsia: "f0f",
-        gainsboro: "dcdcdc",
-        ghostwhite: "f8f8ff",
-        gold: "ffd700",
-        goldenrod: "daa520",
-        gray: "808080",
-        green: "008000",
-        greenyellow: "adff2f",
-        grey: "808080",
-        honeydew: "f0fff0",
-        hotpink: "ff69b4",
-        indianred: "cd5c5c",
-        indigo: "4b0082",
-        ivory: "fffff0",
-        khaki: "f0e68c",
-        lavender: "e6e6fa",
-        lavenderblush: "fff0f5",
-        lawngreen: "7cfc00",
-        lemonchiffon: "fffacd",
-        lightblue: "add8e6",
-        lightcoral: "f08080",
-        lightcyan: "e0ffff",
-        lightgoldenrodyellow: "fafad2",
-        lightgray: "d3d3d3",
-        lightgreen: "90ee90",
-        lightgrey: "d3d3d3",
-        lightpink: "ffb6c1",
-        lightsalmon: "ffa07a",
-        lightseagreen: "20b2aa",
-        lightskyblue: "87cefa",
-        lightslategray: "789",
-        lightslategrey: "789",
-        lightsteelblue: "b0c4de",
-        lightyellow: "ffffe0",
-        lime: "0f0",
-        limegreen: "32cd32",
-        linen: "faf0e6",
-        magenta: "f0f",
-        maroon: "800000",
-        mediumaquamarine: "66cdaa",
-        mediumblue: "0000cd",
-        mediumorchid: "ba55d3",
-        mediumpurple: "9370db",
-        mediumseagreen: "3cb371",
-        mediumslateblue: "7b68ee",
-        mediumspringgreen: "00fa9a",
-        mediumturquoise: "48d1cc",
-        mediumvioletred: "c71585",
-        midnightblue: "191970",
-        mintcream: "f5fffa",
-        mistyrose: "ffe4e1",
-        moccasin: "ffe4b5",
-        navajowhite: "ffdead",
-        navy: "000080",
-        oldlace: "fdf5e6",
-        olive: "808000",
-        olivedrab: "6b8e23",
-        orange: "ffa500",
-        orangered: "ff4500",
-        orchid: "da70d6",
-        palegoldenrod: "eee8aa",
-        palegreen: "98fb98",
-        paleturquoise: "afeeee",
-        palevioletred: "db7093",
-        papayawhip: "ffefd5",
-        peachpuff: "ffdab9",
-        peru: "cd853f",
-        pink: "ffc0cb",
-        plum: "dda0dd",
-        powderblue: "b0e0e6",
-        purple: "800080",
-        red: "f00",
-        rosybrown: "bc8f8f",
-        royalblue: "4169e1",
-        saddlebrown: "8b4513",
-        salmon: "fa8072",
-        sandybrown: "f4a460",
-        seagreen: "2e8b57",
-        seashell: "fff5ee",
-        sienna: "a0522d",
-        silver: "c0c0c0",
-        skyblue: "87ceeb",
-        slateblue: "6a5acd",
-        slategray: "708090",
-        slategrey: "708090",
-        snow: "fffafa",
-        springgreen: "00ff7f",
-        steelblue: "4682b4",
-        tan: "d2b48c",
-        teal: "008080",
-        thistle: "d8bfd8",
-        tomato: "ff6347",
-        turquoise: "40e0d0",
-        violet: "ee82ee",
-        wheat: "f5deb3",
-        white: "fff",
-        whitesmoke: "f5f5f5",
-        yellow: "ff0",
-        yellowgreen: "9acd32"
-    };
-
-    // Make it easy to access colors via `hexNames[hex]`
-    var hexNames = tinycolor.hexNames = flip(names);
-
-
-    // Utilities
-    // ---------
-
-    // `{ 'name1': 'val1' }` becomes `{ 'val1': 'name1' }`
-    function flip(o) {
-        var flipped = { };
-        for (var i in o) {
-            if (o.hasOwnProperty(i)) {
-                flipped[o[i]] = i;
-            }
-        }
-        return flipped;
-    }
-
-    // Return a valid alpha value [0,1] with all invalid values being set to 1
-    function boundAlpha(a) {
-        a = parseFloat(a);
-
-        if (isNaN(a) || a < 0 || a > 1) {
-            a = 1;
-        }
-
-        return a;
-    }
-
-    // Take input from [0, n] and return it as [0, 1]
-    function bound01(n, max) {
-        if (isOnePointZero(n)) { n = "100%"; }
-
-        var processPercent = isPercentage(n);
-        n = mathMin(max, mathMax(0, parseFloat(n)));
-
-        // Automatically convert percentage into number
-        if (processPercent) {
-            n = parseInt(n * max, 10) / 100;
-        }
-
-        // Handle floating point rounding errors
-        if ((math.abs(n - max) < 0.000001)) {
-            return 1;
-        }
-
-        // Convert into [0, 1] range if it isn't already
-        return (n % max) / parseFloat(max);
-    }
-
-    // Force a number between 0 and 1
-    function clamp01(val) {
-        return mathMin(1, mathMax(0, val));
-    }
-
-    // Parse a base-16 hex value into a base-10 integer
-    function parseIntFromHex(val) {
-        return parseInt(val, 16);
-    }
-
-    // Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
-    // <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
-    function isOnePointZero(n) {
-        return typeof n == "string" && n.indexOf('.') != -1 && parseFloat(n) === 1;
-    }
-
-    // Check to see if string passed in is a percentage
-    function isPercentage(n) {
-        return typeof n === "string" && n.indexOf('%') != -1;
-    }
-
-    // Force a hex value to have 2 characters
-    function pad2(c) {
-        return c.length == 1 ? '0' + c : '' + c;
-    }
-
-    // Replace a decimal with it's percentage value
-    function convertToPercentage(n) {
-        if (n <= 1) {
-            n = (n * 100) + "%";
-        }
-
-        return n;
-    }
-
-    // Converts a decimal to a hex value
-    function convertDecimalToHex(d) {
-        return Math.round(parseFloat(d) * 255).toString(16);
-    }
-    // Converts a hex value to a decimal
-    function convertHexToDecimal(h) {
-        return (parseIntFromHex(h) / 255);
-    }
-
-    var matchers = (function() {
-
-        // <http://www.w3.org/TR/css3-values/#integers>
-        var CSS_INTEGER = "[-\\+]?\\d+%?";
-
-        // <http://www.w3.org/TR/css3-values/#number-value>
-        var CSS_NUMBER = "[-\\+]?\\d*\\.\\d+%?";
-
-        // Allow positive/negative integer/number.  Don't capture the either/or, just the entire outcome.
-        var CSS_UNIT = "(?:" + CSS_NUMBER + ")|(?:" + CSS_INTEGER + ")";
-
-        // Actual matching.
-        // Parentheses and commas are optional, but not required.
-        // Whitespace can take the place of commas or opening paren
-        var PERMISSIVE_MATCH3 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
-        var PERMISSIVE_MATCH4 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
-
-        return {
-            rgb: new RegExp("rgb" + PERMISSIVE_MATCH3),
-            rgba: new RegExp("rgba" + PERMISSIVE_MATCH4),
-            hsl: new RegExp("hsl" + PERMISSIVE_MATCH3),
-            hsla: new RegExp("hsla" + PERMISSIVE_MATCH4),
-            hsv: new RegExp("hsv" + PERMISSIVE_MATCH3),
-            hex3: /^([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
-            hex6: /^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/,
-            hex8: /^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/
-        };
-    })();
-
-    // `stringInputToObject`
-    // Permissive string parsing.  Take in a number of formats, and output an object
-    // based on detected format.  Returns `{ r, g, b }` or `{ h, s, l }` or `{ h, s, v}`
-    function stringInputToObject(color) {
-
-        color = color.replace(trimLeft,'').replace(trimRight, '').toLowerCase();
-        var named = false;
-        if (names[color]) {
-            color = names[color];
-            named = true;
-        }
-        else if (color == 'transparent') {
-            return { r: 0, g: 0, b: 0, a: 0, format: "name" };
-        }
-
-        // Try to match string input using regular expressions.
-        // Keep most of the number bounding out of this function - don't worry about [0,1] or [0,100] or [0,360]
-        // Just return an object and let the conversion functions handle that.
-        // This way the result will be the same whether the tinycolor is initialized with string or object.
-        var match;
-        if ((match = matchers.rgb.exec(color))) {
-            return { r: match[1], g: match[2], b: match[3] };
-        }
-        if ((match = matchers.rgba.exec(color))) {
-            return { r: match[1], g: match[2], b: match[3], a: match[4] };
-        }
-        if ((match = matchers.hsl.exec(color))) {
-            return { h: match[1], s: match[2], l: match[3] };
-        }
-        if ((match = matchers.hsla.exec(color))) {
-            return { h: match[1], s: match[2], l: match[3], a: match[4] };
-        }
-        if ((match = matchers.hsv.exec(color))) {
-            return { h: match[1], s: match[2], v: match[3] };
-        }
-        if ((match = matchers.hex8.exec(color))) {
-            return {
-                a: convertHexToDecimal(match[1]),
-                r: parseIntFromHex(match[2]),
-                g: parseIntFromHex(match[3]),
-                b: parseIntFromHex(match[4]),
-                format: named ? "name" : "hex8"
-            };
-        }
-        if ((match = matchers.hex6.exec(color))) {
-            return {
-                r: parseIntFromHex(match[1]),
-                g: parseIntFromHex(match[2]),
-                b: parseIntFromHex(match[3]),
-                format: named ? "name" : "hex"
-            };
-        }
-        if ((match = matchers.hex3.exec(color))) {
-            return {
-                r: parseIntFromHex(match[1] + '' + match[1]),
-                g: parseIntFromHex(match[2] + '' + match[2]),
-                b: parseIntFromHex(match[3] + '' + match[3]),
-                format: named ? "name" : "hex"
-            };
-        }
-
-        return false;
-    }
-
-    window.tinycolor = tinycolor;
-    })();
-
-
-    $(function () {
-        if ($.fn.spectrum.load) {
-            $.fn.spectrum.processNativeColorInputs();
-        }
-    });
-
-})(window, jQuery);
-
-(function () {
-  "use strict";
-
-  angular.module("risevision.widget.common.color-picker", ["risevision.widget.common"])
-    .directive("colorPicker", ["i18nLoader", function (i18nLoader) {
-      return {
-        restrict: "A",
-        scope: {
-          color: "=",
-          type: "@"
-        },
-        transclude: false,
-        link: function ($scope, elem) {
-          var $elem = $(elem);
-
-          $scope.type = $scope.type ? $scope.type : "background";
-
-          function onChange(color) {
-            $scope.$apply(function() {
-              $scope.color = color.toRgbString();
-            });
-          }
-
-          $scope.$watch("color", function(color) {
-            if (color) {
-              if ($elem.next().hasClass(".sp-replacer.sp-light")) {
-                $elem.spectrum("set", color);
-              }
-              else {
-                i18nLoader.get().then(function () {
-                  var options = {
-                    cancelText: "Cancel",
-                    chooseText: "Apply",
-                    color: color,
-                    preferredFormat: "rgb",
-                    showAlpha: true,
-                    showInput: true,
-                    type: $scope.type,
-                    change: onChange,
-                    showPalette: true,
-                    palette: [
-                      ["#000","#444","#666","#999","#ccc","#eee","#f3f3f3","#fff"],
-                      ["#f00","#f90","#ff0","#0f0","#0ff","#00f","#90f","#f0f"],
-                      ["#f4cccc","#fce5cd","#fff2cc","#d9ead3","#d0e0e3","#cfe2f3","#d9d2e9","#ead1dc"],
-                      ["#ea9999","#f9cb9c","#ffe599","#b6d7a8","#a2c4c9","#9fc5e8","#b4a7d6","#d5a6bd"],
-                      ["#e06666","#f6b26b","#ffd966","#93c47d","#76a5af","#6fa8dc","#8e7cc3","#c27ba0"],
-                      ["#c00","#e69138","#f1c232","#6aa84f","#45818e","#3d85c6","#674ea7","#a64d79"],
-                      ["#900","#b45f06","#bf9000","#38761d","#134f5c","#0b5394","#351c75","#741b47"],
-                      ["#600","#783f04","#7f6000","#274e13","#0c343d","#073763","#20124d","#4c1130"]
-                    ]
-                  };
-
-                  $elem.spectrum(options);
-                });
-              }
-            }
-          });
-        }
-      };
-    }]);
-}());
-
-(function () {
-  "use strict";
-
-  angular.module("risevision.widget.common.background-setting",
-    ["risevision.common.i18n", "risevision.widget.common.color-picker"])
-    .directive("backgroundSetting", ["$templateCache", function ($templateCache) {
-      return {
-        restrict: "E",
-        scope: {
-          background: "="
-        },
-        template: $templateCache.get("_angular/background-setting/background-setting.html"),
-        link: function ($scope) {
-          $scope.defaultSetting = {
-            color: "transparent"
-          };
-
-          $scope.defaults = function(obj) {
-            if (obj) {
-              for (var i = 1, length = arguments.length; i < length; i++) {
-                var source = arguments[i];
-
-                for (var prop in source) {
-                  if (obj[prop] === void 0) {
-                    obj[prop] = source[prop];
-                  }
-                }
-              }
-            }
-            return obj;
-          };
-
-          $scope.$watch("background", function(background) {
-            $scope.defaults(background, $scope.defaultSetting);
-          });
-        }
-      };
-    }]);
-}());
-
-(function(module) {
-try { module = angular.module("risevision.widget.common.background-setting"); }
-catch(err) { module = angular.module("risevision.widget.common.background-setting", []); }
-module.run(["$templateCache", function($templateCache) {
-  "use strict";
-  $templateCache.put("_angular/background-setting/background-setting.html",
-    "<div class=\"section\">\n" +
-    "  <h5>{{\"background.heading\" | translate}}</h5>\n" +
-    "  <div class=\"form-group\">\n" +
-    "    <label>{{\"background.color.label\" | translate}}  &nbsp;</label>\n" +
-    "    <div>\n" +
-    "      <input color-picker color=\"background.color\" type=\"background\">\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</div>\n" +
-    "");
-}]);
-})();
-
 (function () {
   "use strict";
 
@@ -9209,26 +8560,11 @@ module.run(["$templateCache", function($templateCache) {
       return {
         restrict: "E",
         scope: {
-          help: "@",
-          contribute: "@",
           save: "&",
           cancel: "&",
           disableSave: "&"
         },
-        template: $templateCache.get("_angular/widget-button-toolbar/widget-button-toolbar.html"),
-        link: function ($scope, elem, attrs) {
-          $scope.helpRef = "";
-          $scope.contributeRef = "";
-
-          if (typeof attrs.help !== "undefined" && attrs.help !== "") {
-            $scope.helpRef = attrs.help;
-          }
-
-          if (typeof attrs.contribute !== "undefined" && attrs.contribute !== "") {
-            $scope.contributeRef = attrs.contribute;
-          }
-
-        }
+        template: $templateCache.get("_angular/widget-button-toolbar/widget-button-toolbar.html")
       };
     }]);
 }());
@@ -9239,23 +8575,15 @@ catch(err) { module = angular.module("risevision.widget.common.widget-button-too
 module.run(["$templateCache", function($templateCache) {
   "use strict";
   $templateCache.put("_angular/widget-button-toolbar/widget-button-toolbar.html",
-    "<div class=\"btn-toolbar sticky-buttons\">\n" +
+    "<div class=\"pull-right\">\n" +
     "  <button id=\"save\" class=\"btn btn-primary btn-fixed-width\" type=\"button\" ng-click=\"save()\" ng-disabled=\"disableSave()\">\n" +
     "    <span>{{\"common.save\" | translate}}</span>\n" +
-    "    <i class=\"fa fa-white fa-check fa-lg icon-right\"></i>\n" +
+    "    <i class=\"fa fa-white fa-check icon-right\"></i>\n" +
     "  </button>\n" +
     "  <button id=\"cancel\" class=\"btn btn-default btn-fixed-width\" type=\"button\" ng-click=\"cancel()\">\n" +
     "    <span>{{\"common.cancel\" | translate}}</span>\n" +
-    "    <i class=\"fa fa-white fa-times fa-lg icon-right\"></i>\n" +
+    "    <i class=\"fa fa-white fa-times icon-right\"></i>\n" +
     "  </button>\n" +
-    "  <a type=\"button\" class=\"btn btn-rv-help btn-fixed-width\" target=\"_blank\" href={{helpRef}} ng-if=\"helpRef !== ''\">\n" +
-    "    <span>{{\"common.help\" | translate}}</span>\n" +
-    "    <i class=\"fa fa-question-circle fa-lg icon-right\"></i>\n" +
-    "  </a>\n" +
-    "  <a type=\"button\" class=\"btn btn-rv-help btn-fixed-width\" target=\"_blank\" href={{contributeRef}} ng-if=\"contributeRef !== ''\">\n" +
-    "    <span>{{\"common.contribute\" | translate}}</span>\n" +
-    "    <i class=\"fa fa-github fa-lg icon-right\"></i>\n" +
-    "  </a>\n" +
     "</div>\n" +
     "");
 }]);
@@ -9277,51 +8605,12 @@ if (typeof config === "undefined") {
 
 angular.module("risevision.widget.image.settings", [
   "risevision.common.i18n",
+  "risevision.widget.common",
   "risevision.widget.common.widget-button-toolbar",
-  "risevision.widget.common.url-field",
   "risevision.widget.common.position-setting",
-  "risevision.widget.common.background-setting"
+  "risevision.widget.common.tooltip",
+  "risevision.widget.common.file-selector"
 ]);
-
-angular.module("risevision.widget.image.settings")
-  .controller("imageSettingsController", ["$scope", "$q", "$log", "commonSettings", "imageValidator",
-    function ($scope, $q, $log, commonSettings, imageValidator) {
-      var imageUrl = "";
-
-      $scope.isValidImage = true;
-
-      $scope.validateImage = function() {
-        if ($scope.settingsForm.urlField.$valid && imageUrl !== "") {
-          imageValidator.isImage(imageUrl).then(function(result) {
-            $scope.isValidImage = result;
-
-            if (result) {
-              $scope.settings.additionalParams.storage = commonSettings.getStorageUrlData(imageUrl);
-              $scope.$parent.saveSettings();
-            }
-            else {
-              $scope.settings.additionalParams.storage = {};
-            }
-          });
-        }
-      };
-
-      $scope.$watch("settings.additionalParams.url", function (url) {
-        if (url !== undefined && url !== "") {
-          imageUrl = url;
-        }
-      });
-    }])
-  .value("defaultSettings", {
-    "params": {},
-    "additionalParams": {
-      "url": "",
-      "storage": {},
-      "scaleToFit": true,
-      "position": "top-left",
-      "background": {}
-    }
-  });
 
 angular.module("risevision.widget.common", []);
 
@@ -9706,3 +8995,70 @@ angular.module("risevision.widget.common")
     }]);
 
 })(angular);
+
+angular.module("risevision.widget.image.settings")
+  .controller("imageSettingsController", ["$scope", "$rootScope", "$q", "$log", "commonSettings",
+    function ($scope, $rootScope, $q, $log, commonSettings) {
+      $scope.isFolder = false;
+
+
+      $scope.$on("fileSelectorClick", function(event, type) {
+        $scope.isFolder = (type === "single-folder") ? true : false;
+      });
+
+      $scope.$watch("settings.additionalParams.selector.url", function (url) {
+        if (typeof url !== "undefined" && url !== "") {
+          $scope.settings.additionalParams.storage = commonSettings.getStorageUrlData(url);
+        }
+      });
+
+      // $scope.$watch("settings.additionalParams.resume", function (resume) {
+      //   if (typeof resume === "undefined") {
+      //     $scope.settings.additionalParams.resume = true;
+      //   }
+      // });
+
+      // Legacy URL setting
+      $scope.$watch("settings.additionalParams.url", function (url) {
+        var storage = {};
+
+        if (typeof url !== "undefined" && url !== "") {
+          storage = commonSettings.getStorageUrlData(url);
+
+          if (Object.keys(storage).length !== 0) {
+            // Storage file
+            $scope.settings.additionalParams.selector = {
+              "selection": "single-file",
+              "storageName": storage.folder + storage.fileName,
+              "url": url
+            };
+          }
+          else {
+            // Third party file
+            $scope.settings.additionalParams.selector = {
+              "selection": "custom",
+              "storageName": "",
+              "url": url
+            };
+          }
+
+          // ensure this value is empty so it no longer gets used
+          $scope.settings.additionalParams.url = "";
+        }
+      });
+    }])
+  .value("defaultSettings", {
+    "params": {},
+    "additionalParams": {
+      "selector": {},
+      "storage": {},
+      // "resume": true,     // folder
+      "scaleToFit": true,
+      "position": "top-left",
+      "duration": 10,     // folder
+      "pause": 10,        // folder
+      "autoHide": false,  // folder
+      "url": "",          // legacy
+      "background": {}    // legacy
+    }
+  });

@@ -1,39 +1,66 @@
 angular.module("risevision.widget.image.settings")
-  .controller("imageSettingsController", ["$scope", "$q", "$log", "commonSettings", "imageValidator",
-    function ($scope, $q, $log, commonSettings, imageValidator) {
-      var imageUrl = "";
+  .controller("imageSettingsController", ["$scope", "$rootScope", "$q", "$log", "commonSettings",
+    function ($scope, $rootScope, $q, $log, commonSettings) {
+      $scope.isFolder = false;
 
-      $scope.isValidImage = true;
 
-      $scope.validateImage = function() {
-        if ($scope.settingsForm.urlField.$valid && imageUrl !== "") {
-          imageValidator.isImage(imageUrl).then(function(result) {
-            $scope.isValidImage = result;
+      $scope.$on("fileSelectorClick", function(event, type) {
+        $scope.isFolder = (type === "single-folder") ? true : false;
+      });
 
-            if (result) {
-              $scope.settings.additionalParams.storage = commonSettings.getStorageUrlData(imageUrl);
-              $scope.$parent.saveSettings();
-            }
-            else {
-              $scope.settings.additionalParams.storage = {};
-            }
-          });
+      $scope.$watch("settings.additionalParams.selector.url", function (url) {
+        if (typeof url !== "undefined" && url !== "") {
+          $scope.settings.additionalParams.storage = commonSettings.getStorageUrlData(url);
         }
-      };
+      });
 
+      // $scope.$watch("settings.additionalParams.resume", function (resume) {
+      //   if (typeof resume === "undefined") {
+      //     $scope.settings.additionalParams.resume = true;
+      //   }
+      // });
+
+      // Legacy URL setting
       $scope.$watch("settings.additionalParams.url", function (url) {
-        if (url !== undefined && url !== "") {
-          imageUrl = url;
+        var storage = {};
+
+        if (typeof url !== "undefined" && url !== "") {
+          storage = commonSettings.getStorageUrlData(url);
+
+          if (Object.keys(storage).length !== 0) {
+            // Storage file
+            $scope.settings.additionalParams.selector = {
+              "selection": "single-file",
+              "storageName": storage.folder + storage.fileName,
+              "url": url
+            };
+          }
+          else {
+            // Third party file
+            $scope.settings.additionalParams.selector = {
+              "selection": "custom",
+              "storageName": "",
+              "url": url
+            };
+          }
+
+          // ensure this value is empty so it no longer gets used
+          $scope.settings.additionalParams.url = "";
         }
       });
     }])
   .value("defaultSettings", {
     "params": {},
     "additionalParams": {
-      "url": "",
+      "selector": {},
       "storage": {},
+      // "resume": true,     // folder
       "scaleToFit": true,
       "position": "top-left",
-      "background": {}
+      "duration": 10,     // folder
+      "pause": 10,        // folder
+      "autoHide": false,  // folder
+      "url": "",          // legacy
+      "background": {}    // legacy
     }
   });

@@ -155,8 +155,29 @@
     runSequence("test:local", cb);
   });
 
+  // Unit testing
+  gulp.task("test:unit:settings", factory.testUnitAngular(
+    {testFiles: [
+      "src/components/jquery/dist/jquery.js",
+      "src/components/angular/angular.js",
+      "src/components/angular-mocks/angular-mocks.js",
+      "src/components/angular-sanitize/angular-sanitize.js",
+      "src/components/angular-translate/angular-translate.js",
+      "src/components/angular-translate-loader-static-files/angular-translate-loader-static-files.js",
+      "node_modules/widget-tester/mocks/common-mock.js",
+      "src/components/angular-bootstrap/ui-bootstrap-tpls.js",
+      "src/components/widget-settings-ui-components/dist/js/**/*.js",
+      "src/components/widget-settings-ui-core/dist/*.js",
+      "src/components/component-storage-selector/dist/storage-selector.js",
+      "src/components/component-subscription-status/dist/js/subscription-status.js",
+      "src/config/test.js",
+      "src/settings/settings-app.js",
+      "src/settings/**/*.js",
+      "test/unit/settings/**/*spec.js"]}
+  ));
+
   gulp.task("test", function(cb) {
-    runSequence("test:e2e", "test:integration", cb);
+    runSequence("test:unit:settings", "test:e2e", "test:integration", cb);
   });
 
   gulp.task("build", function (cb) {

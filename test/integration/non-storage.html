@@ -102,7 +102,7 @@
         requests[0].respond(200);
 
         assert(onRefreshSpy.calledOnce, "onFileRefresh called once");
-        assert.include(onRefreshSpy.args[0][0], "http://s3.amazonaws.com/rise-common/images/logo-small.png?cb=",
+        assert(onRefreshSpy.calledWith("http://s3.amazonaws.com/rise-common/images/logo-small.png"),
           "onFileRefresh called with correct url");
       });
 

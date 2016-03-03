@@ -3,6 +3,14 @@ angular.module("risevision.widget.image.settings")
     function ($scope, $rootScope, $q, $log, commonSettings) {
       $scope.isFolder = false;
 
+      $scope.processCustomUrl = function () {
+        if ($scope.settings.additionalParams.selector.selection === "custom") {
+          $scope.settings.additionalParams.selector.url = "https://proxy.risevision.com/" +
+            $scope.settings.additionalParams.selector.url;
+        }
+
+        $scope.$parent.saveSettings();
+      };
 
       $scope.$on("fileSelectorClick", function(event, type) {
         $scope.isFolder = (type === "single-folder") ? true : false;

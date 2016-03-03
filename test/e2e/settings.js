@@ -131,7 +131,7 @@
           "selector": {
             "selection": "custom",
             "storageName": "",
-            "url": validImageUrl
+            "url": "https://proxy.risevision.com/" + validImageUrl
           },
           "storage": {},
           "resume": true,

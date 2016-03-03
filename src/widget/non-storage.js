@@ -69,6 +69,7 @@ RiseVision.Image.NonStorage = function (data) {
   function init() {
     // Handle pre-merge use of "url" setting property
     _url = (data.url && data.url !== "") ? data.url : data.selector.url;
+    _url = _url.replace("https://proxy.risevision.com/", "");
 
     _getFile(true);
   }

@@ -9,7 +9,7 @@
       "selector": {
         "selection": "custom",
         "storageName": "",
-        "url": "http://s3.amazonaws.com/rise-common/images/logo-small.png"
+        "url": "https://proxy.risevision.com/http://s3.amazonaws.com/rise-common/images/logo-small.png"
       },
       "storage": {},
       "resume": true,

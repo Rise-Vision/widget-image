@@ -30,7 +30,7 @@
     "rise-storage": "https://github.com/Rise-Vision/web-component-rise-storage.git#1.5.3",
     "webcomponentsjs": "~0.7.11",
     "widget-common": "https://github.com/Rise-Vision/widget-common.git#0.7.4",
-    "widget-settings-ui-components": "https://github.com/Rise-Vision/widget-settings-ui-components.git#1.2.12",
+    "widget-settings-ui-components": "https://github.com/Rise-Vision/widget-settings-ui-components.git#1.3.0",
     "widget-settings-ui-core": "https://github.com/Rise-Vision/widget-settings-ui-core.git#0.1.11"
   },
   "resolutions": {

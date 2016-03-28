@@ -176,6 +176,40 @@
 
       suite("rise cache error", function() {
 
+        test("should log a rise cache not running when ping response is empty", function() {
+          spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
+
+          storage.dispatchEvent(new CustomEvent("rise-cache-not-running", null));
+
+          params.event = "error"
+          params.event_details = "rise cache not running";
+          params.error_details = "";
+          delete params.file_url;
+          delete params.file_format;
+
+          assert(spy.calledOnce);
+          assert(spy.calledWith(table, params));
+        });
+
+        test("should log a rise cache not running when ping response is 404", function() {
+          spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
+
+          storage.dispatchEvent(new CustomEvent("rise-cache-not-running", {
+            "detail": {
+              "error": {
+                "message": "The request failed with status code: 404"
+              }},
+            "bubbles": true
+          }));
+
+          params.event = "error";
+          params.event_details = "rise cache not running";
+          params.error_details = "The request failed with status code: 404";
+
+          assert(spy.calledOnce);
+          assert(spy.calledWith(table, params));
+        });
+
         test("should log a rise cache error", function() {
           spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
 
@@ -195,10 +229,13 @@
           params.event_details = "rise cache error";
           params.error_details = "The request failed with status code: 404";
           params.file_url = "http://localhost:9494/?url=https%3A%2F%2Fstorage.googleapis.com%2Frisemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443%2FWidgets%2Fsimpson's.jpg";
+          params.file_format= "jpg";
+
 
           assert(spy.calledOnce);
           assert(spy.calledWith(table, params));
         });
+
       });
 
       suite("storage api error", function() {

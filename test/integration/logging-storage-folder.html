@@ -440,6 +440,38 @@
         assert(spy.calledOnce);
         assert(spy.calledWith(table, params));
       });
+
+      test("should log a rise cache not running when ping response is empty", function() {
+        spy = sinon.spy(RiseVision.Common.Logger, "log");
+
+        storage.dispatchEvent(new CustomEvent("rise-cache-not-running", null));
+
+        params.event = "error"
+        params.event_details = "rise cache not running";
+        params.error_details = "";
+
+        assert(spy.calledOnce);
+        assert(spy.calledWith(table, params));
+      });
+
+      test("should log a rise cache not running when ping response is 404", function() {
+        spy = sinon.spy(RiseVision.Common.Logger, "log");
+
+        storage.dispatchEvent(new CustomEvent("rise-cache-not-running", {
+          "detail": {
+            "error": {
+              "message": "The request failed with status code: 404"
+            }},
+          "bubbles": true
+        }));
+
+        params.event = "error"
+        params.event_details = "rise cache not running";
+        params.error_details = "The request failed with status code: 404";
+
+        assert(spy.calledOnce);
+        assert(spy.calledWith(table, params));
+      });
     });
 
     suite("storage subscription expired", function() {
@@ -460,6 +492,7 @@
 
         params.event = "error";
         params.event_details = "storage subscription expired";
+        delete params.error_details;
         delete params.file_url;
         delete params.file_format;
 

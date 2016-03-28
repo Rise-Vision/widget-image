@@ -124,6 +124,17 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError(errorMessage);
     });
 
+    storage.addEventListener("rise-cache-not-running", function(e) {
+
+      var params = {
+        "event": "error",
+        "event_details": "rise cache not running",
+        "error_details": (e.detail && e.detail.error)? e.detail.error.message: ""
+      };
+
+      RiseVision.Image.logEvent(params, true);
+    });
+
     storage.setAttribute("folder", params.storage.folder);
     storage.setAttribute("fileName", params.storage.fileName);
     storage.setAttribute("companyId", params.storage.companyId);

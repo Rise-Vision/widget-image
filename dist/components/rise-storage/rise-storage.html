@@ -740,12 +740,12 @@
       this._hasAttemptedGetRequest = false;
 
       if (this._isLoading) {
-        this._cacheUrl = this._baseCacheUrl + "?url=" + this._fileUrl;
+        this._cacheUrl = this._baseCacheUrl + "?url=" + this._fileUrl + "&single=true";
       }
       else {
         // Include a cache buster as this will be the URL that gets passed to the browser
         // if the file has changed.
-        this._cacheUrl = this._baseCacheUrl + "cb=" + new Date().getTime() + "?url=" + this._fileUrl;
+        this._cacheUrl = this._baseCacheUrl + "cb=" + new Date().getTime() + "?url=" + this._fileUrl + "&single=true";
       }
 
       this.$.cache.generateRequest();

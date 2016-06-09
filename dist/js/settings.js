@@ -9766,7 +9766,7 @@ module.run(["$templateCache", function($templateCache) {
 
             switch(fileType) {
               case "image":
-                extensions = [".jpg", ".jpeg", ".png", ".bmp", ".svg", ".gif"];
+                extensions = [".jpg", ".jpeg", ".png", ".bmp", ".svg", ".gif", ".webp"];
                 break;
               case "video":
                 extensions = [".webm", ".mp4", ".ogv", ".ogg"];

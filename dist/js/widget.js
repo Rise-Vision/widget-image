@@ -650,21 +650,16 @@ RiseVision.Image = (function (gadgets) {
   }
 
   function setSingleImage(url) {
-      var container = document.getElementById("container"),
-      image = document.querySelector("#container #image"),
-      fragment = document.createDocumentFragment(),
-      el = _getImageElement();
 
-      el.style.backgroundImage = "url('" + url + "')";
-      el.style.opacity = "0";
+    // Create an image object to load the image so it will be ready for the background image
+    var img = new Image();
+    img.onload = function() {
+      // Once loaded replace the background image of the image div element
+      var image = document.querySelector("#container #image");
 
-      fragment.appendChild(el);
-      container.appendChild(fragment);
-      el.style.opacity = "1";
-
-      setTimeout(function () {
-        container.removeChild(image);
-      }, 3000);
+      image.style.backgroundImage = "url('" + url + "')";
+    };
+    img.src = url.replace("\\'", "'");
   }
 
   /*

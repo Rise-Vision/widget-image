@@ -69,10 +69,13 @@
         assert.isNotNull(document.querySelector(".scale-to-fit"));
       });
 
-      test("should set background image", function() {
-        clock.tick(5000);
-        assert.equal(document.getElementById("image").style.backgroundImage,
-          'url(\"http://s3.amazonaws.com/rise-common/images/logo-small.png\")');
+      test("should set background image", function(done) {
+        setTimeout(function () {
+          assert.equal(document.getElementById("image").style.backgroundImage,
+            'url(\"http://s3.amazonaws.com/rise-common/images/logo-small.png\")');
+          done();
+        }, 3000)
+
       });
     });
 

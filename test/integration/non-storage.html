@@ -69,11 +69,31 @@
         assert.isNotNull(document.querySelector(".scale-to-fit"));
       });
 
-      test("should set background image", function() {
-        clock.tick(5000);
-        assert.equal(document.getElementById("image").style.backgroundImage,
-          'url(\"http://s3.amazonaws.com/rise-common/images/logo-small.png\")');
+      test("should set single image", function(done) {
+        setTimeout(function() {
+          assert.equal(document.getElementById("image").style.backgroundImage,
+            'url(\"http://s3.amazonaws.com/rise-common/images/logo-small.png\")');
+          done();
+        }, 3000);
       });
+    });
+
+    suite("visibility", function() {
+
+      test("should hide image when pause()", function () {
+        RiseVision.Image.pause();
+
+        assert.equal(document.getElementById("image").style.visibility, "hidden");
+
+      });
+
+      test("should show image when play()", function () {
+        RiseVision.Image.play();
+
+        assert.equal(document.getElementById("image").style.visibility, "visible");
+
+      });
+
     });
 
     suite("file refresh", function() {
@@ -83,13 +103,18 @@
         RiseVision.Image.onFileRefresh.restore();
       });
 
-      test("onFileRefresh() called when file changed", function() {
+      test("onFileRefresh() called when file changed", function(done) {
         // advance clock the refresh interval duration amount
         clock.tick(300000);
 
         assert(onRefreshSpy.calledOnce, "onFileRefresh called once");
-        assert.include(onRefreshSpy.args[0][0], "http://s3.amazonaws.com/rise-common/images/logo-small.png?cb=",
-          "onFileRefresh called with correct url");
+
+        setTimeout(function() {
+          assert.include(onRefreshSpy.args[0][0], "http://s3.amazonaws.com/rise-common/images/logo-small.png",
+            "onFileRefresh called with correct url");
+          done();
+        }, 3000);
+
       });
 
     });

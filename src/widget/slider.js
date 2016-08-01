@@ -40,7 +40,9 @@ RiseVision.Image.Slider = function (params) {
       slide.setAttribute("data-masterspeed", 500);
       slide.setAttribute("data-delay", params.duration * 1000);
 
-      image.src = file.url;
+      // Lazy load
+      image.src = "";
+      image.setAttribute("data-lazyload", file.url);
 
       // Alignment
       switch (params.position) {

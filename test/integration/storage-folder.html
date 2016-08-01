@@ -131,9 +131,9 @@
       });
 
       test("should add images in alphabetical order", function() {
-        assert.equal(document.querySelector(".tp-revslider-mainul .tp-revslider-slidesli:nth-child(1) .tp-bgimg").getAttribute("src"), "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGated_Book_Cover.jpg?alt=media", "first slide");
+        assert.equal(document.querySelector(".tp-revslider-mainul .tp-revslider-slidesli:nth-child(1) .tp-bgimg").getAttribute("data-lazyload"), "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGated_Book_Cover.jpg?alt=media", "first slide");
 
-        assert.equal(document.querySelector(".tp-revslider-mainul .tp-revslider-slidesli:nth-child(2) .tp-bgimg").getAttribute("src"), "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGone_Girl_Book_Cover.jpg?alt=media", "second slide");
+        assert.equal(document.querySelector(".tp-revslider-mainul .tp-revslider-slidesli:nth-child(2) .tp-bgimg").getAttribute("data-lazyload"), "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGone_Girl_Book_Cover.jpg?alt=media", "second slide");
       });
 
     });
@@ -153,7 +153,7 @@
       test("should add image", function(done) {
         setTimeout(function() {
           assert.equal(document.querySelectorAll(".tp-revslider-mainul .tp-revslider-slidesli").length, 3, "num of slides");
-          assert.equal(document.querySelector(".tp-revslider-mainul .tp-revslider-slidesli:nth-child(3) .tp-bgimg").getAttribute("src"), "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FThe_Girl_On_The_Train_Cover.jpg?alt=media");
+          assert.equal(document.querySelector(".tp-revslider-mainul .tp-revslider-slidesli:nth-child(3) .tp-bgimg").getAttribute("data-lazyload"), "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FThe_Girl_On_The_Train_Cover.jpg?alt=media");
           done();
         }, 8000);
       });

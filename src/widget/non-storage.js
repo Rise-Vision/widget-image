@@ -58,7 +58,7 @@ RiseVision.Image.NonStorage = function (data) {
   function _startRefreshInterval() {
     if (_refreshIntervalId === null) {
       _refreshIntervalId = setInterval(function () {
-        _getFile(false);
+        _getFile(true);
       }, _refreshDuration);
     }
   }

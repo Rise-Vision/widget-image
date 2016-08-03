@@ -529,6 +529,8 @@ RiseVision.Image = (function (gadgets) {
 
   var _viewerPaused = true;
 
+  var _img = null;
+
   /*
    *  Private Methods
    */
@@ -607,6 +609,8 @@ RiseVision.Image = (function (gadgets) {
       fragment.appendChild(el);
       container.appendChild(fragment);
 
+      _img = new Image();
+
       isStorageFile = (Object.keys(_params.storage).length !== 0);
 
       if (!isStorageFile) {
@@ -650,21 +654,22 @@ RiseVision.Image = (function (gadgets) {
   }
 
   function setSingleImage(url) {
-      var container = document.getElementById("container"),
-      image = document.querySelector("#container #image"),
-      fragment = document.createDocumentFragment(),
-      el = _getImageElement();
 
-      el.style.backgroundImage = "url('" + url + "')";
-      el.style.opacity = "0";
+    _img.onload = function() {
+      var image = document.querySelector("#container #image");
 
-      fragment.appendChild(el);
-      container.appendChild(fragment);
-      el.style.opacity = "1";
+      image.style.backgroundImage = "url('" + url + "')";
+    };
 
-      setTimeout(function () {
-        container.removeChild(image);
-      }, 3000);
+    _img.onerror = function() {
+      logEvent({
+        "event": "error",
+        "event_details": "image load error",
+        "file_url": url
+      }, true);
+    };
+
+    _img.src = url.replace("\\'", "'"); // handles special characters
   }
 
   /*
@@ -746,6 +751,8 @@ RiseVision.Image = (function (gadgets) {
   }
 
   function pause() {
+    var image = document.querySelectorAll("#container #image");
+
     _viewerPaused = true;
 
     // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
@@ -754,9 +761,16 @@ RiseVision.Image = (function (gadgets) {
     if (_mode === "folder" && _slider && _slider.isReady()) {
       _slider.pause();
     }
+    else if (_mode === "file" && image.length > 0) {
+      for (var i = 0; i < image.length; i += 1) {
+        image[i].style.visibility = "hidden";
+      }
+    }
   }
 
   function play() {
+    var image = document.querySelectorAll("#container #image");
+
     _viewerPaused = false;
 
     if (!_configurationLogged) {
@@ -773,6 +787,11 @@ RiseVision.Image = (function (gadgets) {
 
     if (_mode === "folder" && _slider && _slider.isReady()) {
       _slider.play();
+    }
+    else if (_mode === "file" && image.length > 0) {
+      for (var i = 0; i < image.length; i += 1) {
+        image[i].style.visibility = "visible";
+      }
     }
   }
 
@@ -1505,7 +1524,7 @@ RiseVision.Image.NonStorage = function (data) {
   function _startRefreshInterval() {
     if (_refreshIntervalId === null) {
       _refreshIntervalId = setInterval(function () {
-        _getFile(false);
+        _getFile(true);
       }, _refreshDuration);
     }
   }

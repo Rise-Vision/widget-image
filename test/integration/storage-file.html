@@ -114,6 +114,24 @@
       });
     });
 
+    suite("visibility", function() {
+
+      test("should hide image when pause()", function () {
+        RiseVision.Image.pause();
+
+        assert.equal(document.getElementById("image").style.visibility, "hidden");
+
+      });
+
+      test("should show image when play()", function () {
+        RiseVision.Image.play();
+
+        assert.equal(document.getElementById("image").style.visibility, "visible");
+
+      });
+
+    });
+
     suite("file changed", function() {
       setup(function() {
         refreshSpy = sinon.spy(RiseVision.Image, "onFileRefresh");
@@ -145,7 +163,7 @@
     suite("special characters in file name", function() {
       setup(function() {
         refreshSpy = sinon.spy(RiseVision.Image, "onFileRefresh");
-      })
+      });
 
       teardown(function() {
         RiseVision.Image.onFileRefresh.restore();

@@ -1,12 +1,12 @@
+/* exported WIDGET_COMMON_CONFIG */
 var WIDGET_COMMON_CONFIG = {
   AUTH_PATH_URL: "v1/widget/auth",
   LOGGER_CLIENT_ID: "1088527147109-6q1o2vtihn34292pjt4ckhmhck0rk0o7.apps.googleusercontent.com",
   LOGGER_CLIENT_SECRET: "nlZyrcPLg6oEwO9f9Wfn29Wh",
   LOGGER_REFRESH_TOKEN: "1/xzt4kwzE1H7W9VnKB8cAaCx6zb4Es4nKEoqaYHdTD15IgOrJDtdun6zK6XiATCKT",
-  STORAGE_ENV: "prod",
   STORE_URL: "https://store-dot-rvaserver2.appspot.com/"
 };
-/* global gadgets */
+/* global WIDGET_COMMON_CONFIG */
 
 var RiseVision = RiseVision || {};
 RiseVision.Common = RiseVision.Common || {};
@@ -15,7 +15,8 @@ RiseVision.Common.LoggerUtils = (function() {
   "use strict";
 
    var displayId = "",
-    companyId = "";
+     companyId = "",
+     version = null;
 
   /*
    *  Private Methods
@@ -35,6 +36,10 @@ RiseVision.Common.LoggerUtils = (function() {
 
       json.company_id = companyId;
       json.display_id = displayId;
+
+      if (version) {
+        json.version = version;
+      }
 
       cb(json);
     }
@@ -119,11 +124,16 @@ RiseVision.Common.LoggerUtils = (function() {
     displayId = display;
   }
 
+  function setVersion(value) {
+    version = value;
+  }
+
   return {
     "getInsertData": getInsertData,
     "getFileFormat": getFileFormat,
     "logEvent": logEvent,
-    "setIds": setIds
+    "setIds": setIds,
+    "setVersion": setVersion
   };
 })();
 
@@ -221,26 +231,41 @@ RiseVision.Common.RiseCache = (function () {
   var BASE_CACHE_URL = "//localhost:9494/";
 
   var _pingReceived = false,
-    _isCacheRunning = false;
+    _isCacheRunning = false,
+    _isV2Running = false;
 
   function ping(callback) {
-    var r = new XMLHttpRequest();
+    var r = new XMLHttpRequest(),
+      /* jshint validthis: true */
+      self = this;
 
     if (!callback || typeof callback !== "function") {
       return;
     }
 
-    r.open("GET", BASE_CACHE_URL + "ping?callback=_", true);
+    if (!_isV2Running) {
+      r.open("GET", BASE_CACHE_URL + "ping?callback=_", true);
+    }
+    else {
+      r.open("GET", BASE_CACHE_URL, true);
+    }
+
     r.onreadystatechange = function () {
       try {
         if (r.readyState === 4 ) {
           // save this result for use in getFile()
           _pingReceived = true;
 
-          if(r.status === 200){
+          if(r.status === 200) {
             _isCacheRunning = true;
 
             callback(true, r.responseText);
+          } else if (r.status === 404) {
+            // Rise Cache V2 is running
+            _isV2Running = true;
+
+            // call ping again so correct ping URL is used for Rise Cache V2
+            return self.ping(callback);
           } else {
             console.debug("Rise Cache is not running");
             _isCacheRunning = false;
@@ -325,12 +350,47 @@ RiseVision.Common.RiseCache = (function () {
 
   }
 
+  function isRiseCacheRunning(callback) {
+    if (!callback || typeof callback !== "function") {
+      return;
+    }
+
+    if (!_pingReceived) {
+      /* jshint validthis: true */
+      return this.ping(function () {
+        callback(_isCacheRunning);
+      });
+    } else {
+      callback(_isCacheRunning);
+    }
+  }
+
+  function isV2Running(callback) {
+    if (!callback || typeof callback !== "function") {
+      return;
+    }
+
+    if (!_pingReceived) {
+      /* jshint validthis: true */
+      return this.ping(function () {
+        callback(_isV2Running);
+      });
+    }
+    else {
+      callback(_isV2Running);
+    }
+  }
+
   return {
     getFile: getFile,
+    isRiseCacheRunning: isRiseCacheRunning,
+    isV2Running: isV2Running,
     ping: ping
   };
 
 })();
+
+/* global WebFont */
 
 var RiseVision = RiseVision || {};
 
@@ -339,13 +399,13 @@ RiseVision.Common = RiseVision.Common || {};
 RiseVision.Common.Utilities = (function() {
 
   function getFontCssStyle(className, fontObj) {
-    var family = "font-family:" + fontObj.font.family + "; ";
+    var family = "font-family: " + decodeURIComponent(fontObj.font.family).replace(/'/g, "") + "; ";
     var color = "color: " + (fontObj.color ? fontObj.color : fontObj.forecolor) + "; ";
     var size = "font-size: " + (fontObj.size.indexOf("px") === -1 ? fontObj.size + "px; " : fontObj.size + "; ");
     var weight = "font-weight: " + (fontObj.bold ? "bold" : "normal") + "; ";
     var italic = "font-style: " + (fontObj.italic ? "italic" : "normal") + "; ";
     var underline = "text-decoration: " + (fontObj.underline ? "underline" : "none") + "; ";
-    var highlight = "background-color: " + (fontObj.highlightColor ? fontObj.highlightColor : fontObj.backcolor) + "; ";
+    var highlight = "background-color: " + (fontObj.highlightColor ? fontObj.highlightColor : fontObj.backcolor) + ";";
 
     return "." + className + " {" + family + color + size + weight + italic + underline + highlight + "}";
   }
@@ -387,23 +447,75 @@ RiseVision.Common.Utilities = (function() {
    *           object   contentDoc    Document object into which to inject styles
    *                                  and load fonts (optional).
    */
-  function loadFonts(settings, contentDoc) {
-    settings.forEach(function(item) {
-      if (item.class && item.fontSetting) {
-        addCSSRules([ getFontCssStyle(item.class, item.fontSetting) ]);
-      }
+  function loadFonts(settings, cb) {
+    var families = null,
+      googleFamilies = [],
+      customFamilies = [],
+      customUrls = [];
 
-      if (item.fontSetting.font.type) {
-        if (item.fontSetting.font.type === "custom" && item.fontSetting.font.family &&
-          item.fontSetting.font.url) {
-          loadCustomFont(item.fontSetting.font.family, item.fontSetting.font.url,
-            contentDoc);
-        }
-        else if (item.fontSetting.font.type === "google" && item.fontSetting.font.family) {
-          loadGoogleFont(item.fontSetting.font.family, contentDoc);
-        }
+    function callback() {
+      if (cb && typeof cb === "function") {
+        cb();
+      }
+    }
+
+    function onGoogleFontsLoaded() {
+      callback();
+    }
+
+    if (!settings || settings.length === 0) {
+      callback();
+      return;
+    }
+
+    // Check for custom css class names and add rules if so
+    settings.forEach(function(item) {
+      if (item.class && item.fontStyle) {
+        addCSSRules([ getFontCssStyle(item.class, item.fontStyle) ]);
       }
     });
+
+    // Google fonts
+    for (var i = 0; i < settings.length; i++) {
+      if (settings[i].fontStyle && settings[i].fontStyle.font.type &&
+        (settings[i].fontStyle.font.type === "google")) {
+        // Remove fallback font.
+        families = settings[i].fontStyle.font.family.split(",")[0];
+
+        // strip possible single quotes
+        families = families.replace(/'/g, "");
+
+        googleFamilies.push(families);
+      }
+    }
+
+    // Custom fonts
+    for (i = 0; i < settings.length; i++) {
+      if (settings[i].fontStyle && settings[i].fontStyle.font.type &&
+        (settings[i].fontStyle.font.type === "custom")) {
+        // decode value and strip single quotes
+        customFamilies.push(decodeURIComponent(settings[i].fontStyle.font.family).replace(/'/g, ""));
+        // strip single quotes
+        customUrls.push(settings[i].fontStyle.font.url.replace(/'/g, "\\'"));
+      }
+    }
+
+    if (googleFamilies.length === 0 && customFamilies.length === 0) {
+      callback();
+    }
+    else {
+      // Load the fonts
+      for (var j = 0; j < customFamilies.length; j += 1) {
+        loadCustomFont(customFamilies[j], customUrls[j]);
+      }
+
+      if (googleFamilies.length > 0) {
+        loadGoogleFonts(googleFamilies, onGoogleFontsLoaded);
+      }
+      else {
+        callback();
+      }
+    }
   }
 
   function loadCustomFont(family, url, contentDoc) {
@@ -419,20 +531,23 @@ RiseVision.Common.Utilities = (function() {
     }
   }
 
-  function loadGoogleFont(family, contentDoc) {
-    var stylesheet = document.createElement("link");
-
-    contentDoc = contentDoc || document;
-
-    stylesheet.setAttribute("rel", "stylesheet");
-    stylesheet.setAttribute("type", "text/css");
-
-    // split to account for family value containing a fallback (eg. Aladin,sans-serif)
-    stylesheet.setAttribute("href", "https://fonts.googleapis.com/css?family=" + family.split(",")[0]);
-
-    if (stylesheet !== null) {
-      contentDoc.getElementsByTagName("head")[0].appendChild(stylesheet);
-    }
+  function loadGoogleFonts(families, cb) {
+    WebFont.load({
+      google: {
+        families: families
+      },
+      active: function() {
+        if (cb && typeof cb === "function") {
+          cb();
+        }
+      },
+      inactive: function() {
+        if (cb && typeof cb === "function") {
+          cb();
+        }
+      },
+      timeout: 2000
+    });
   }
 
   function preloadImages(urls) {
@@ -453,7 +568,7 @@ RiseVision.Common.Utilities = (function() {
     for (var i = 0; i < vars.length; i++) {
       pair = vars[i].split("=");
 
-      if (pair[0] == param) {
+      if (pair[0] == param) { // jshint ignore:line
         return decodeURIComponent(pair[1]);
       }
     }
@@ -477,15 +592,65 @@ RiseVision.Common.Utilities = (function() {
     return errorMessage;
   }
 
+  function unescapeHTML(html) {
+    var div = document.createElement("div");
+
+    div.innerHTML = html;
+
+    return div.textContent;
+  }
+
+  function hasInternetConnection(filePath, callback) {
+    var xhr = new XMLHttpRequest();
+
+    if (!filePath || !callback || typeof callback !== "function") {
+      return;
+    }
+
+    xhr.open("HEAD", filePath + "?cb=" + new Date().getTime(), false);
+
+    try {
+      xhr.send();
+
+      callback((xhr.status >= 200 && xhr.status < 304));
+
+    } catch (e) {
+      callback(false);
+    }
+  }
+
+  /**
+   * Check if chrome version is under a certain version
+   */
+  function isLegacy() {
+    var legacyVersion = 25;
+
+    var match = navigator.userAgent.match(/Chrome\/(\S+)/);
+    var version = match ? match[1] : 0;
+
+    if (version) {
+      version = parseInt(version.substring(0,version.indexOf(".")));
+
+      if (version <= legacyVersion) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   return {
     getQueryParameter: getQueryParameter,
     getFontCssStyle:  getFontCssStyle,
     addCSSRules:      addCSSRules,
     loadFonts:        loadFonts,
     loadCustomFont:   loadCustomFont,
-    loadGoogleFont:   loadGoogleFont,
+    loadGoogleFonts:   loadGoogleFonts,
     preloadImages:    preloadImages,
-    getRiseCacheErrorMessage: getRiseCacheErrorMessage
+    getRiseCacheErrorMessage: getRiseCacheErrorMessage,
+    unescapeHTML: unescapeHTML,
+    hasInternetConnection: hasInternetConnection,
+    isLegacy: isLegacy
   };
 })();
 
@@ -1574,7 +1739,7 @@ RiseVision.Common.Message = function (mainContainer, messageContainer) {
       messageContainer.style.display = "none";
 
       // show main container
-      mainContainer.style.visibility = "visible";
+      mainContainer.style.display = "block";
 
       _active = false;
     }
@@ -1586,7 +1751,7 @@ RiseVision.Common.Message = function (mainContainer, messageContainer) {
 
     if (!_active) {
       // hide main container
-      mainContainer.style.visibility = "hidden";
+      mainContainer.style.display = "none";
 
       messageContainer.style.display = "block";
 
@@ -1700,6 +1865,33 @@ RiseVision.Common.Message = function (mainContainer, messageContainer) {
   }
 
   window.addEventListener("WebComponentsReady", polymerReady);
+
+  // check which version of Rise Cache is running and dynamically add rise-storage dependencies
+  RiseVision.Common.RiseCache.isV2Running(function (isV2) {
+    var fragment = document.createDocumentFragment(),
+      link = document.createElement("link"),
+      href = "components/" + ((isV2) ? "rise-storage-v2" : "rise-storage") + "/rise-storage.html",
+      storage = document.createElement("rise-storage");
+
+    link.setAttribute("rel", "import");
+    link.setAttribute("href", href);
+
+    // add the rise-storage <link> element to document head
+    document.getElementsByTagName("head")[0].appendChild(link);
+
+    storage.setAttribute("id", "videoStorage");
+    storage.setAttribute("refresh", 5);
+    fragment.appendChild(storage);
+
+    // add the <rise-storage> element to the body
+    document.body.appendChild(fragment);
+
+    var webcomponents = document.createElement("script");
+    webcomponents.src = "components/webcomponentsjs/webcomponents-lite.min.js";
+
+    // add the webcomponents polyfill source to the document head
+    document.getElementsByTagName("head")[0].appendChild(webcomponents);
+  });
 
 })(window, document, gadgets);
 

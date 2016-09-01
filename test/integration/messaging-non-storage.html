@@ -45,7 +45,7 @@
         RiseVision.Image.onFileInit.restore();
         RiseVision.Image.onFileInit(window.gadget.settings.additionalParams.selector.url);
 
-        assert.isTrue((document.getElementById("container").style.visibility === "visible"), "image container is showing");
+        assert.isTrue((document.getElementById("container").style.display === "block"), "image container is showing");
         assert.isTrue((document.getElementById("messageContainer").style.display === "none"), "message container is hidden");
       });
     });

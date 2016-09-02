@@ -1879,7 +1879,6 @@ RiseVision.Common.Message = function (mainContainer, messageContainer) {
     // add the rise-storage <link> element to document head
     document.getElementsByTagName("head")[0].appendChild(link);
 
-    storage.setAttribute("id", "videoStorage");
     storage.setAttribute("refresh", 5);
     fragment.appendChild(storage);
 

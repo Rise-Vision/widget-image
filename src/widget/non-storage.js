@@ -13,7 +13,7 @@ RiseVision.Image.NonStorage = function (data) {
 
   var _url = "";
 
-  function _getFile(omitCacheBuster) {
+  function _getFile() {
     var params;
 
     riseCache.getFile(_url, function (response, error) {
@@ -52,13 +52,13 @@ RiseVision.Image.NonStorage = function (data) {
         var errorMessage = RiseVision.Common.Utilities.getRiseCacheErrorMessage(statusCode);
         RiseVision.Image.showError(errorMessage);
       }
-    }, omitCacheBuster);
+    });
   }
 
   function _startRefreshInterval() {
     if (_refreshIntervalId === null) {
       _refreshIntervalId = setInterval(function () {
-        _getFile(true);
+        _getFile();
       }, _refreshDuration);
     }
   }
@@ -70,7 +70,7 @@ RiseVision.Image.NonStorage = function (data) {
     // Handle pre-merge use of "url" setting property
     _url = (data.url && data.url !== "") ? data.url : data.selector.url;
 
-    _getFile(true);
+    _getFile();
   }
 
   return {

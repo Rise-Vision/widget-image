@@ -1831,26 +1831,22 @@ RiseVision.Common.RiseCache = (function () {
     r.send();
   }
 
-  function getFile(fileUrl, callback, nocachebuster) {
+  function getFile(fileUrl, callback) {
     if (!fileUrl || !callback || typeof callback !== "function") {
       return;
     }
 
     function fileRequest() {
-      var url, str, separator;
+      var url = "";
 
       if (_isCacheRunning) {
-        // configure url with cachebuster or not
-        url = (nocachebuster) ? BASE_CACHE_URL + "?url=" + encodeURIComponent(fileUrl) :
-        BASE_CACHE_URL + "cb=" + new Date().getTime() + "?url=" + encodeURIComponent(fileUrl);
-      } else {
-        if (nocachebuster) {
-          url = fileUrl;
+        if (_isV2Running) {
+          url = BASE_CACHE_URL + "files?url=" + encodeURIComponent(fileUrl);
         } else {
-          str = fileUrl.split("?");
-          separator = (str.length === 1) ? "?" : "&";
-          url = fileUrl + separator + "cb=" + new Date().getTime();
+          url = BASE_CACHE_URL + "?url=" + encodeURIComponent(fileUrl);
         }
+      } else {
+        url = fileUrl;
       }
 
       makeRequest("HEAD", url);
@@ -3239,7 +3235,7 @@ RiseVision.Image.NonStorage = function (data) {
 
   var _url = "";
 
-  function _getFile(omitCacheBuster) {
+  function _getFile() {
     var params;
 
     riseCache.getFile(_url, function (response, error) {
@@ -3278,13 +3274,13 @@ RiseVision.Image.NonStorage = function (data) {
         var errorMessage = RiseVision.Common.Utilities.getRiseCacheErrorMessage(statusCode);
         RiseVision.Image.showError(errorMessage);
       }
-    }, omitCacheBuster);
+    });
   }
 
   function _startRefreshInterval() {
     if (_refreshIntervalId === null) {
       _refreshIntervalId = setInterval(function () {
-        _getFile(true);
+        _getFile();
       }, _refreshDuration);
     }
   }
@@ -3296,7 +3292,7 @@ RiseVision.Image.NonStorage = function (data) {
     // Handle pre-merge use of "url" setting property
     _url = (data.url && data.url !== "") ? data.url : data.selector.url;
 
-    _getFile(true);
+    _getFile();
   }
 
   return {

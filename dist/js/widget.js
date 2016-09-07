@@ -1453,7 +1453,7 @@ RiseVision.Image.StorageFile = function (params) {
   }
 
   function retry() {
-    var storage = document.getElementById("videoStorage");
+    var storage = document.querySelector("rise-storage");
 
     if (!storage) {
       return;

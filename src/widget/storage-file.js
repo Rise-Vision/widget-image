@@ -135,8 +135,8 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.logEvent(params, true);
     });
 
-    storage.addEventListener("rise-cache-file-unavailable", function (e) {
-      RiseVision.Image.onFileUnavailable(e.detail.message);
+    storage.addEventListener("rise-cache-file-unavailable", function () {
+      RiseVision.Image.onFileUnavailable("File is downloading");
     });
 
     storage.setAttribute("folder", params.storage.folder);

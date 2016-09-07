@@ -158,6 +158,13 @@ RiseVision.Image = (function (gadgets) {
       var image = document.querySelector("#container #image");
 
       image.style.backgroundImage = "url('" + url + "')";
+
+      // Widget is playing right now
+      if (!_viewerPaused) {
+        for (var i = 0; i < image.length; i += 1) {
+          image[i].style.visibility = "visible";
+        }
+      }
     };
 
     _img.onerror = function() {

@@ -159,11 +159,9 @@ RiseVision.Image = (function (gadgets) {
 
       image.style.backgroundImage = "url('" + url + "')";
 
-      // Widget is playing right now
+      // If widget is playing right now make sure the div image element is visible
       if (!_viewerPaused) {
-        for (var i = 0; i < image.length; i += 1) {
-          image[i].style.visibility = "visible";
-        }
+        image.style.visibility = "visible";
       }
     };
 
@@ -220,6 +218,11 @@ RiseVision.Image = (function (gadgets) {
       // urls value will be a string of one url
       _currentFiles[0] = urls;
 
+      if (_unavailableFlag) {
+        // remove the message previously shown
+        _message.hide();
+      }
+
       setSingleImage(_currentFiles[0]);
 
     } else if (_mode === "folder") {
@@ -271,7 +274,7 @@ RiseVision.Image = (function (gadgets) {
   }
 
   function pause() {
-    var image = document.querySelectorAll("#container #image");
+    var image = document.querySelector("#container #image");
 
     _viewerPaused = true;
 
@@ -281,15 +284,13 @@ RiseVision.Image = (function (gadgets) {
     if (_mode === "folder" && _slider && _slider.isReady()) {
       _slider.pause();
     }
-    else if (_mode === "file" && image.length > 0) {
-      for (var i = 0; i < image.length; i += 1) {
-        image[i].style.visibility = "hidden";
-      }
+    else if (_mode === "file" && image) {
+      image.style.visibility = "hidden";
     }
   }
 
   function play() {
-    var image = document.querySelectorAll("#container #image");
+    var image = document.querySelector("#container #image");
 
     _viewerPaused = false;
 
@@ -316,10 +317,8 @@ RiseVision.Image = (function (gadgets) {
     if (_mode === "folder" && _slider && _slider.isReady()) {
       _slider.play();
     }
-    else if (_mode === "file" && image.length > 0) {
-      for (var i = 0; i < image.length; i += 1) {
-        image[i].style.visibility = "visible";
-      }
+    else if (_mode === "file" && image) {
+      image.style.visibility = "visible";
     }
   }
 

@@ -258,6 +258,40 @@
         clock.restore();
         RiseVision.Image.play.restore();
       });
+
+      test("should not display message and ensure image is visible when file becomes available", function() {
+        var clock = sinon.useFakeTimers(),
+          spy = sinon.spy(RiseVision.Image, "play");
+
+        // file is unavailable
+        storage.dispatchEvent(new CustomEvent("rise-cache-file-unavailable", {
+          "detail": {
+            "status": 202,
+            "message": "File is downloading"
+          },
+          "bubbles": true
+        }));
+
+        clock.tick(5500);
+        // widget is visible from play() call
+        assert(spy.calledOnce);
+
+        // storage provides file
+        storage.dispatchEvent(new CustomEvent("rise-storage-response", {
+          "detail": {
+            "added": true,
+            "name": "Widgets/simpson's.jpg",
+            "url": "https://storage.googleapis.com/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/Widgets%2Fsimpson's.jpg"
+          },
+          "bubbles": true
+        }));
+
+        // image should be visible
+        assert.isTrue((document.querySelector("#container #image").style.visibility === "visible"), "message visibility");
+
+        clock.restore();
+        RiseVision.Image.play.restore();
+      });
     });
   });
 

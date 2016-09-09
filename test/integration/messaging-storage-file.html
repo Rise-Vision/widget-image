@@ -8,14 +8,9 @@
   <link rel="stylesheet" href="../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
 
-  <script src="../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../src/components/web-component-tester/browser.js"></script>
-
-  <link rel="import" href="../../src/components/rise-storage/rise-storage.html">
 </head>
 <body>
-
-<rise-storage refresh="5"></rise-storage>
 
 <div id="container"></div>
 
@@ -33,15 +28,41 @@
 <script src="../../src/widget/image.js"></script>
 <script src="../../src/widget/storage-file.js"></script>
 <script src="../../src/components/widget-common/dist/message.js"></script>
+
+<script type="text/javascript">
+  config.COMPONENTS_PATH = "../../src/components/";
+</script>
+
 <script src="../../src/widget/main.js"></script>
 
 <script>
 
   suite("messaging", function() {
-    var storage = document.querySelector("rise-storage");
 
-    sinon.stub(storage.$.ping, "generateRequest", function () {
-      storage._handlePingError();
+    var check = function(done) {
+      if (ready) {
+        done();
+      }
+      else {
+        setTimeout(function() {
+          check(done)
+        }, 1000);
+      }
+    }, storage, paramsStub, ready = false;
+
+    paramsStub = sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+      ready = true;
+
+      storage = document.querySelector("rise-storage");
+
+      // restore the function
+      paramsStub.restore();
+      // call it again with the params
+      RiseVision.Image.setAdditionalParams(params, mode);
+    });
+
+    suiteSetup(function(done) {
+      check(done);
     });
 
     suite("waiting", function() {

@@ -8,14 +8,9 @@
   <link rel="stylesheet" href="../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
 
-  <script src="../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../src/components/web-component-tester/browser.js"></script>
-
-  <link rel="import" href="../../src/components/rise-storage/rise-storage.html">
 </head>
 <body>
-
-  <rise-storage refresh="5"></rise-storage>
 
   <div id="container"></div>
 
@@ -33,11 +28,14 @@
   <script src="../../src/widget/image.js"></script>
   <script src="../../src/widget/storage-file.js"></script>
   <script src="../../src/components/widget-common/dist/message.js"></script>
+
+  <script type="text/javascript">
+    config.COMPONENTS_PATH = "../../src/components/";
+  </script>
+
   <script src="../../src/widget/main.js"></script>
 
   <script>
-    var storage = document.querySelector("rise-storage");
-
     suite("logging", function() {
       var playStub, spy, clock,
         table = "image_events",
@@ -49,9 +47,27 @@
           "file_format": "jpg",
           "company_id": '"companyId"',
           "display_id": '"displayId"'
-        }, paramsStub;
+        }, paramsStub, storage, ready = false;
+
+      var check = function(done) {
+        if (ready) {
+          playStub = sinon.stub(RiseVision.Image, "play");
+          clock = sinon.useFakeTimers();
+
+          done();
+        }
+        else {
+          setTimeout(function() {
+            check(done)
+          }, 1000);
+        }
+      };
 
       paramsStub = sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+        ready = true;
+
+        storage = document.querySelector("rise-storage");
+
         // spy on log call
         spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
         // restore the function
@@ -60,13 +76,8 @@
         RiseVision.Image.setAdditionalParams(params, mode);
       });
 
-      sinon.stub(storage.$.ping, "generateRequest", function () {
-        storage._handlePingError();
-      });
-
-      suiteSetup(function() {
-        playStub = sinon.stub(RiseVision.Image, "play");
-        clock = sinon.useFakeTimers();
+      suiteSetup(function(done) {
+        check(done);
       });
 
       suiteTeardown(function() {

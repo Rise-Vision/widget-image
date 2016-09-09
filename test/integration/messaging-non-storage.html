@@ -8,7 +8,6 @@
   <link rel="stylesheet" type="text/css" href="../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
 
-  <script src="../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../src/components/web-component-tester/browser.js"></script>
 
 </head>
@@ -30,10 +29,40 @@
 <script src="../../src/widget/image.js"></script>
 <script src="../../src/widget/non-storage.js"></script>
 <script src="../../src/components/widget-common/dist/message.js"></script>
+
+<script type="text/javascript">
+  config.COMPONENTS_PATH = "../../src/components/";
+</script>
+
 <script src="../../src/widget/main.js"></script>
 
 <script>
   suite("messaging", function() {
+
+    var check = function(done) {
+      if (ready) {
+        done();
+      }
+      else {
+        setTimeout(function() {
+          check(done)
+        }, 1000);
+      }
+    }, paramsStub, ready = false;
+
+    paramsStub = sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+      ready = true;
+
+      // restore the function
+      paramsStub.restore();
+      // call it again with the params
+      RiseVision.Image.setAdditionalParams(params, mode);
+    });
+
+    suiteSetup(function(done) {
+      check(done);
+    });
+
     suite("downloading message", function() {
       sinon.stub(RiseVision.Image, "onFileInit", function(){});
 

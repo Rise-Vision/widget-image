@@ -8,9 +8,7 @@
   <link rel="stylesheet" type="text/css" href="../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
 
-  <script src="../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../src/components/web-component-tester/browser.js"></script>
-
 </head>
 <body>
 
@@ -29,21 +27,35 @@
 <script src="../../src/widget/image.js"></script>
 <script src="../../src/widget/non-storage.js"></script>
 <script src="../../src/components/widget-common/dist/message.js"></script>
+
+<script type="text/javascript">
+  config.COMPONENTS_PATH = "../../src/components/";
+</script>
+
 <script src="../../src/widget/main.js"></script>
 
 <script>
 
   suite("non-storage", function() {
 
-    var clock, paramsStub, xhr, requests;
+    var clock, paramsStub, storage, ready = false;
+
+    var check = function(done) {
+      if (ready) {
+
+        storage = document.querySelector("rise-storage");
+
+        done();
+      }
+      else {
+        setTimeout(function() {
+          check(done)
+        }, 1000);
+      }
+    };
 
     paramsStub = sinon.stub(RiseVision.Image, "setAdditionalParams", function (names, values) {
-      requests = [];
-      xhr = sinon.useFakeXMLHttpRequest();
-
-      xhr.onCreate = function (xhr) {
-        requests.push(xhr);
-      };
+      ready = true;
 
       // need to set the fake timer clock before any of the code within setAdditionalParams is executed
       clock = sinon.useFakeTimers();
@@ -51,9 +63,10 @@
       paramsStub.restore();
       // call it again with the params
       RiseVision.Image.setAdditionalParams(names, values);
+    });
 
-      requests[0].respond(0); // Ping request
-      xhr.restore();
+    suiteSetup(function(done) {
+      check(done);
     });
 
     teardown(function () {

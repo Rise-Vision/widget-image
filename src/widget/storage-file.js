@@ -135,6 +135,10 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.logEvent(params, true);
     });
 
+    storage.addEventListener("rise-cache-file-unavailable", function () {
+      RiseVision.Image.onFileUnavailable("File is downloading");
+    });
+
     storage.setAttribute("folder", params.storage.folder);
     storage.setAttribute("fileName", params.storage.fileName);
     storage.setAttribute("companyId", params.storage.companyId);
@@ -142,7 +146,18 @@ RiseVision.Image.StorageFile = function (params) {
     storage.go();
   }
 
+  function retry() {
+    var storage = document.querySelector("rise-storage");
+
+    if (!storage) {
+      return;
+    }
+
+    storage.go();
+  }
+
   return {
-    "init": init
+    "init": init,
+    "retry": retry
   };
 };

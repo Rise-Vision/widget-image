@@ -8,14 +8,9 @@
   <link rel="stylesheet" type="text/css" href="../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
 
-  <script src="../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../src/components/web-component-tester/browser.js"></script>
-
-  <link rel="import" href="../../src/components/rise-storage/rise-storage.html">
 </head>
 <body>
-
-<rise-storage refresh="5"></rise-storage>
 
 <div id="container"></div>
 
@@ -33,52 +28,61 @@
 <script src="../../src/widget/image.js"></script>
 <script src="../../src/widget/storage-file.js"></script>
 <script src="../../src/components/widget-common/dist/message.js"></script>
+
+<script type="text/javascript">
+  config.COMPONENTS_PATH = "../../src/components/";
+</script>
+
 <script src="../../src/widget/main.js"></script>
 
 <script>
   suite("storage - file", function() {
 
-    var storage = document.querySelector("rise-storage"),
-      spy = sinon.spy(RiseVision.Image, "setAdditionalParams"),
+    var storage,
       responded = false,
       refreshSpy = null,
-      listener;
+      listener, paramsStub, ready = false;
 
-    sinon.stub(storage.$.ping, "generateRequest", function () {
-      storage._handlePingError();
+    var check = function(done) {
+      if (ready) {
+        done();
+      }
+      else {
+        setTimeout(function() {
+          check(done)
+        }, 1000);
+      }
+    };
+
+    paramsStub = sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+      ready = true;
+
+      storage = document.querySelector("rise-storage");
+      // No need to make requests to Storage via the component since events are triggered manually
+      // for these test cases.
+      sinon.stub(storage, "_getStorageSubscription", function () {});
+
+      // restore the function
+      paramsStub.restore();
+
+      // call it again with the params
+      RiseVision.Image.setAdditionalParams(params, mode);
     });
 
-    // No need to make requests to Storage via the component since events are triggered manually
-    // for these test cases.
-    sinon.stub(storage, "_getStorageSubscription", function () {});
+    suiteSetup(function(done) {
+      check(done);
+    });
 
     suite("file added", function () {
-      var check = function(done) {
-        if (spy && spy.calledOnce) {
-          storage.dispatchEvent(new CustomEvent("rise-storage-response", {
-            "detail": {
-              "added": true,
-              "name": "widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-              "url": "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGone_Girl_Book_Cover.jpg?alt=media"
-            },
-            "bubbles": true
-          }));
-
-          done();
-        }
-        else {
-          setTimeout(function() {
-            check(done)
-          }, 1000);
-        }
-      };
-
-      suiteSetup(function(done) {
-        check(done);
-      });
-
-      suiteTeardown(function() {
-        RiseVision.Image.setAdditionalParams.restore();
+      suiteSetup(function() {
+        storage.dispatchEvent(new CustomEvent("rise-storage-response", {
+          "detail": {
+            "added": true,
+            "name": "widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+            "url": "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGone_Girl_Book_Cover.jpg?alt=media"
+          },
+          "bubbles": true
+        }));
       });
 
       test("should set folder attribute of storage component", function() {

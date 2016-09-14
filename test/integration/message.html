@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Message Tests</title>
+
+  <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
+
+  <script src="../../src/components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../src/components/web-component-tester/browser.js"></script>
+
+  <script src="../../src/widget/message.js"></script>
+</head>
+<body>
+
+<div id="container"></div>
+<div id="messageContainer"></div>
+
+<script>
+  var mainContainer = document.getElementById("container"),
+    messageContainer = document.getElementById("messageContainer");
+
+  mainContainer.style.height = "778px";
+
+  suite("Message", function() {
+
+    var message = new RiseVision.Image.Message(document.getElementById("container"),
+      document.getElementById("messageContainer"));
+
+    suite("Initialization", function () {
+
+      test("should set the height of the message container to be same as main container", function () {
+        assert.equal(mainContainer.height, messageContainer.height);
+      });
+
+    });
+
+    suite("Show Message", function () {
+
+      suiteSetup(function () {
+        message.show("Test message");
+      });
+
+      test("should hide main container", function () {
+        assert.equal(mainContainer.style.visibility, "hidden");
+      });
+
+      test("should show message container", function () {
+        assert.equal(messageContainer.style.display, "block");
+      });
+
+      test("should create paragraph", function () {
+        assert.isNotNull(messageContainer.querySelector("p.message"));
+      });
+
+      test("should display correct message", function () {
+        assert.equal(messageContainer.querySelector("p.message").innerHTML, "Test message");
+      });
+
+    });
+
+    suite("Show different message", function () {
+
+      suiteSetup(function () {
+        message.show("Testing different message");
+      });
+
+      test("should display changed message", function () {
+        assert.equal(messageContainer.querySelector("p.message").innerHTML, "Testing different message");
+      });
+
+    });
+
+    suite("Hide message", function () {
+
+      suiteSetup(function () {
+        message.hide();
+      });
+
+      test("should show main container", function () {
+        assert.equal(mainContainer.style.visibility, "visible");
+      });
+
+      test("should hide message container", function () {
+        assert.equal(messageContainer.style.display, "none");
+      });
+
+      test("should clear paragraph", function () {
+        assert.isNull(messageContainer.querySelector("p.message"));
+      });
+
+    });
+
+  });
+</script>
+</body>
+</html>

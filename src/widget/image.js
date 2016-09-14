@@ -91,7 +91,7 @@ RiseVision.Image = (function (gadgets) {
       isStorageFile;
 
     // create instance of message
-    _message = new RiseVision.Common.Message(document.getElementById("container"),
+    _message = new RiseVision.Image.Message(document.getElementById("container"),
       document.getElementById("messageContainer"));
 
     // show wait message

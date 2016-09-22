@@ -4,7 +4,8 @@ RiseVision.Image = RiseVision.Image || {};
 RiseVision.Image.NonStorage = function (data) {
   "use strict";
 
-  var riseCache = RiseVision.Common.RiseCache;
+  var riseCache = RiseVision.Common.RiseCache,
+    utils = RiseVision.Common.Utilities;
 
   var _refreshDuration = 300000,  // 5 minutes
     _refreshIntervalId = null;
@@ -69,6 +70,8 @@ RiseVision.Image.NonStorage = function (data) {
   function init() {
     // Handle pre-merge use of "url" setting property
     _url = (data.url && data.url !== "") ? data.url : data.selector.url;
+
+    _url = utils.addProtocol(_url);
 
     _getFile(true);
   }

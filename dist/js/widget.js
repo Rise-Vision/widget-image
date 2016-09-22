@@ -2192,7 +2192,18 @@ RiseVision.Common.Utilities = (function() {
     return false;
   }
 
+  /**
+   * Adds http:// or https:// protocol to url if the protocol is missing
+   */
+  function addProtocol(url, secure) {
+    if (!/^(?:f|ht)tps?\:\/\//.test(url)) {
+      url = ((secure) ? "https://" : "http://") + url;
+    }
+    return url;
+  }
+
   return {
+    addProtocol: addProtocol,
     getQueryParameter: getQueryParameter,
     getFontCssStyle:  getFontCssStyle,
     addCSSRules:      addCSSRules,
@@ -3304,7 +3315,8 @@ RiseVision.Image = RiseVision.Image || {};
 RiseVision.Image.NonStorage = function (data) {
   "use strict";
 
-  var riseCache = RiseVision.Common.RiseCache;
+  var riseCache = RiseVision.Common.RiseCache,
+    utils = RiseVision.Common.Utilities;
 
   var _refreshDuration = 300000,  // 5 minutes
     _refreshIntervalId = null;
@@ -3369,6 +3381,8 @@ RiseVision.Image.NonStorage = function (data) {
   function init() {
     // Handle pre-merge use of "url" setting property
     _url = (data.url && data.url !== "") ? data.url : data.selector.url;
+
+    _url = utils.addProtocol(_url);
 
     _getFile(true);
   }

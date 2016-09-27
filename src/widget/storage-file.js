@@ -5,6 +5,9 @@ RiseVision.Image = RiseVision.Image || {};
 RiseVision.Image.StorageFile = function (params) {
   "use strict";
 
+  var utils = RiseVision.Common.Utilities,
+    riseCache = RiseVision.Common.RiseCache;
+
   var _initialLoad = true;
 
   /*
@@ -110,17 +113,26 @@ RiseVision.Image.StorageFile = function (params) {
           "event_details": "rise cache error",
           "error_details": e.detail.error.message,
           "file_url": fileUrl
-        };
+        },
+        statusCode = 0,
+        errorMessage;
 
+      // log the error
       RiseVision.Image.logEvent(params, true);
 
-      var statusCode = 0;
-      // Show a different message if there is a 404 coming from rise cache
-      if(e.detail.error.message){
-        statusCode = +e.detail.error.message.substring(e.detail.error.message.indexOf(":")+2);
+      if (riseCache.isV2Running()) {
+        errorMessage = riseCache.getErrorMessage(statusCode);
+      }
+      else {
+        // Show a different message if there is a 404 coming from rise cache
+        if(e.detail.error.message){
+          statusCode = +e.detail.error.message.substring(e.detail.error.message.indexOf(":")+2);
+        }
+
+        errorMessage = utils.getRiseCacheErrorMessage(statusCode);
       }
 
-      var errorMessage = RiseVision.Common.Utilities.getRiseCacheErrorMessage(statusCode);
+      // show the error
       RiseVision.Image.showError(errorMessage);
     });
 

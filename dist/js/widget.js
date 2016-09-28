@@ -2952,15 +2952,14 @@ RiseVision.Image = RiseVision.Image || {};
 RiseVision.Image.StorageFile = function (params) {
   "use strict";
 
-  var _initialLoad = true;
+  var _initialLoad = true,
+    _storage = document.querySelector("rise-storage");
 
   /*
    *  Public Methods
    */
   function init() {
-    var storage = document.querySelector("rise-storage");
-
-    storage.addEventListener("rise-storage-response", function(e) {
+    _storage.addEventListener("rise-storage-response", function(e) {
       var url;
 
       if (e.detail && e.detail.url) {
@@ -2990,7 +2989,7 @@ RiseVision.Image.StorageFile = function (params) {
       }
     });
 
-    storage.addEventListener("rise-storage-api-error", function(e) {
+    _storage.addEventListener("rise-storage-api-error", function(e) {
       var params = {
           "event": "error",
           "event_details": "storage api error",
@@ -3001,7 +3000,7 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError("Sorry, there was a problem communicating with Rise Storage.");
     });
 
-    storage.addEventListener("rise-storage-no-file", function(e) {
+    _storage.addEventListener("rise-storage-no-file", function(e) {
       var params = {
         "event": "error",
         "event_details": "storage file not found",
@@ -3016,7 +3015,7 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError("The selected image does not exist or has been moved to Trash.");
     });
 
-    storage.addEventListener("rise-storage-file-throttled", function(e) {
+    _storage.addEventListener("rise-storage-file-throttled", function(e) {
       var params = {
         "event": "error",
         "event_details": "storage file throttled",
@@ -3027,7 +3026,7 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError("The selected image is temporarily unavailable.");
     });
 
-    storage.addEventListener("rise-storage-subscription-expired", function() {
+    _storage.addEventListener("rise-storage-subscription-expired", function() {
       var params = {
         "event": "error",
         "event_details": "storage subscription expired"
@@ -3037,7 +3036,7 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError("Rise Storage subscription is not active.");
     });
 
-    storage.addEventListener("rise-storage-error", function(e) {
+    _storage.addEventListener("rise-storage-error", function(e) {
       var fileUrl = (e.detail && e.detail.request && e.detail.request.url) ? e.detail.request.url : null,
         params = {
           "event": "error",
@@ -3050,7 +3049,7 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError("Sorry, there was a problem communicating with Rise Storage.", true);
     });
 
-    storage.addEventListener("rise-cache-error", function(e) {
+    _storage.addEventListener("rise-cache-error", function(e) {
       var fileUrl = (e.detail && e.detail.request && e.detail.request.url) ? e.detail.request.url : null,
         params = {
           "event": "error",
@@ -3071,7 +3070,7 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.showError(errorMessage);
     });
 
-    storage.addEventListener("rise-cache-not-running", function(e) {
+    _storage.addEventListener("rise-cache-not-running", function(e) {
 
       var params = {
         "event": "error",
@@ -3082,25 +3081,23 @@ RiseVision.Image.StorageFile = function (params) {
       RiseVision.Image.logEvent(params, true);
     });
 
-    storage.addEventListener("rise-cache-file-unavailable", function () {
+    _storage.addEventListener("rise-cache-file-unavailable", function () {
       RiseVision.Image.onFileUnavailable("File is downloading");
     });
 
-    storage.setAttribute("folder", params.storage.folder);
-    storage.setAttribute("fileName", params.storage.fileName);
-    storage.setAttribute("companyId", params.storage.companyId);
-    storage.setAttribute("env", config.STORAGE_ENV);
-    storage.go();
+    _storage.setAttribute("folder", params.storage.folder);
+    _storage.setAttribute("fileName", params.storage.fileName);
+    _storage.setAttribute("companyId", params.storage.companyId);
+    _storage.setAttribute("env", config.STORAGE_ENV);
+    _storage.go();
   }
 
   function retry() {
-    var storage = document.querySelector("rise-storage");
-
-    if (!storage) {
+    if (!_storage) {
       return;
     }
 
-    storage.go();
+    _storage.go();
   }
 
   return {

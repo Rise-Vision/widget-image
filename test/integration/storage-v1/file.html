@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>Image Widget</title>
 
-  <link rel="stylesheet" type="text/css" href="../../src/widget/css/styles.css">
-  <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
+  <link rel="stylesheet" type="text/css" href="../../../src/widget/css/styles.css">
+  <link rel="stylesheet" href="../../../src/components/widget-common/dist/css/message.css">
 
-  <script src="../../src/components/web-component-tester/browser.js"></script>
+  <script src="../../../src/components/web-component-tester/browser.js"></script>
 </head>
 <body>
 
@@ -16,32 +16,32 @@
 
 <div id="messageContainer"></div>
 
-<script src="../data/storage-file.js"></script>
+<script src="../../data/storage-file.js"></script>
 
-<script src="../../node_modules/widget-tester/mocks/gadget-mocks.js"></script>
-<script src="../../node_modules/widget-tester/mocks/logger-mock.js"></script>
+<script src="../../../node_modules/widget-tester/mocks/gadget-mocks.js"></script>
+<script src="../../../node_modules/widget-tester/mocks/logger-mock.js"></script>
 
-<script src="../../src/components/widget-common/dist/config.js"></script>
-<script src="../../src/components/widget-common/dist/common.js"></script>
-<script src="../../src/components/widget-common/dist/rise-cache.js"></script>
-<script src="../../src/config/config.js"></script>
-<script src="../../src/widget/image.js"></script>
-<script src="../../src/widget/storage-file.js"></script>
-<script src="../../src/components/widget-common/dist/message.js"></script>
+<script src="../../../src/components/underscore/underscore.js"></script>
+<script src="../../../src/components/widget-common/dist/config.js"></script>
+<script src="../../../src/components/widget-common/dist/common.js"></script>
+<script src="../../../src/components/widget-common/dist/rise-cache.js"></script>
+<script src="../../../src/config/test.js"></script>
+<script src="../../../src/widget/image.js"></script>
+<script src="../../../src/widget/message.js"></script>
+<script src="../../../src/widget/storage-file.js"></script>
+
 
 <script type="text/javascript">
-  config.COMPONENTS_PATH = "../../src/components/";
+  config.COMPONENTS_PATH = "../../../src/components/";
 </script>
-
-<script src="../../src/widget/main.js"></script>
 
 <script>
   suite("storage - file", function() {
 
-    var storage,
-      responded = false,
-      refreshSpy = null,
-      listener, paramsStub, ready = false;
+    var ready = false,
+      refreshSpy = null;
+
+    var xhr, requests, storage;
 
     var check = function(done) {
       if (ready) {
@@ -54,7 +54,20 @@
       }
     };
 
-    paramsStub = sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+    sinon.stub(RiseVision.Common.RiseCache, "isV2Running", function (callback) {
+      xhr = sinon.useFakeXMLHttpRequest();
+
+      xhr.onCreate = function (xhr) {
+        requests.push(xhr);
+      };
+
+      requests = [];
+
+      RiseVision.Common.RiseCache.isV2Running.restore();
+      RiseVision.Common.RiseCache.isV2Running(callback);
+    });
+
+    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
       ready = true;
 
       storage = document.querySelector("rise-storage");
@@ -63,14 +76,21 @@
       sinon.stub(storage, "_getStorageSubscription", function () {});
 
       // restore the function
-      paramsStub.restore();
+      RiseVision.Image.setAdditionalParams.restore();
 
       // call it again with the params
       RiseVision.Image.setAdditionalParams(params, mode);
     });
 
-    suiteSetup(function(done) {
+    suiteSetup(function (done) {
+      // Rise Cache V1 running
+      requests[0].respond(200);
+
       check(done);
+    });
+
+    suiteTeardown(function() {
+      xhr.restore();
     });
 
     suite("file added", function () {
@@ -392,5 +412,7 @@
 
   });
 </script>
+
+<script src="../../../src/widget/main.js"></script>
 </body>
 </html>

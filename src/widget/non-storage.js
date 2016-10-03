@@ -18,6 +18,9 @@ RiseVision.Image.NonStorage = function (data) {
     var params;
 
     riseCache.getFile(_url, function (response, error) {
+      var statusCode = 0,
+        errorMessage;
+
       if (!error) {
 
         if (_isLoading) {
@@ -44,13 +47,18 @@ RiseVision.Image.NonStorage = function (data) {
 
         RiseVision.Image.logEvent(params, true);
 
-        var statusCode = 0;
-        // Show a different message if there is a 404 coming from rise cache
-        if(error.message){
-          statusCode = +error.message.substring(error.message.indexOf(":")+2);
+        if (riseCache.isV2Running()) {
+          errorMessage = riseCache.getErrorMessage(statusCode);
+        }
+        else {
+          // Show a different message if there is a 404 coming from rise cache
+          if(error.message){
+            statusCode = +error.message.substring(error.message.indexOf(":")+2);
+          }
+
+          errorMessage = utils.getRiseCacheErrorMessage(statusCode);
         }
 
-        var errorMessage = RiseVision.Common.Utilities.getRiseCacheErrorMessage(statusCode);
         RiseVision.Image.showError(errorMessage);
       }
     }, omitCacheBuster);

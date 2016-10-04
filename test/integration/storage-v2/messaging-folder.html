@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>Image Widget</title>
+
+  <link rel="stylesheet" href="//s3.amazonaws.com/rise-common/scripts/slider-revolution/css/style.css">
+  <link rel="stylesheet" href="//s3.amazonaws.com/rise-common/scripts/slider-revolution/css/settings.css">
+
+  <link rel="stylesheet" type="text/css" href="../../../src/widget/css/styles.css">
+  <link rel="stylesheet" href="../../../src/components/widget-common/dist/css/message.css">
+
+  <script src="../../../src/components/web-component-tester/browser.js"></script>
+</head>
+<body>
+
+<div id="container"></div>
+
+<div id="messageContainer"></div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="//s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.tools.min.js"></script>
+<script src="//s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.revolution.min.js"></script>
+
+<script src="../../../node_modules/widget-tester/mocks/gadget-mocks.js"></script>
+<script src="../../../node_modules/widget-tester/mocks/logger-mock.js"></script>
+
+<script src="../../../src/components/underscore/underscore.js"></script>
+<script src="../../../src/components/widget-common/dist/config.js"></script>
+<script src="../../../src/components/widget-common/dist/rise-cache.js"></script>
+<script src="../../../src/components/widget-common/dist/common.js"></script>
+<script src="../../../src/config/test.js"></script>
+<script src="../../../src/widget/image.js"></script>
+<script src="../../../src/widget/message.js"></script>
+<script src="../../../src/widget/slider.js"></script>
+<script src="../../../src/widget/storage-folder.js"></script>
+
+<script type="text/javascript">
+  config.COMPONENTS_PATH = "../../../src/components/";
+</script>
+
+<!-- TEST FILES -->
+<script src="../../data/storage-folder.js"></script>
+<script src="../js/storage-messaging-folder.js"></script>
+
+<script>
+  isV2Running = true;
+</script>
+
+<script src="../js/storage-messaging-folder-stubs.js"></script>
+
+<script src="../../../src/widget/main.js"></script>
+</body>
+</html>

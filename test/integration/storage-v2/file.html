@@ -39,6 +39,30 @@
 <script>
   // Ensure RC V2 running
   isV2Running = true;
+
+  suite("error loading image", function() {
+
+    test("should get metadata from Storage", function(done) {
+      var spy = sinon.spy(storage, "getMetadata");
+
+      storage.dispatchEvent(new CustomEvent("rise-storage-response", {
+        "detail": {
+          "changed": true,
+          "name": "bad-image.jpg",
+          "url": "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/bad-image.jpg?alt=media"
+        },
+        "bubbles": true
+      }));
+
+      // Allow time for image to load.
+      setTimeout(function() {
+        assert.equal(spy.callCount, 1);
+        spy.restore();
+        done();
+      }, 500);
+    });
+
+  });
 </script>
 
 <script src="../js/storage-file-stubs.js"></script>

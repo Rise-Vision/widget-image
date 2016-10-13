@@ -168,8 +168,19 @@ RiseVision.Image.StorageFile = function (params) {
     storage.go();
   }
 
+  function getMetadata() {
+    var storage = document.querySelector("rise-storage");
+
+    if (!storage || (typeof storage.getMetadata !== "function")) {
+      return;
+    }
+
+    storage.getMetadata();
+  }
+
   return {
     "init": init,
-    "retry": retry
+    "retry": retry,
+    "getMetadata": getMetadata
   };
 };

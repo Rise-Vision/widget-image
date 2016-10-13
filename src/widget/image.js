@@ -171,6 +171,10 @@ RiseVision.Image = (function (gadgets) {
         "event_details": "image load error",
         "file_url": url
       }, true);
+
+      if (_storage) {
+        _storage.getMetadata();
+      }
     };
 
     _img.src = url.replace("\\'", "'"); // handles special characters

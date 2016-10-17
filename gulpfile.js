@@ -188,6 +188,10 @@
     });
   });
 
+  gulp.task("build-dev", function (cb) {
+    runSequence(["clean", "config"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
+  });
+
   gulp.task("build", function (cb) {
     runSequence(["clean", "config", "bower-update"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
   });

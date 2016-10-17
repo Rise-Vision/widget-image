@@ -3569,6 +3569,11 @@ RiseVision.Image.NonStorage = function (data) {
     document.getElementsByTagName("head")[0].appendChild(link);
 
     storage.setAttribute("refresh", 5);
+
+    if (isV2) {
+      storage.setAttribute("usage", "widget");
+    }
+
     storage.addEventListener("rise-storage-ready", onStorageReady);
     fragment.appendChild(storage);
 

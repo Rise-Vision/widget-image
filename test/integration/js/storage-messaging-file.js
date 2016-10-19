@@ -269,7 +269,7 @@ suite("cache file unavailable", function () {
     }));
 
     // image should be visible
-    assert.isTrue((document.querySelector("#container #image").style.visibility === "visible"), "message visibility");
+    assert.isTrue((document.querySelector("#container #image").style.visibility === ""), "message visibility");
 
     clock.restore();
     RiseVision.Image.play.restore();

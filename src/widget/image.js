@@ -28,7 +28,8 @@ RiseVision.Image = (function (gadgets) {
 
   var _viewerPaused = true;
 
-  var _img = null;
+  var _img = null,
+    _isGif = false;
 
   /*
    *  Private Methods
@@ -158,9 +159,10 @@ RiseVision.Image = (function (gadgets) {
       var image = document.querySelector("#container #image");
 
       image.style.backgroundImage = "url('" + url + "')";
+      _isGif = url.indexOf(".gif") === -1 ? false : true;
 
       // If widget is playing right now make sure the div image element is visible
-      if (!_viewerPaused) {
+      if (!_viewerPaused && _isGif) {
         image.style.visibility = "visible";
       }
     };
@@ -284,7 +286,7 @@ RiseVision.Image = (function (gadgets) {
     if (_mode === "folder" && _slider && _slider.isReady()) {
       _slider.pause();
     }
-    else if (_mode === "file" && image) {
+    else if (_mode === "file" && image && _isGif) {
       image.style.visibility = "hidden";
     }
   }
@@ -317,7 +319,7 @@ RiseVision.Image = (function (gadgets) {
     if (_mode === "folder" && _slider && _slider.isReady()) {
       _slider.play();
     }
-    else if (_mode === "file" && image) {
+    else if (_mode === "file" && image && _isGif) {
       image.style.visibility = "visible";
     }
   }

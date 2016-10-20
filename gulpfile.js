@@ -100,6 +100,8 @@
       "src/components/underscore/underscore*.*",
       "src/components/rise-storage/rise-storage.html",
       "src/components/rise-storage-v2/rise-storage.html",
+      "src/components/rise-logger/rise-logger.html",
+      "src/components/rise-logger/rise-logger-utils.html",
       "src/components/polymer/*.*{html,js}",
       "src/components/promise-polyfill/*.*{html,js}",
       "src/components/iron-ajax/iron-ajax.html",
@@ -184,6 +186,10 @@
       console.log(err);
       cb();
     });
+  });
+
+  gulp.task("build-dev", function (cb) {
+    runSequence(["clean", "config"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
   });
 
   gulp.task("build", function (cb) {

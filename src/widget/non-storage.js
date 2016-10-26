@@ -37,29 +37,34 @@ RiseVision.Image.NonStorage = function (data) {
 
       } else {
 
-        // error occurred
-        params = {
-          "event": "error",
-          "event_details": "non-storage error",
-          "error_details": error.message,
-          "file_url": response.url
-        };
+        if (error.message === "File is downloading") {
+          RiseVision.Image.onFileUnavailable(error.message);  
+        } else {
 
-        RiseVision.Image.logEvent(params, true);
+          // error occurred
+          params = {
+            "event": "error",
+            "event_details": "non-storage error",
+            "error_details": error.message,
+            "file_url": response.url
+          };
 
-        if (riseCache.isV2Running()) {
-          errorMessage = riseCache.getErrorMessage(statusCode);
-        }
-        else {
-          // Show a different message if there is a 404 coming from rise cache
-          if(error.message){
-            statusCode = +error.message.substring(error.message.indexOf(":")+2);
+          RiseVision.Image.logEvent(params, true);
+
+          if (riseCache.isV2Running()) {
+            errorMessage = riseCache.getErrorMessage(statusCode);
+          }
+          else {
+            // Show a different message if there is a 404 coming from rise cache
+            if(error.message){
+              statusCode = +error.message.substring(error.message.indexOf(":")+2);
+            }
+
+            errorMessage = utils.getRiseCacheErrorMessage(statusCode);
           }
 
-          errorMessage = utils.getRiseCacheErrorMessage(statusCode);
-        }
-
-        RiseVision.Image.showError(errorMessage);
+          RiseVision.Image.showError(errorMessage);  
+        }        
       }
     }, omitCacheBuster);
   }

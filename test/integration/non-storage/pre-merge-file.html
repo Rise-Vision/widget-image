@@ -143,24 +143,6 @@
 
     });
 
-    suite("visibility", function() {
-
-      test("should hide image when pause()", function () {
-        RiseVision.Image.pause();
-
-        assert.equal(document.getElementById("image").style.visibility, "hidden");
-
-      });
-
-      test("should show image when play()", function () {
-        RiseVision.Image.play();
-
-        assert.equal(document.getElementById("image").style.visibility, "visible");
-
-      });
-
-    });
-
   });
 </script>
 

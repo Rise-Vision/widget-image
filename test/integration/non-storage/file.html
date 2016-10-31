@@ -117,24 +117,6 @@
       });
     });
 
-    suite("visibility", function() {
-
-      test("should hide image when pause()", function () {
-        RiseVision.Image.pause();
-
-        assert.equal(document.getElementById("image").style.visibility, "hidden");
-
-      });
-
-      test("should show image when play()", function () {
-        RiseVision.Image.play();
-
-        assert.equal(document.getElementById("image").style.visibility, "visible");
-
-      });
-
-    });
-
     suite("file refresh", function() {
       var onRefreshSpy = sinon.spy(RiseVision.Image, "onFileRefresh");
 
@@ -153,6 +135,29 @@
             "onFileRefresh called with correct url");
           done();
         }, 3000);
+
+      });
+
+    });
+
+    suite("visibility", function() {
+
+      test("should hide .gif when paused", function (done) {
+        RiseVision.Image.onFileInit("https://s3.amazonaws.com/Rise-Images/Animations/howitworks.gif");
+
+        setTimeout(function() {
+          RiseVision.Image.pause();
+
+          assert.equal(document.getElementById("image").style.visibility, "hidden");
+          done();
+        }, 3000);
+
+      });
+
+      test("should show .gif when played", function () {
+        RiseVision.Image.play();
+
+        assert.equal(document.getElementById("image").style.visibility, "visible");
 
       });
 

@@ -74,14 +74,25 @@ suite("file added", function () {
 
 suite("visibility", function() {
 
-  test("should hide image when pause()", function () {
-    RiseVision.Image.pause();
+  test("should hide .gif when paused", function (done) {
+    storage.dispatchEvent(new CustomEvent("rise-storage-response", {
+      "detail": {
+        "changed": true,
+        "name": "widget-testing/image-widget/bells.gif",
+        "url": "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2Fbells.gif?alt=media&cb=0"
+      },
+      "bubbles": true
+    }));
 
-    assert.equal(document.getElementById("image").style.visibility, "hidden");
+    setTimeout(function() {
+      RiseVision.Image.pause();
+      assert.equal(document.getElementById("image").style.visibility, "hidden");
+      done();
+    }, 3000);
 
   });
 
-  test("should show image when play()", function () {
+  test("should show .gif when played", function () {
     RiseVision.Image.play();
 
     assert.equal(document.getElementById("image").style.visibility, "visible");

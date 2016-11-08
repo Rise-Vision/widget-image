@@ -10,7 +10,6 @@
   var gulp = require("gulp");
   var gulpif = require("gulp-if");
   var gutil = require("gulp-util");
-  var htmlreplace = require("gulp-html-replace");
   var jshint = require("gulp-jshint");
   var minifyCSS = require("gulp-minify-css");
   var path = require("path");

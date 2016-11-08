@@ -1,6 +1,7 @@
-*.log
+dist/
 node_modules/
 reports/
 src/components/
 src/config/config.js
 src/*-e2e.html
+*.log

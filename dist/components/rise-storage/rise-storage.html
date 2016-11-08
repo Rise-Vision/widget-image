@@ -679,6 +679,7 @@
         file = {},
         previousItem = null,
         suffix = "?alt=media",
+        modeSuffix = "&mode=preview",
         cb = "&cb=" + new Date().getTime(),
         filesFiltered = 0,
         totalFiles = 0;
@@ -724,7 +725,7 @@
                   file.url = self._baseCacheUrl + "?url=" + encodeURIComponent(item.selfLink + suffix);
                 }
                 else if(!self._isOfflinePlayer()) {
-                  file.url = item.selfLink + suffix;
+                  file.url = item.selfLink + suffix + modeSuffix;
                 }
                 else {
                   file.url = item.selfLink;
@@ -744,7 +745,7 @@
                   file.url = self._baseCacheUrl + "cb=" + new Date().getTime() + "?url=" + encodeURIComponent(item.selfLink + suffix);
                 }
                 else if(!self._isOfflinePlayer()) {
-                  file.url = item.selfLink + suffix + cb;
+                  file.url = item.selfLink + suffix + cb + modeSuffix;
                 }
                 else {
                   file.url = item.selfLink;
@@ -1204,7 +1205,8 @@
         filePath = "",
         startIndex = -1,
         endIndex = -1,
-        suffix = "?alt=media";
+        suffix = "?alt=media",
+        modeSuffix = "&mode=preview";
 
       // File in the root of the bucket.
       if (response.selfLink) {
@@ -1225,7 +1227,7 @@
         this._fileUrl = encodeURIComponent("https://storage.googleapis.com/" + bucket + "/" + filePath);
       }
       else {
-        this._fileUrl = url + suffix;
+        this._fileUrl = url + suffix + modeSuffix;
       }
     },
 

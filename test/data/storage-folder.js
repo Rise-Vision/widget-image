@@ -1,4 +1,4 @@
-(function(window) {
+( function( window ) {
   "use strict";
 
   window.gadget = window.gadget || {};
@@ -24,4 +24,4 @@
       "autoHide": false
     }
   };
-})(window);
+} )( window );

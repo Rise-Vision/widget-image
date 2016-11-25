@@ -10,7 +10,8 @@ var table = "image_events",
     "file_url": "http://localhost:9494/?url=https%3A%2F%2Fstorage.googleapis.com%2Frisemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443%2FWidgets%2Fsimpson's.jpg",
     "file_format": "jpg",
     "company_id": "\"companyId\"",
-    "display_id": "\"displayId\""
+    "display_id": "\"displayId\"",
+    "version": "0.1.1"
   },
   ready = false,
   isV2Running = false,
@@ -54,7 +55,8 @@ suite( "configuration", function() {
       "event": "configuration",
       "event_details": "storage file",
       "company_id": params.company_id,
-      "display_id": params.display_id
+      "display_id": params.display_id,
+      "version": params.version
     } ) );
 
   } );

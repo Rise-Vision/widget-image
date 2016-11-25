@@ -8,7 +8,8 @@ var table = "image_events",
     "event": "error",
     "event_details": "storage folder empty",
     "company_id": "\"companyId\"",
-    "display_id": "\"displayId\""
+    "display_id": "\"displayId\"",
+    "version": "0.1.1"
   },
   ready = false,
   isV2Running = false,
@@ -71,7 +72,8 @@ suite( "configuration", function() {
       "event": "configuration",
       "event_details": "storage folder",
       "company_id": params.company_id,
-      "display_id": params.display_id
+      "display_id": params.display_id,
+      "version": params.version
     } ) );
 
   } );

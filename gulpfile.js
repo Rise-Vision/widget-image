@@ -6,11 +6,11 @@
   var bower = require("gulp-bower");
   var bump = require("gulp-bump");
   var del = require("del");
+  var eslint = require("gulp-eslint");
   var factory = require("widget-tester").gulpTaskFactory;
   var gulp = require("gulp");
   var gulpif = require("gulp-if");
   var gutil = require("gulp-util");
-  var jshint = require("gulp-jshint");
   var minifyCSS = require("gulp-minify-css");
   var path = require("path");
   var rename = require("gulp-rename");
@@ -23,6 +23,7 @@
 
   var appJSFiles = [
       "src/**/*.js",
+      "test/**/*.js",
       "!./src/components/**/*"
     ],
     htmlFiles = [
@@ -48,12 +49,12 @@
       .pipe(gulp.dest("./"));
   });
 
-  gulp.task("lint", function() {
+  gulp.task( "lint", function() {
     return gulp.src(appJSFiles)
-      .pipe(jshint())
-      .pipe(jshint.reporter("jshint-stylish"))
-      .pipe(jshint.reporter("fail"));
-  });
+      .pipe( eslint() )
+      .pipe( eslint.format() )
+      .pipe( eslint.failAfterError() );
+  } );
 
   gulp.task("source", ["lint"], function () {
     var isProd = (env === "prod");

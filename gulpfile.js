@@ -6,11 +6,12 @@
   var bower = require("gulp-bower");
   var bump = require("gulp-bump");
   var del = require("del");
+  var eslint = require("gulp-eslint");
   var factory = require("widget-tester").gulpTaskFactory;
+  var file = require("gulp-file");
   var gulp = require("gulp");
   var gulpif = require("gulp-if");
   var gutil = require("gulp-util");
-  var jshint = require("gulp-jshint");
   var minifyCSS = require("gulp-minify-css");
   var path = require("path");
   var rename = require("gulp-rename");
@@ -23,6 +24,7 @@
 
   var appJSFiles = [
       "src/**/*.js",
+      "test/**/*.js",
       "!./src/components/**/*"
     ],
     htmlFiles = [
@@ -48,12 +50,12 @@
       .pipe(gulp.dest("./"));
   });
 
-  gulp.task("lint", function() {
+  gulp.task( "lint", function() {
     return gulp.src(appJSFiles)
-      .pipe(jshint())
-      .pipe(jshint.reporter("jshint-stylish"))
-      .pipe(jshint.reporter("fail"));
-  });
+      .pipe( eslint() )
+      .pipe( eslint.format() )
+      .pipe( eslint.failAfterError() );
+  } );
 
   gulp.task("source", ["lint"], function () {
     var isProd = (env === "prod");
@@ -109,6 +111,15 @@
       .pipe(gulp.dest("dist/"));
   });
 
+  gulp.task("version", function () {
+    var pkg = require("./package.json"),
+      str = '/* exported version */\n' +
+        'var version = "' + pkg.version + '";';
+
+    return file("version.js", str, {src: true})
+      .pipe(gulp.dest("./src/config/"));
+  });
+
   gulp.task("watch",function(){
     gulp.watch("./src/**/*", ["build"]);
   });
@@ -155,6 +166,7 @@
       "src/components/widget-settings-ui-core/dist/*.js",
       "src/components/component-storage-selector/dist/storage-selector.js",
       "src/components/component-subscription-status/dist/js/subscription-status.js",
+      "src/config/version.js",
       "src/config/test.js",
       "src/settings/settings-app.js",
       "src/settings/**/*.js",
@@ -177,7 +189,7 @@
   });
 
   gulp.task("test", function(cb) {
-    runSequence("test:unit", "test:e2e", "test:integration", cb);
+    runSequence("version", "test:unit", "test:e2e", "test:integration", cb);
   });
 
   gulp.task("bower-update", function (cb) {
@@ -188,11 +200,11 @@
   });
 
   gulp.task("build-dev", function (cb) {
-    runSequence(["clean", "config"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
+    runSequence(["clean", "config", "version"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
   });
 
   gulp.task("build", function (cb) {
-    runSequence(["clean", "config", "bower-update"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
+    runSequence(["clean", "config", "bower-update", "version"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
   });
 
   gulp.task("default", function(cb) {

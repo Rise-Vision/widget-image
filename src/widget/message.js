@@ -1,7 +1,8 @@
 var RiseVision = RiseVision || {};
+
 RiseVision.Image = RiseVision.Image || {};
 
-RiseVision.Image.Message = function (mainContainer, messageContainer) {
+RiseVision.Image.Message = function( mainContainer, messageContainer ) {
   "use strict";
 
   var _active = false;
@@ -9,8 +10,8 @@ RiseVision.Image.Message = function (mainContainer, messageContainer) {
   function _init() {
     try {
       messageContainer.style.height = mainContainer.style.height;
-    } catch (e) {
-      console.warn("Can't initialize Message - ", e.message);
+    } catch ( e ) {
+      console.warn( "Can't initialize Message - ", e.message ); // eslint-disable-line no-console
     }
   }
 
@@ -18,10 +19,10 @@ RiseVision.Image.Message = function (mainContainer, messageContainer) {
    *  Public Methods
    */
   function hide() {
-    if (_active) {
+    if ( _active ) {
       // clear content of message container
-      while (messageContainer.firstChild) {
-        messageContainer.removeChild(messageContainer.firstChild);
+      while ( messageContainer.firstChild ) {
+        messageContainer.removeChild( messageContainer.firstChild );
       }
 
       // hide message container
@@ -34,28 +35,28 @@ RiseVision.Image.Message = function (mainContainer, messageContainer) {
     }
   }
 
-  function show(message) {
+  function show( message ) {
     var fragment = document.createDocumentFragment(),
       p;
 
-    if (!_active) {
+    if ( !_active ) {
       // hide main container
       mainContainer.style.visibility = "hidden";
 
       messageContainer.style.display = "block";
 
       // create message element
-      p = document.createElement("p");
+      p = document.createElement( "p" );
       p.innerHTML = message;
-      p.setAttribute("class", "message");
+      p.setAttribute( "class", "message" );
 
-      fragment.appendChild(p);
-      messageContainer.appendChild(fragment);
+      fragment.appendChild( p );
+      messageContainer.appendChild( fragment );
 
       _active = true;
     } else {
       // message already being shown, update message text
-      p = messageContainer.querySelector(".message");
+      p = messageContainer.querySelector( ".message" );
       p.innerHTML = message;
     }
   }

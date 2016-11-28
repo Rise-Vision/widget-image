@@ -1,100 +1,98 @@
 /* global config */
 var RiseVision = RiseVision || {};
+
 RiseVision.Image = RiseVision.Image || {};
 
-RiseVision.Image.StorageFile = function (params) {
+RiseVision.Image.StorageFile = function( params, displayId ) {
   "use strict";
 
   var utils = RiseVision.Common.Utilities,
-    riseCache = RiseVision.Common.RiseCache;
-
-  var _initialLoad = true;
+    riseCache = RiseVision.Common.RiseCache,
+    _initialLoad = true;
 
   /*
    *  Public Methods
    */
   function init() {
-    var storage = document.querySelector("rise-storage");
+    var storage = document.querySelector( "rise-storage" );
 
-    storage.addEventListener("rise-storage-response", function(e) {
+    storage.addEventListener( "rise-storage-response", function( e ) {
       var url;
 
-      if (e.detail && e.detail.url) {
+      if ( e.detail && e.detail.url ) {
 
-        url = e.detail.url.replace("'", "\\'");
+        url = e.detail.url.replace( "'", "\\'" );
 
-        if (_initialLoad) {
+        if ( _initialLoad ) {
           _initialLoad = false;
 
-          RiseVision.Image.onFileInit(url);
-        }
-        else {
+          RiseVision.Image.onFileInit( url );
+        } else {
           // check for "changed" property
-          if (e.detail.hasOwnProperty("changed")) {
-            if (e.detail.changed) {
-              RiseVision.Image.onFileRefresh(url);
-            }
-            else {
+          if ( e.detail.hasOwnProperty( "changed" ) ) {
+            if ( e.detail.changed ) {
+              RiseVision.Image.onFileRefresh( url );
+            } else {
               // in the event of a network failure and recovery, check if the Widget is in a state of storage error
-              if (RiseVision.Image.hasStorageError()) {
+              if ( RiseVision.Image.hasStorageError() ) {
                 // proceed with refresh logic so the Widget can eventually play video again from a network recovery
-                RiseVision.Image.onFileRefresh(e.detail.url);
+                RiseVision.Image.onFileRefresh( e.detail.url );
               }
             }
           }
         }
       }
-    });
+    } );
 
-    storage.addEventListener("rise-storage-api-error", function(e) {
-      var params = {
-          "event": "error",
-          "event_details": "storage api error",
-          "error_details": "Response code: " + e.detail.code + ", message: " + e.detail.message
-        };
-
-      RiseVision.Image.logEvent(params, true);
-      RiseVision.Image.showError("Sorry, there was a problem communicating with Rise Storage.");
-    });
-
-    storage.addEventListener("rise-storage-no-file", function(e) {
+    storage.addEventListener( "rise-storage-api-error", function( e ) {
       var params = {
         "event": "error",
-        "event_details": "storage file not found",
-        "file_url": e.detail
-      },
-        img = document.getElementById("image");
+        "event_details": "storage api error",
+        "error_details": "Response code: " + e.detail.code + ", message: " + e.detail.message
+      };
+
+      RiseVision.Image.logEvent( params, true );
+      RiseVision.Image.showError( "Sorry, there was a problem communicating with Rise Storage." );
+    } );
+
+    storage.addEventListener( "rise-storage-no-file", function( e ) {
+      var params = {
+          "event": "error",
+          "event_details": "storage file not found",
+          "file_url": e.detail
+        },
+        img = document.getElementById( "image" );
 
       // clear the existing image
       img.style.background = "";
 
-      RiseVision.Image.logEvent(params, true);
-      RiseVision.Image.showError("The selected image does not exist or has been moved to Trash.");
-    });
+      RiseVision.Image.logEvent( params, true );
+      RiseVision.Image.showError( "The selected image does not exist or has been moved to Trash." );
+    } );
 
-    storage.addEventListener("rise-storage-file-throttled", function(e) {
+    storage.addEventListener( "rise-storage-file-throttled", function( e ) {
       var params = {
         "event": "error",
         "event_details": "storage file throttled",
         "file_url": e.detail
       };
 
-      RiseVision.Image.logEvent(params, true);
-      RiseVision.Image.showError("The selected image is temporarily unavailable.");
-    });
+      RiseVision.Image.logEvent( params, true );
+      RiseVision.Image.showError( "The selected image is temporarily unavailable." );
+    } );
 
-    storage.addEventListener("rise-storage-subscription-expired", function() {
+    storage.addEventListener( "rise-storage-subscription-expired", function() {
       var params = {
         "event": "error",
         "event_details": "storage subscription expired"
       };
 
-      RiseVision.Image.logEvent(params, true);
-      RiseVision.Image.showError("Rise Storage subscription is not active.");
-    });
+      RiseVision.Image.logEvent( params, true );
+      RiseVision.Image.showError( "Rise Storage subscription is not active." );
+    } );
 
-    storage.addEventListener("rise-storage-error", function(e) {
-      var fileUrl = (e.detail && e.detail.request && e.detail.request.url) ? e.detail.request.url : null,
+    storage.addEventListener( "rise-storage-error", function( e ) {
+      var fileUrl = ( e.detail && e.detail.request && e.detail.request.url ) ? e.detail.request.url : null,
         params = {
           "event": "error",
           "event_details": "rise storage error",
@@ -102,12 +100,12 @@ RiseVision.Image.StorageFile = function (params) {
           "file_url": fileUrl
         };
 
-      RiseVision.Image.logEvent(params, true);
-      RiseVision.Image.showError("Sorry, there was a problem communicating with Rise Storage.", true);
-    });
+      RiseVision.Image.logEvent( params, true );
+      RiseVision.Image.showError( "Sorry, there was a problem communicating with Rise Storage.", true );
+    } );
 
-    storage.addEventListener("rise-cache-error", function(e) {
-      var fileUrl = (e.detail && e.detail.request && e.detail.request.url) ? e.detail.request.url : null,
+    storage.addEventListener( "rise-cache-error", function( e ) {
+      var fileUrl = ( e.detail && e.detail.request && e.detail.request.url ) ? e.detail.request.url : null,
         params = {
           "event": "error",
           "event_details": "rise cache error",
@@ -118,50 +116,50 @@ RiseVision.Image.StorageFile = function (params) {
         errorMessage;
 
       // log the error
-      RiseVision.Image.logEvent(params, true);
+      RiseVision.Image.logEvent( params, true );
 
-      if (riseCache.isV2Running()) {
-        errorMessage = riseCache.getErrorMessage(statusCode);
-      }
-      else {
+      if ( riseCache.isV2Running() ) {
+        errorMessage = riseCache.getErrorMessage( statusCode );
+      } else {
         // Show a different message if there is a 404 coming from rise cache
-        if(e.detail.error.message){
-          statusCode = +e.detail.error.message.substring(e.detail.error.message.indexOf(":")+2);
+        if ( e.detail.error.message ) {
+          statusCode = +e.detail.error.message.substring( e.detail.error.message.indexOf( ":" ) + 2 );
         }
 
-        errorMessage = utils.getRiseCacheErrorMessage(statusCode);
+        errorMessage = utils.getRiseCacheErrorMessage( statusCode );
       }
 
       // show the error
-      RiseVision.Image.showError(errorMessage);
-    });
+      RiseVision.Image.showError( errorMessage );
+    } );
 
-    storage.addEventListener("rise-cache-not-running", function(e) {
+    storage.addEventListener( "rise-cache-not-running", function( e ) {
 
       var params = {
         "event": "error",
         "event_details": "rise cache not running",
-        "error_details": (e.detail && e.detail.error)? e.detail.error.message: ""
+        "error_details": ( e.detail && e.detail.error ) ? e.detail.error.message : ""
       };
 
-      RiseVision.Image.logEvent(params, true);
-    });
+      RiseVision.Image.logEvent( params, true );
+    } );
 
-    storage.addEventListener("rise-cache-file-unavailable", function () {
-      RiseVision.Image.onFileUnavailable("File is downloading");
-    });
+    storage.addEventListener( "rise-cache-file-unavailable", function() {
+      RiseVision.Image.onFileUnavailable( "File is downloading" );
+    } );
 
-    storage.setAttribute("folder", params.storage.folder);
-    storage.setAttribute("fileName", params.storage.fileName);
-    storage.setAttribute("companyId", params.storage.companyId);
-    storage.setAttribute("env", config.STORAGE_ENV);
+    storage.setAttribute( "folder", params.storage.folder );
+    storage.setAttribute( "fileName", params.storage.fileName );
+    storage.setAttribute( "companyId", params.storage.companyId );
+    storage.setAttribute( "displayId", displayId );
+    storage.setAttribute( "env", config.STORAGE_ENV );
     storage.go();
   }
 
   function retry() {
-    var storage = document.querySelector("rise-storage");
+    var storage = document.querySelector( "rise-storage" );
 
-    if (!storage) {
+    if ( !storage ) {
       return;
     }
 

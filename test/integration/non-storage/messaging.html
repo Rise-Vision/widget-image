@@ -26,6 +26,7 @@
 <script src="../../../src/components/widget-common/dist/config.js"></script>
 <script src="../../../src/components/widget-common/dist/common.js"></script>
 <script src="../../../src/components/widget-common/dist/rise-cache.js"></script>
+<script src="../../../src/config/version.js"></script>
 <script src="../../../src/config/test.js"></script>
 <script src="../../../src/widget/image.js"></script>
 <script src="../../../src/widget/message.js"></script>
@@ -66,7 +67,7 @@
       RiseVision.Common.RiseCache.isV2Running(callback);
     });
 
-    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode, displayId) {
       ready = true;
 
       storage = document.querySelector("rise-storage");
@@ -76,7 +77,7 @@
       RiseVision.Image.setAdditionalParams.restore();
 
       // call it again with the params
-      RiseVision.Image.setAdditionalParams(params, mode);
+      RiseVision.Image.setAdditionalParams(params, mode, displayId);
     });
 
     suiteSetup(function (done) {

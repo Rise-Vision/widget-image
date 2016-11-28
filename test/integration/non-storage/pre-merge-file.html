@@ -67,7 +67,7 @@
       RiseVision.Common.RiseCache.isV2Running(callback);
     });
 
-    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode) {
+    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode, displayId) {
       ready = true;
 
       storage = document.querySelector("rise-storage");
@@ -82,7 +82,7 @@
       RiseVision.Image.setAdditionalParams.restore();
 
       // call it again with the params
-      RiseVision.Image.setAdditionalParams(params, mode);
+      RiseVision.Image.setAdditionalParams(params, mode, displayId);
     });
 
     suiteSetup(function (done) {

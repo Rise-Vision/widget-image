@@ -17,7 +17,7 @@ sinon.stub( RiseVision.Common.RiseCache, "isV2Running", function( callback ) {
   RiseVision.Common.RiseCache.isV2Running( callback );
 } );
 
-sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode ) {
+sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode, displayId ) {
   ready = true; // eslint-disable-line no-undef
 
   storage = document.querySelector( "rise-storage" );
@@ -32,7 +32,7 @@ sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode ) {
   RiseVision.Image.setAdditionalParams.restore();
 
   // call it again with the params
-  RiseVision.Image.setAdditionalParams( params, mode );
+  RiseVision.Image.setAdditionalParams( params, mode, displayId );
 
   storage.dispatchEvent( new CustomEvent( "rise-storage-response", {
     "detail": {

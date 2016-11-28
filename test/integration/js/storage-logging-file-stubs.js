@@ -16,7 +16,7 @@ sinon.stub( RiseVision.Common.RiseCache, "isV2Running", function( callback ) {
   RiseVision.Common.RiseCache.isV2Running( callback );
 } );
 
-sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode ) {
+sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode, displayId ) {
   ready = true; // eslint-disable-line no-undef
 
   storage = document.querySelector( "rise-storage" );
@@ -28,5 +28,5 @@ sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode ) {
   spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" ); // eslint-disable-line no-undef
 
   RiseVision.Image.setAdditionalParams.restore();
-  RiseVision.Image.setAdditionalParams( params, mode );
+  RiseVision.Image.setAdditionalParams( params, mode, displayId );
 } );

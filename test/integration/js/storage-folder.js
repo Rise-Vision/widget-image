@@ -61,6 +61,10 @@ suite( "initialize", function() {
     assert.equal( storage.companyid, "30007b45-3df0-4c7b-9f7f-7d8ce6443013" );
   } );
 
+  test( "should set displayid attribute of storage component", function() {
+    assert.equal( storage.displayid, "\"displayId\"" );
+  } );
+
   test( "should set env attribute of storage component", function() {
     assert.equal( storage.env, config.STORAGE_ENV );
   } );

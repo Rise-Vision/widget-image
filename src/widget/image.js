@@ -8,6 +8,7 @@ RiseVision.Image = ( function( gadgets ) {
   "use strict";
 
   var _mode,
+    _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
     _params = null,
@@ -116,7 +117,7 @@ RiseVision.Image = ( function( gadgets ) {
         _configurationType = "storage file";
 
         // create and initialize the Storage file instance
-        _storage = new RiseVision.Image.StorageFile( _params );
+        _storage = new RiseVision.Image.StorageFile( _params, _displayId );
         _storage.init();
       }
     } else if ( _mode === "folder" ) {
@@ -129,7 +130,7 @@ RiseVision.Image = ( function( gadgets ) {
       _configurationType = "storage folder";
 
       // create and initialize the Storage folder instance
-      _storage = new RiseVision.Image.StorageFolder( _params );
+      _storage = new RiseVision.Image.StorageFolder( _params, _displayId );
       _storage.init();
     }
 
@@ -246,9 +247,10 @@ RiseVision.Image = ( function( gadgets ) {
     }
   }
 
-  function setAdditionalParams( additionalParams, modeType ) {
+  function setAdditionalParams( additionalParams, modeType, displayId ) {
     _params = _.clone( additionalParams );
     _mode = modeType;
+    _displayId = displayId;
 
     _params.width = _prefs.getInt( "rsW" );
     _params.height = _prefs.getInt( "rsH" );

@@ -3,7 +3,7 @@ var RiseVision = RiseVision || {};
 
 RiseVision.Image = RiseVision.Image || {};
 
-RiseVision.Image.StorageFile = function( params ) {
+RiseVision.Image.StorageFile = function( params, displayId ) {
   "use strict";
 
   var utils = RiseVision.Common.Utilities,
@@ -151,6 +151,7 @@ RiseVision.Image.StorageFile = function( params ) {
     storage.setAttribute( "folder", params.storage.folder );
     storage.setAttribute( "fileName", params.storage.fileName );
     storage.setAttribute( "companyId", params.storage.companyId );
+    storage.setAttribute( "displayId", displayId );
     storage.setAttribute( "env", config.STORAGE_ENV );
     storage.go();
   }

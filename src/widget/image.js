@@ -152,6 +152,7 @@ RiseVision.Image = ( function( gadgets ) {
     _img.onload = function() {
       var image = document.querySelector( "#container #image" );
 
+      image.style.backgroundImage = "none";
       image.style.backgroundImage = "url('" + url + "')";
       _isGif = url.indexOf( ".gif" ) === -1 ? false : true;
 

@@ -267,7 +267,7 @@ RiseVision.Image.Slider = function( params ) {
       // Destroy and recreate the slider immediately if currently only 1 slide and there has been a change.
       if ( $api ) {
         destroySlider();
-        init( _.clone( files ) );
+        init( files );
       }
     } else {
       newFiles = _.clone( files );

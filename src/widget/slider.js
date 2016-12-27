@@ -262,8 +262,18 @@ RiseVision.Image.Slider = function( params ) {
   function refresh( files ) {
     // Start preloading images right away.
     RiseVision.Common.Utilities.preloadImages( files );
-    newFiles = _.clone( files );
-    refreshSlider = true;
+
+    if ( currentFiles.length === 1 ) {
+      // Destroy and recreate the slider immediately if currently only 1 slide and there has been a change.
+      if ( $api ) {
+        destroySlider();
+        init( files );
+      }
+    } else {
+      newFiles = _.clone( files );
+      refreshSlider = true;
+    }
+
   }
 
   return {

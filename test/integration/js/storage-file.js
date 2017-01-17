@@ -326,6 +326,46 @@ suite( "storage errors", function() {
       "showError() called with correct message" );
   } );
 
+  test( "should handle when a 'rise cache not running' occurs", function() {
+    params.event = "error";
+    params.event_details = "rise cache not running";
+    params.error_details = "The request failed with status code: 500";
+
+    delete params.file_url;
+
+    if ( isV2Running ) {
+      storage.dispatchEvent( new CustomEvent( "rise-cache-not-running", {
+        "detail": {
+          "resp": {
+            "error": {
+              "message": "The request failed with status code: 500"
+            }
+          },
+          "isPlayerRunning": true
+        },
+        "bubbles": true
+      } ) );
+
+      assert( onShowErrorStub.calledOnce, "showError() called once" );
+      assert( onShowErrorStub.calledWith( "Waiting for Rise Cache" ),
+        "showError() called with correct message" );
+
+    } else {
+      storage.dispatchEvent( new CustomEvent( "rise-cache-not-running", {
+        "detail": {
+          "error": {
+            "message": "The request failed with status code: 500"
+          }
+        },
+        "bubbles": true
+      } ) );
+    }
+
+    assert( onLogEventStub.calledOnce, "logEvent() called once" );
+    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+
+  } );
+
 } );
 
 suite( "Network Recovery", function() {

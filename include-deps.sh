@@ -3,7 +3,7 @@ curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/css/style.cs
 curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/css/settings.css" -o dist/scripts/slider-revolution/css/settings.css
 
 mkdir -p dist/scripts/slider-revolution/js
-curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.tools.min.js" -o dist/scripts/slider-revolution/js/jquery.tools.min.js
+curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.tools.min.js" -o dist/scripts/slider-revolution/js/jquery.themepunch.tools.min.js
 curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.revolution.min.js" -o dist/scripts/slider-revolution/js/jquery.themepunch.revolution.min.js
 
 mkdir -p dist/jquery

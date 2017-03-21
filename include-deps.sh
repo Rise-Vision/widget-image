@@ -1,10 +1,4 @@
-mkdir -p dist/scripts/slider-revolution/css
-curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/css/style.css" -o dist/scripts/slider-revolution/css/style.css
-curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/css/settings.css" -o dist/scripts/slider-revolution/css/settings.css
-
-mkdir -p dist/scripts/slider-revolution/js
-curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.tools.min.js" -o dist/scripts/slider-revolution/js/jquery.themepunch.tools.min.js
-curl "http://s3.amazonaws.com/rise-common/scripts/slider-revolution/js/jquery.themepunch.revolution.min.js" -o dist/scripts/slider-revolution/js/jquery.themepunch.revolution.min.js
+aws --no-sign s3 cp s3://rise-common/scripts/slider-revolution ./dist/scripts/slider-revolution --recursive --exclude "*.psd"
 
 mkdir -p dist/jquery
 curl "http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" -o dist/jquery/jquery.min.js

@@ -39,6 +39,6 @@
     "gulp-watch": "^0.6.8",
     "run-sequence": "^0.3.2",
     "web-component-tester": "*",
-    "widget-tester": "git://github.com/Rise-Vision/widget-tester.git#1.7.1"
+    "widget-tester": "git://github.com/Rise-Vision/widget-tester.git#1.7.2"
   }
 }

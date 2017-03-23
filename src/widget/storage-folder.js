@@ -138,6 +138,16 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
       RiseVision.Image.showError( "The selected folder does not contain any supported image formats." );
     } );
 
+    storage.addEventListener( "rise-storage-subscription-error", function( e ) {
+      var params = {
+        "event": "error",
+        "event_details": "storage subscription error",
+        "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status
+      };
+
+      RiseVision.Image.logEvent( params, true );
+    } );
+
     storage.addEventListener( "rise-storage-subscription-expired", function() {
       var params = {
         "event": "error",

@@ -72,7 +72,7 @@ RiseVision.Image = ( function( gadgets ) {
         slideNum = _slider.getCurrentSlide();
 
         if ( slideNum !== -1 ) {
-          return _currentFiles[ slideNum ];
+          return ( _currentFiles[ slideNum ] ) ? ( _currentFiles[ slideNum ] ).url : null;
         }
       }
     }

@@ -17,7 +17,8 @@ RiseVision.Image.Slider = function( params ) {
     isLoading = true,
     isPlaying = false,
     isInteracting = false,
-    navTimeout = 3000;
+    navTimeout = 3000,
+    singleImagePUDTimer = null;
 
   /*
    *  Private Methods
@@ -164,6 +165,14 @@ RiseVision.Image.Slider = function( params ) {
     }
   }
 
+  function startSingleImagePUDTimer() {
+    var delay = ( ( params.duration === undefined ) || ( params.duration < 1 ) ) ? 10000 : params.duration * 1000;
+
+    singleImagePUDTimer = setTimeout( function() {
+      RiseVision.Image.onSliderComplete();
+    }, delay );
+  }
+
   /*
    *  Public Methods
    *  TODO: Test what happens when folder isn't found.
@@ -249,6 +258,10 @@ RiseVision.Image.Slider = function( params ) {
         $api.revresume();
         isPlaying = true;
       }
+
+      if ( currentFiles.length === 1 ) {
+        startSingleImagePUDTimer();
+      }
     }
   }
 
@@ -256,6 +269,10 @@ RiseVision.Image.Slider = function( params ) {
     if ( $api && isPlaying ) {
       $api.revpause();
       isPlaying = false;
+    }
+
+    if ( singleImagePUDTimer ) {
+      clearTimeout( singleImagePUDTimer );
     }
   }
 
@@ -266,6 +283,7 @@ RiseVision.Image.Slider = function( params ) {
     if ( currentFiles.length === 1 ) {
       // Destroy and recreate the slider immediately if currently only 1 slide and there has been a change.
       if ( $api ) {
+        clearTimeout( singleImagePUDTimer );
         destroySlider();
         init( files );
       }

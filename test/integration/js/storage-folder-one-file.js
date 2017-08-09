@@ -1,4 +1,4 @@
-/* global requests, suiteSetup, suite, test, assert */
+/* global requests, suiteSetup, suite, test, assert, sinon, RiseVision, suiteTeardown */
 
 /* eslint-disable func-names */
 
@@ -28,6 +28,8 @@ suiteSetup( function( done ) {
 } );
 
 suite( "folder with one file", function() {
+  var spy;
+
   suiteSetup( function() {
     storage.dispatchEvent( new CustomEvent( "rise-storage-response", {
       "detail": {
@@ -37,16 +39,35 @@ suite( "folder with one file", function() {
       },
       "bubbles": true
     } ) );
+
+    spy = sinon.spy( RiseVision.Common.Logger, "log" );
+  } );
+
+  suiteTeardown( function() {
+    RiseVision.Common.Logger.log.restore();
   } );
 
   test( "should initialize and add one image slide", function( done ) {
     setTimeout( function() {
       assert.equal( document.querySelectorAll( ".tp-revslider-mainul .tp-revslider-slidesli" ).length, 1, "num of slides" );
       assert.equal( document.querySelector( ".tp-revslider-mainul .tp-revslider-slidesli:nth-child(1) .tp-bgimg" ).getAttribute( "data-lazyload" ), "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGone_Girl_Book_Cover.jpg?alt=media", "one slide" );
+
       done();
     }, 8000 );
   } );
 
+  test( "should call done after duration delay", function() {
+
+    assert( spy.calledWith( "image_events", {
+      "event": "done",
+      "company_id": "\"companyId\"",
+      "display_id": "\"displayId\"",
+      "file_format": "jpg",
+      "file_url": "https://www.googleapis.com/storage/v1/b/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/o/widget-testing%2Fimage-widget%2FGone_Girl_Book_Cover.jpg?alt=media",
+      "version": "0.1.1"
+    } ) );
+
+  } );
 
 } );
 

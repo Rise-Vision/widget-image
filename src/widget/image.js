@@ -14,6 +14,7 @@ RiseVision.Image = ( function( gadgets ) {
     _params = null,
     _storage = null,
     _nonStorage = null,
+    _localStorage = null,
     _slider = null,
     _currentFiles = [],
     _errorLog = null,
@@ -80,6 +81,16 @@ RiseVision.Image = ( function( gadgets ) {
     return null;
   }
 
+  function _testLocalStorage() {
+    // don't test if display id is invalid or preview/local
+    if ( !_displayId || _displayId === "preview" || _displayId === "display_id" || _displayId.indexOf("displayId") !== -1 ) {
+      return;
+    }
+
+    _localStorage = new RiseVision.Image.LocalStorageFile();
+    _localStorage.init();
+  }
+
   function init() {
     var container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
@@ -134,6 +145,7 @@ RiseVision.Image = ( function( gadgets ) {
       _storage.init();
     }
 
+    _testLocalStorage();
     _ready();
   }
 

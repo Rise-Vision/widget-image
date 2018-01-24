@@ -83,7 +83,7 @@ RiseVision.Image = ( function( gadgets ) {
 
   function _testLocalStorage() {
     // don't test if display id is invalid or preview/local
-    if ( !_displayId || _displayId === "preview" || _displayId === "display_id" || _displayId.indexOf("displayId") !== -1 ) {
+    if ( !_displayId || _displayId === "preview" || _displayId === "display_id" || _displayId.indexOf( "displayId" ) !== -1 ) {
       return;
     }
 

@@ -6,7 +6,7 @@ RiseVision.Image.LocalStorageFile = function() {
   "use strict";
 
   var wsClient = RiseVision.Common.WSClient,
-    testGCSImage = "https://storage.googleapis.com/local-storage-test/test-1x1.png",
+    testGCSImage = "local-storage-test/test-1x1.png",
     watchMessageAlreadySent = false,
     testImageDownloaded = false;
 
@@ -49,22 +49,22 @@ RiseVision.Image.LocalStorageFile = function() {
     } );
 
     // test downloading the image
-    if ( !testImageDownloaded ) {
+    if ( !testImageDownloaded && message.ospath ) {
       imgTest.onload = function() {
         RiseVision.Image.logEvent( {
           "event": "Test image downloaded",
-          "file_url": message.filePath
+          "file_url": message.ospath
         } );
       };
 
       imgTest.onerror = function() {
         RiseVision.Image.logEvent( {
           "event": "Test image download failed",
-          "file_url": message.filePath
+          "file_url": message.ospath
         } );
       };
 
-      imgTest.src = message.filePath;
+      imgTest.src = message.ospath;
       testImageDownloaded = true;
     }
   }

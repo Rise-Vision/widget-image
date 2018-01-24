@@ -100,6 +100,8 @@ RiseVision.Image.LocalStorageFile = function() {
           return _fileErrorHandler( message );
         }
       } );
+
+      wsClient.getModuleClientList();
     }
   }
 

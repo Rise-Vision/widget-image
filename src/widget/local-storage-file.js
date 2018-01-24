@@ -54,6 +54,8 @@ RiseVision.Image.LocalStorageFile = function() {
 
     // test downloading the image
     if ( !testImageDownloadAttempted && message.status && message.status === "CURRENT" ) {
+      imgTest = new Image();
+
       imgTest.onload = function() {
         RiseVision.Image.logEvent( {
           "event": "Test image downloaded",
@@ -61,9 +63,10 @@ RiseVision.Image.LocalStorageFile = function() {
         } );
       };
 
-      imgTest.onerror = function() {
+      imgTest.onerror = function( err ) {
         RiseVision.Image.logEvent( {
           "event": "Test image download failed",
+          "event_details": JSON.stringify( err ),
           "file_url": message.ospath
         } );
       };
@@ -73,7 +76,7 @@ RiseVision.Image.LocalStorageFile = function() {
         "file_url": message.ospath
       } );
 
-      imgTest.src = message.ospath;
+      imgTest.src = "file://" + message.ospath;
       testImageDownloadAttempted = true;
     }
   }

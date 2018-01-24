@@ -8,7 +8,7 @@ RiseVision.Image.LocalStorageFile = function() {
   var wsClient = RiseVision.Common.WSClient,
     testGCSImage = "local-storage-test/test-1x1.png",
     watchMessageAlreadySent = false,
-    testImageDownloaded = false;
+    testImageDownloadAttempted = false;
 
   function _clientListHandler( message ) {
     var clients = message.clients;
@@ -41,6 +41,10 @@ RiseVision.Image.LocalStorageFile = function() {
   function _fileUpdateHandler( message ) {
     var imgTest = null;
 
+    if ( !message.filePath || message.filePath !== testGCSImage ) {
+      return;
+    }
+
     // log successful test of receiving FILE-UPDATE message
     RiseVision.Image.logEvent( {
       "event": "Test image FILE-UPDATE",
@@ -49,7 +53,7 @@ RiseVision.Image.LocalStorageFile = function() {
     } );
 
     // test downloading the image
-    if ( !testImageDownloaded && message.ospath ) {
+    if ( !testImageDownloadAttempted && message.status && message.status === "CURRENT" ) {
       imgTest.onload = function() {
         RiseVision.Image.logEvent( {
           "event": "Test image downloaded",
@@ -64,8 +68,13 @@ RiseVision.Image.LocalStorageFile = function() {
         } );
       };
 
+      RiseVision.Image.logEvent( {
+        "event": "Attempt test image download",
+        "file_url": message.ospath
+      } );
+
       imgTest.src = message.ospath;
-      testImageDownloaded = true;
+      testImageDownloadAttempted = true;
     }
   }
 

@@ -21,6 +21,16 @@
 
   <div id="messageContainer"></div>
 
+  <script>
+    if (document.domain.indexOf("localhost") === -1) {
+      try {
+        document.domain = "risevision.com";
+      } catch (err) {
+        // can't set document.domain, risevision.com not an accepted suffix of current document domain
+      }
+    }
+  </script>
+
   <script src="jquery/jquery.min.js"></script>
   <script src="scripts/slider-revolution/js/jquery.themepunch.tools.min.js"></script>
   <script src="scripts/slider-revolution/js/jquery.themepunch.revolution.min.js"></script>

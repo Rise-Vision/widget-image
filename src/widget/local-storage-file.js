@@ -1,3 +1,5 @@
+/* global localMessaging */
+
 var RiseVision = RiseVision || {};
 
 RiseVision.Image = RiseVision.Image || {};
@@ -5,7 +7,7 @@ RiseVision.Image = RiseVision.Image || {};
 RiseVision.Image.LocalStorageFile = function() {
   "use strict";
 
-  var wsClient = RiseVision.Common.WSClient,
+  var wsClient = new localMessaging.default(),
     testGCSImage = "local-storage-test/test-1x1.png",
     watchMessageAlreadySent = false,
     testImageLoadAttempted = false;

@@ -3,6 +3,7 @@
 (function () {
   "use strict";
 
+  var babel = require("gulp-babel");
   var bower = require("gulp-bower");
   var bump = require("gulp-bump");
   var del = require("del");
@@ -25,7 +26,8 @@
   var appJSFiles = [
       "src/**/*.js",
       "test/**/*.js",
-      "!./src/components/**/*"
+      "!./src/components/**/*",
+      "!./src/common-modules/**/*"
     ],
     htmlFiles = [
       "./src/settings.html",
@@ -56,6 +58,16 @@
       .pipe( eslint.format() )
       .pipe( eslint.failAfterError() );
   } );
+
+  gulp.task("es6-modules", function() {
+    return gulp.src([
+      "./node_modules/common-component/local-messaging.js"
+      ])
+      .pipe(babel({
+        "plugins": ["transform-es2015-modules-umd"]
+      }))
+      .pipe(gulp.dest("src/common-modules/"));
+  });
 
   gulp.task("source", ["lint"], function () {
     var isProd = (env === "prod");
@@ -189,7 +201,7 @@
   });
 
   gulp.task("test", function(cb) {
-    runSequence("version", "test:unit", "test:e2e", "test:integration", cb);
+    runSequence("version", "es6-modules", "test:unit", "test:e2e", "test:integration", cb);
   });
 
   gulp.task("bower-update", function (cb) {
@@ -200,11 +212,11 @@
   });
 
   gulp.task("build-dev", function (cb) {
-    runSequence(["clean", "config", "version"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
+    runSequence(["clean", "config", "version"], ["es6-modules", "source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
   });
 
   gulp.task("build", function (cb) {
-    runSequence(["clean", "config", "bower-update", "version"], ["source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
+    runSequence(["clean", "config", "bower-update", "version"], ["es6-modules", "source", "fonts", "i18n", "rise-storage"], ["unminify"], cb);
   });
 
   gulp.task("default", function(cb) {

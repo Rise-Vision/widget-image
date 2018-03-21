@@ -4,7 +4,7 @@ var RiseVision = RiseVision || {};
 
 RiseVision.Image = RiseVision.Image || {};
 
-RiseVision.Image.LocalStorageFile = function() {
+RiseVision.Image.LocalStorageBackgroundTesting = function() {
   "use strict";
 
   var wsClient = new localMessaging.default(),

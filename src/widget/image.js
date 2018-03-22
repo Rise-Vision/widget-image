@@ -14,8 +14,8 @@ RiseVision.Image = ( function( gadgets ) {
     _params = null,
     _storage = null,
     _nonStorage = null,
-    _localStorageBackgroundTesting = null,
-    _localStorageFile = null,
+    _localStorage = null,
+    _playerLocalStorageFile = null,
     _slider = null,
     _currentFiles = [],
     _errorLog = null,
@@ -88,11 +88,11 @@ RiseVision.Image = ( function( gadgets ) {
       return;
     }
 
-    _localStorageBackgroundTesting = new RiseVision.Image.LocalStorageBackgroundTesting();
-    _localStorageBackgroundTesting.init();
+    _localStorage = new RiseVision.Image.LocalStorageFile();
+    _localStorage.init();
 
-    _localStorageFile = new RiseVision.Image.LocalStorageFile();
-    _localStorageFile.init();
+    _playerLocalStorageFile = new RiseVision.Image.PlayerLocalStorageFile();
+    _playerLocalStorageFile.init();
   }
 
   function init() {

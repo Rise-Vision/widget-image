@@ -35,7 +35,7 @@
     ],
     es6Modules = [
       "./node_modules/common-component/local-messaging.js",
-      "./node_modules/common-component/local-storage.js"
+      "./node_modules/common-component/player-local-storage.js"
     ];
 
   gulp.task("clean", function (cb) {

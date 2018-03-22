@@ -15,6 +15,7 @@ RiseVision.Image = ( function( gadgets ) {
     _storage = null,
     _nonStorage = null,
     _localStorageBackgroundTesting = null,
+    _localStorageFile = null,
     _slider = null,
     _currentFiles = [],
     _errorLog = null,
@@ -89,6 +90,9 @@ RiseVision.Image = ( function( gadgets ) {
 
     _localStorageBackgroundTesting = new RiseVision.Image.LocalStorageBackgroundTesting();
     _localStorageBackgroundTesting.init();
+
+    _localStorageFile = new RiseVision.Image.LocalStorageFile();
+    _localStorageFile.init();
   }
 
   function init() {

@@ -43,9 +43,6 @@ RiseVision.Image = ( function( gadgets ) {
     if ( _errorLog !== null ) {
       logEvent( _errorLog, true );
     }
-
-    // log "done" event
-    logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
   }
 
   function _clearErrorTimer() {
@@ -308,8 +305,6 @@ RiseVision.Image = ( function( gadgets ) {
       logEvent( { "event": "configuration", "event_details": _configurationType }, false );
       _configurationLogged = true;
     }
-
-    logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
       _startErrorTimer();

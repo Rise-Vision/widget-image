@@ -32,6 +32,10 @@
     htmlFiles = [
       "./src/settings.html",
       "./src/widget.html"
+    ],
+    es6Modules = [
+      "./node_modules/common-component/local-messaging.js",
+      "./node_modules/common-component/player-local-storage.js"
     ];
 
   gulp.task("clean", function (cb) {
@@ -60,9 +64,7 @@
   } );
 
   gulp.task("es6-modules", function() {
-    return gulp.src([
-      "./node_modules/common-component/local-messaging.js"
-      ])
+    return gulp.src(es6Modules)
       .pipe(babel({
         "plugins": ["transform-es2015-modules-umd"]
       }))

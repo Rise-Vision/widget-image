@@ -15,6 +15,7 @@ RiseVision.Image = ( function( gadgets ) {
     _storage = null,
     _nonStorage = null,
     _localStorage = null,
+    _playerLocalStorageFile = null,
     _slider = null,
     _currentFiles = [],
     _errorLog = null,
@@ -78,7 +79,7 @@ RiseVision.Image = ( function( gadgets ) {
     return null;
   }
 
-  function _testLocalStorage() {
+  function _localStorageBackgroundTesting() {
     // don't test if display id is invalid or preview/local
     if ( !_displayId || _displayId === "preview" || _displayId === "display_id" || _displayId.indexOf( "displayId" ) !== -1 ) {
       return;
@@ -86,6 +87,9 @@ RiseVision.Image = ( function( gadgets ) {
 
     _localStorage = new RiseVision.Image.LocalStorageFile();
     _localStorage.init();
+
+    _playerLocalStorageFile = new RiseVision.Image.PlayerLocalStorageFile();
+    _playerLocalStorageFile.init();
   }
 
   function init() {
@@ -142,7 +146,7 @@ RiseVision.Image = ( function( gadgets ) {
       _storage.init();
     }
 
-    _testLocalStorage();
+    _localStorageBackgroundTesting();
     _ready();
   }
 

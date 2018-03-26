@@ -110,7 +110,7 @@ suite( "storage folder empty", function() {
 
     spy = sinon.spy( RiseVision.Common.Logger, "log" );
     clock.tick( 5000 );
-    assert( spy.calledTwice, "called twice" );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.Logger.log.getCall( 0 );
 
@@ -138,8 +138,7 @@ suite( "storage folder empty", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );
 
@@ -168,7 +167,6 @@ suite( "storage folder doesn't exist", function() {
     delete params.file_url;
 
     assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
   } );
 
   test( "should log a storage folder doesn't exist error when done is fired", function() {
@@ -179,7 +177,7 @@ suite( "storage folder doesn't exist", function() {
 
     spy = sinon.spy( RiseVision.Common.Logger, "log" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.Logger.log.getCall( 0 );
 
@@ -208,8 +206,7 @@ suite( "storage folder doesn't exist", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );
 
@@ -248,7 +245,7 @@ suite( "storage folder invalid format", function() {
 
     spy = sinon.spy( RiseVision.Common.Logger, "log" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.Logger.log.getCall( 0 );
 
@@ -276,8 +273,7 @@ suite( "storage folder invalid format", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );
 
@@ -327,7 +323,7 @@ suite( "rise storage error", function() {
     spy = sinon.spy( RiseVision.Common.Logger, "log" );
     clock.tick( 5000 );
 
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.Logger.log.getCall( 0 );
 
@@ -361,8 +357,7 @@ suite( "rise storage error", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 
   test( "should log a rise cache error", function() {
@@ -497,7 +492,7 @@ suite( "storage subscription expired", function() {
 
     spy = sinon.spy( RiseVision.Common.Logger, "log" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.Logger.log.getCall( 0 );
 
@@ -524,8 +519,7 @@ suite( "storage subscription expired", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );
 
@@ -573,7 +567,7 @@ suite( "storage api error", function() {
 
     spy = sinon.spy( RiseVision.Common.Logger, "log" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.Logger.log.getCall( 0 );
 
@@ -606,7 +600,6 @@ suite( "storage api error", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );

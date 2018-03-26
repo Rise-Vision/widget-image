@@ -60,25 +60,6 @@ RiseVision.Image = ( function( gadgets ) {
     }, 5000 );
   }
 
-  function _getCurrentFile() {
-    var slideNum = -1;
-
-    if ( _currentFiles && _currentFiles.length > 0 ) {
-      if ( _mode === "file" ) {
-        return _currentFiles[ 0 ];
-      } else if ( _mode === "folder" && _slider && _slider.isReady() ) {
-        // retrieve the currently played slide
-        slideNum = _slider.getCurrentSlide();
-
-        if ( slideNum !== -1 ) {
-          return ( _currentFiles[ slideNum ] ) ? ( _currentFiles[ slideNum ] ).url : null;
-        }
-      }
-    }
-
-    return null;
-  }
-
   function _localStorageBackgroundTesting() {
     // don't test if display id is invalid or preview/local
     if ( !_displayId || _displayId === "preview" || _displayId === "display_id" || _displayId.indexOf( "displayId" ) !== -1 ) {

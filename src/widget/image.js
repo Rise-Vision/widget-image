@@ -11,6 +11,7 @@ RiseVision.Image = ( function( gadgets ) {
     _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
+    _utils = RiseVision.Image.Utils,
     _params = null,
     _storage = null,
     _nonStorage = null,
@@ -100,7 +101,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     if ( _mode === "file" ) {
       // create the image <div> within the container <div>
-      el = _getImageElement();
+      el = _utils.getImageElement( _params );
       fragment.appendChild( el );
       container.appendChild( fragment );
 
@@ -135,16 +136,6 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     _ready();
-  }
-
-  function _getImageElement() {
-    var el = document.createElement( "div" );
-
-    el.setAttribute( "id", "image" );
-    el.className = _params.position;
-    el.className = _params.scaleToFit ? el.className + " scale-to-fit" : el.className;
-
-    return el;
   }
 
   function setSingleImage( url ) {

@@ -3,12 +3,13 @@
 
 var RiseVision = RiseVision || {};
 
-RiseVision.Image = RiseVision.Image || {};
+RiseVision.ImageRLS = RiseVision.ImageRLS || {};
 
-RiseVision.Image.PlayerLocalStorageFile = function( params ) {
+RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   "use strict";
 
   var INITIAL_PROCESSING_DELAY = 10000,
+    imageUtils = RiseVision.ImageUtils,
     messaging = new localMessaging.default(),
     storage = null,
     initialProcessingTimer = null,
@@ -45,7 +46,7 @@ RiseVision.Image.PlayerLocalStorageFile = function( params ) {
   }
 
   function _handleAuthorized() {
-    RiseVision.Image.logEvent( {
+    imageUtils.logEvent( {
       "event": "authorized"
     } );
 
@@ -74,13 +75,13 @@ RiseVision.Image.PlayerLocalStorageFile = function( params ) {
 
     switch ( data.event.toUpperCase() ) {
     case "NO-CONNECTION":
-      RiseVision.Image.logEvent( {
+      imageUtils.logEvent( {
         "event": "no connection",
         "event_details": "use rise cache"
       } );
       break;
     case "REQUIRED-MODULES-UNAVAILABLE":
-      RiseVision.Image.logEvent( {
+      imageUtils.logEvent( {
         "event": "required modules unavailable"
       } );
       break;
@@ -88,7 +89,7 @@ RiseVision.Image.PlayerLocalStorageFile = function( params ) {
       _handleAuthorized();
       break;
     case "UNAUTHORIZED":
-      RiseVision.Image.logEvent( {
+      imageUtils.logEvent( {
         "event": "unauthorized"
       } );
       break;
@@ -111,9 +112,6 @@ RiseVision.Image.PlayerLocalStorageFile = function( params ) {
   }
 
   function init() {
-
-
-
     storage = new playerLocalStorage.default( messaging, _handleEvents );
   }
 

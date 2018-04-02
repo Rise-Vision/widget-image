@@ -6,7 +6,7 @@
 
 describe( "getTableName", function() {
   it( "should return the correct table name", function() {
-    expect( RiseVision.Image.getTableName(), "image_events" );
+    expect( RiseVision.ImageUtils.getTableName(), "image_events" );
   } );
 } );
 
@@ -31,7 +31,7 @@ describe( "logEvent", function() {
       "display_id": ""
     };
 
-    RiseVision.Image.logEvent( {
+    RiseVision.ImageUtils.logEvent( {
       "event": "test",
       "event_details": "test details",
       "file_url": "http://www.test.com/file.jpg"
@@ -47,7 +47,7 @@ describe( "logEvent", function() {
       "display_id": ""
     };
 
-    RiseVision.Image.logEvent( { "event": "test" } );
+    RiseVision.ImageUtils.logEvent( { "event": "test" } );
 
     expect( logSpy ).to.have.been.calledWith( "image_events", params );
   } );

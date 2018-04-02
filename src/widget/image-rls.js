@@ -12,18 +12,25 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
-    _utils = RiseVision.ImageUtils,
+    _imageUtils = RiseVision.ImageUtils,
     _params = null,
     _storage = null,
+    _currentFiles = [],
     _configurationType = null,
-    _img = null;
+    _viewerPaused = true,
+    _configurationLogged = false,
+    _img = null,
+    _isGif = false;
 
   /*
    *  Private Methods
    */
-  function _ready() {
-    gadgets.rpc.call( "", "rsevent_ready", null, _prefs.getString( "id" ),
-      true, true, true, true, true );
+  function _done() {
+    _imageUtils.sendDoneToViewer( _prefs );
+
+    // log "done" event
+    // TODO: file_url should be current file
+    _imageUtils.logEvent( { "event": "done", "file_url": null }, false );
   }
 
   function _init() {
@@ -45,7 +52,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     if ( _mode === "file" ) {
       // create the image <div> within the container <div>
-      el = _utils.getImageElement( _params );
+      el = _imageUtils.getImageElement( _params );
       fragment.appendChild( el );
       container.appendChild( fragment );
 
@@ -60,12 +67,66 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       // TODO: coming soon
     }
 
-    _ready();
+    _imageUtils.sendReadyToViewer( _prefs );
+  }
+
+  function setSingleImage( url ) {
+    _img.onload = function() {
+      var image = document.querySelector( "#container #image" );
+
+      image.style.backgroundImage = "none";
+      // handles single quotes
+      image.style.backgroundImage = "url('" + url.replace( "'", "\\'" ) + "')";
+      _isGif = url.indexOf( ".gif" ) === -1 ? false : true;
+
+      // If widget is playing right now make sure the div image element is visible
+      if ( !_viewerPaused && _isGif ) {
+        image.style.visibility = "visible";
+      }
+    };
+
+    _img.onerror = function() {
+      _imageUtils.logEvent( {
+        "event": "error",
+        "event_details": "image load error",
+        "file_url": url
+      }, true );
+    };
+
+    _img.src = url;
   }
 
   /*
    *  Public Methods
    */
+  function onFileInit( urls ) {
+    if ( _mode === "file" ) {
+      // urls value will be a string of one url
+      _currentFiles[ 0 ] = urls;
+
+      // remove message previously shown
+      _message.hide();
+
+      setSingleImage( _currentFiles[ 0 ] );
+    }
+  }
+
+  function onFileRefresh( urls ) {
+    if ( _mode === "file" ) {
+      // urls value will be a string of one url
+      _currentFiles[ 0 ] = urls;
+
+      setSingleImage( _currentFiles[ 0 ] );
+    }
+  }
+
+  function onFileUnavailable( message ) {
+    _message.show( message );
+
+    if ( !_viewerPaused ) {
+      _done();
+    }
+  }
 
   function setAdditionalParams( additionalParams, modeType, displayId ) {
     _params = _.clone( additionalParams );
@@ -79,15 +140,30 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _init();
   }
 
-  function pause() {}
+  function pause() {
+    _viewerPaused = true;
+  }
 
-  function play() {}
+  function play() {
+    _viewerPaused = false;
+
+    if ( !_configurationLogged ) {
+      _imageUtils.logEvent( { "event": "configuration", "event_details": _configurationType }, false );
+      _configurationLogged = true;
+    }
+
+    // TODO: file_url should be current file
+    _imageUtils.logEvent( { "event": "play", "file_url": null }, false );
+  }
 
   function stop() {
     pause();
   }
 
   return {
+    "onFileInit": onFileInit,
+    "onFileRefresh": onFileRefresh,
+    "onFileUnavailable": onFileUnavailable,
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,

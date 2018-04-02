@@ -11,6 +11,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   var INITIAL_PROCESSING_DELAY = 10000,
     imageUtils = RiseVision.ImageUtils,
     messaging = new localMessaging.default(),
+    filePath = "",
     storage = null,
     initialProcessingTimer = null,
     watchInitiated = false,
@@ -22,14 +23,13 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   }
 
   function _startInitialProcessingTimer() {
-    _clearInitialProcessingTimer();
-
     initialProcessingTimer = setTimeout( function() {
-
+      // file is still processing/downloading
+      RiseVision.ImageRLS.onFileUnavailable( "File is downloading" );
     }, INITIAL_PROCESSING_DELAY );
   }
 
-  function _getStoragePath() {
+  function _getFilePath() {
     var path = "";
 
     if ( params.storage.folder ) {
@@ -41,32 +41,36 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     return "risemedialibrary-" + params.storage.companyId + "/" + path;
   }
 
-  function _getSingleFileURL() {
-    return "https://storage.googleapis.com/" + encodeURIComponent( _getStoragePath() );
-  }
-
   function _handleAuthorized() {
     imageUtils.logEvent( {
       "event": "authorized"
     } );
 
     if ( !watchInitiated ) {
-      storage.watchFiles( _getSingleFileURL() );
+      // start watching the file
+      storage.watchFiles( filePath );
       watchInitiated = true;
     }
   }
 
   function _handleFileProcessing() {
-    if ( initialLoad ) {
-      //RiseVision.Image.onFileUnavailable( "File is downloading" );
+    if ( initialLoad && !initialProcessingTimer ) {
       _startInitialProcessingTimer();
-    } else {
-      _clearInitialProcessingTimer();
-
     }
   }
 
-  function _handleFileAvailable() {}
+  function _handleFileAvailable( data ) {
+    _clearInitialProcessingTimer();
+
+    if ( initialLoad ) {
+      initialLoad = false;
+      RiseVision.ImageRLS.onFileInit( data.fileUrl );
+
+      return;
+    }
+
+    RiseVision.ImageRLS.onFileRefresh( data.fileUrl );
+  }
 
   function _handleEvents( data ) {
     if ( !data || !data.event || typeof data.event !== "string" ) {
@@ -112,6 +116,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   }
 
   function init() {
+    filePath = _getFilePath();
     storage = new playerLocalStorage.default( messaging, _handleEvents );
   }
 

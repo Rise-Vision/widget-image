@@ -11,13 +11,12 @@ RiseVision.Image = ( function( gadgets ) {
     _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
-    _utils = RiseVision.Image.Utils,
+    _imageUtils = RiseVision.ImageUtils,
     _params = null,
     _storage = null,
     _nonStorage = null,
     _slider = null,
     _currentFiles = [],
-    _errorLog = null,
     _configurationType = null,
     _errorTimer = null,
     _errorFlag = false,
@@ -39,13 +38,8 @@ RiseVision.Image = ( function( gadgets ) {
   function _done() {
     gadgets.rpc.call( "", "rsevent_done", null, _prefs.getString( "id" ) );
 
-    // Any errors need to be logged before the done event.
-    if ( _errorLog !== null ) {
-      logEvent( _errorLog, true );
-    }
-
     // log "done" event
-    logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
+    _imageUtils.logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
   }
 
   function _clearErrorTimer() {
@@ -101,7 +95,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     if ( _mode === "file" ) {
       // create the image <div> within the container <div>
-      el = _utils.getImageElement( _params );
+      el = _imageUtils.getImageElement( _params );
       fragment.appendChild( el );
       container.appendChild( fragment );
 
@@ -154,7 +148,7 @@ RiseVision.Image = ( function( gadgets ) {
     };
 
     _img.onerror = function() {
-      logEvent( {
+      _imageUtils.logEvent( {
         "event": "error",
         "event_details": "image load error",
         "file_url": url
@@ -170,14 +164,6 @@ RiseVision.Image = ( function( gadgets ) {
    */
   function hasStorageError() {
     return _storageErrorFlag;
-  }
-
-  function logEvent( params, isError ) {
-    if ( isError ) {
-      _errorLog = params;
-    }
-
-    RiseVision.Common.LoggerUtils.logEvent( getTableName(), params );
   }
 
   function onFileInit( urls ) {
@@ -225,7 +211,7 @@ RiseVision.Image = ( function( gadgets ) {
     _errorFlag = false;
     _storageErrorFlag = false;
     _unavailableFlag = false;
-    _errorLog = null;
+    _imageUtils.clearErrorLog();
   }
 
   function onFileUnavailable( message ) {
@@ -284,11 +270,11 @@ RiseVision.Image = ( function( gadgets ) {
     _viewerPaused = false;
 
     if ( !_configurationLogged ) {
-      logEvent( { "event": "configuration", "event_details": _configurationType }, false );
+      _imageUtils.logEvent( { "event": "configuration", "event_details": _configurationType }, false );
       _configurationLogged = true;
     }
 
-    logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
+    _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
       _startErrorTimer();
@@ -308,10 +294,6 @@ RiseVision.Image = ( function( gadgets ) {
     } else if ( _mode === "file" && image && _isGif ) {
       image.style.visibility = "visible";
     }
-  }
-
-  function getTableName() {
-    return "image_events";
   }
 
   function showError( message, isStorageError ) {
@@ -336,7 +318,6 @@ RiseVision.Image = ( function( gadgets ) {
 
   return {
     "hasStorageError": hasStorageError,
-    "logEvent": logEvent,
     "onFileInit": onFileInit,
     "onFileRefresh": onFileRefresh,
     "onFileUnavailable": onFileUnavailable,
@@ -345,7 +326,6 @@ RiseVision.Image = ( function( gadgets ) {
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,
-    "getTableName": getTableName,
     "showError": showError,
     "stop": stop
   };

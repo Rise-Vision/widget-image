@@ -12,7 +12,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
-    _utils = RiseVision.Image.Utils,
+    _utils = RiseVision.ImageUtils,
     _params = null,
     _storage = null,
     _configurationType = null,
@@ -87,15 +87,10 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     pause();
   }
 
-  function getTableName() {
-    return "image_events";
-  }
-
   return {
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,
-    "getTableName": getTableName,
     "stop": stop
   };
 } )( gadgets );

@@ -7,6 +7,7 @@ RiseVision.Image.NonStorage = function( data ) {
 
   var riseCache = RiseVision.Common.RiseCache,
     utils = RiseVision.Common.Utilities,
+    imageUtils = RiseVision.ImageUtils,
     // 5 minutes
     _refreshDuration = 300000,
     _refreshIntervalId = null,
@@ -48,7 +49,7 @@ RiseVision.Image.NonStorage = function( data ) {
             "file_url": response.url
           };
 
-          RiseVision.Image.logEvent( params, true );
+          imageUtils.logEvent( params, true );
 
           if ( riseCache.isV2Running() ) {
             errorMessage = riseCache.getErrorMessage( statusCode );

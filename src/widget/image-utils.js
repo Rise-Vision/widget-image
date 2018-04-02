@@ -1,13 +1,17 @@
 var RiseVision = RiseVision || {};
 
-RiseVision.Image = RiseVision.Image || {};
-
-RiseVision.Image.Utils = ( function() {
+RiseVision.ImageUtils = ( function() {
   "use strict";
+
+  var _errorLog = null;
 
   /*
    *  Public  Methods
    */
+
+  function clearErrorLog() {
+    _errorLog = null;
+  }
 
   function getImageElement( params ) {
     var el = document.createElement( "div" );
@@ -19,8 +23,30 @@ RiseVision.Image.Utils = ( function() {
     return el;
   }
 
+  function getTableName() {
+    return "image_events";
+  }
+
+  function logEvent( params, isError ) {
+    if ( isError ) {
+      _errorLog = params;
+    }
+
+    if ( params.event === "done" ) {
+      // Any errors need to be logged before the done event.
+      if ( _errorLog ) {
+        RiseVision.Common.LoggerUtils.logEvent( getTableName(), _errorLog );
+      }
+    }
+
+    RiseVision.Common.LoggerUtils.logEvent( getTableName(), params );
+  }
+
   return {
-    "getImageElement": getImageElement
+    "clearErrorLog": clearErrorLog,
+    "getImageElement": getImageElement,
+    "getTableName": getTableName,
+    "logEvent": logEvent
   };
 
 } )();

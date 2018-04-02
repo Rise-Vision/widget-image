@@ -1,3 +1,5 @@
+/* global gadgets */
+
 var RiseVision = RiseVision || {};
 
 RiseVision.ImageUtils = ( function() {
@@ -42,11 +44,22 @@ RiseVision.ImageUtils = ( function() {
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), params );
   }
 
+  function sendDoneToViewer( prefs ) {
+    gadgets.rpc.call( "", "rsevent_done", null, prefs.getString( "id" ) );
+  }
+
+  function sendReadyToViewer( prefs ) {
+    gadgets.rpc.call( "", "rsevent_ready", null, prefs.getString( "id" ),
+      true, true, true, true, true );
+  }
+
   return {
     "clearErrorLog": clearErrorLog,
     "getImageElement": getImageElement,
     "getTableName": getTableName,
-    "logEvent": logEvent
+    "logEvent": logEvent,
+    "sendDoneToViewer": sendDoneToViewer,
+    "sendReadyToViewer": sendReadyToViewer
   };
 
 } )();

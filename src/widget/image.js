@@ -30,13 +30,8 @@ RiseVision.Image = ( function( gadgets ) {
   /*
    *  Private Methods
    */
-  function _ready() {
-    gadgets.rpc.call( "", "rsevent_ready", null, _prefs.getString( "id" ),
-      true, true, true, true, true );
-  }
-
   function _done() {
-    gadgets.rpc.call( "", "rsevent_done", null, _prefs.getString( "id" ) );
+    _imageUtils.sendDoneToViewer( _prefs );
 
     // log "done" event
     _imageUtils.logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
@@ -129,7 +124,7 @@ RiseVision.Image = ( function( gadgets ) {
       _storage.init();
     }
 
-    _ready();
+    _imageUtils.sendReadyToViewer( _prefs );
   }
 
   function setSingleImage( url ) {

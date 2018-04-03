@@ -17,6 +17,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _storage = null,
     _currentFiles = [],
     _configurationType = null,
+    _errorFlag = false,
     _viewerPaused = true,
     _configurationLogged = false,
     _img = null,
@@ -26,7 +27,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
    *  Private Methods
    */
   function _done() {
-    _imageUtils.sendDoneToViewer( _prefs );
+    _imageUtils.sendDoneToViewer();
 
     // log "done" event
     // TODO: file_url should be current file
@@ -67,7 +68,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       // TODO: coming soon
     }
 
-    _imageUtils.sendReadyToViewer( _prefs );
+    _imageUtils.sendReadyToViewer();
   }
 
   function setSingleImage( url ) {
@@ -118,6 +119,9 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
       setSingleImage( _currentFiles[ 0 ] );
     }
+
+    _errorFlag = false;
+    _imageUtils.clearErrorLog();
   }
 
   function onFileUnavailable( message ) {
@@ -145,6 +149,8 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function play() {
+    var image = document.querySelector( "#container #image" );
+
     _viewerPaused = false;
 
     if ( !_configurationLogged ) {
@@ -154,6 +160,28 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     // TODO: file_url should be current file
     _imageUtils.logEvent( { "event": "play", "file_url": null }, false );
+
+    if ( _errorFlag ) {
+      _imageUtils.startErrorTimer();
+      return;
+    }
+
+    // TODO: handle folder
+    if ( _mode === "file" && image && _isGif ) {
+      image.style.visibility = "visible";
+    }
+  }
+
+  function showError( message ) {
+    _errorFlag = true;
+
+    _message.show( message );
+
+    // TODO: handle folder
+
+    if ( !_viewerPaused ) {
+      _imageUtils.startErrorTimer();
+    }
   }
 
   function stop() {
@@ -167,6 +195,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,
+    "showError": showError,
     "stop": stop
   };
 } )( gadgets );

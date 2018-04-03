@@ -18,7 +18,6 @@ RiseVision.Image = ( function( gadgets ) {
     _slider = null,
     _currentFiles = [],
     _configurationType = null,
-    _errorTimer = null,
     _errorFlag = false,
     _storageErrorFlag = false,
     _configurationLogged = false,
@@ -31,25 +30,12 @@ RiseVision.Image = ( function( gadgets ) {
    *  Private Methods
    */
   function _done() {
-    _imageUtils.sendDoneToViewer( _prefs );
+    _imageUtils.sendDoneToViewer();
 
     // log "done" event
     _imageUtils.logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
   }
 
-  function _clearErrorTimer() {
-    clearTimeout( _errorTimer );
-    _errorTimer = null;
-  }
-
-  function _startErrorTimer() {
-    _clearErrorTimer();
-
-    _errorTimer = setTimeout( function() {
-      // notify Viewer widget is done
-      _done();
-    }, 5000 );
-  }
 
   function _getCurrentFile() {
     var slideNum = -1;
@@ -124,7 +110,7 @@ RiseVision.Image = ( function( gadgets ) {
       _storage.init();
     }
 
-    _imageUtils.sendReadyToViewer( _prefs );
+    _imageUtils.sendReadyToViewer();
   }
 
   function setSingleImage( url ) {
@@ -216,7 +202,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     // if Widget is playing right now, run the timer
     if ( !_viewerPaused ) {
-      _startErrorTimer();
+      _imageUtils.startErrorTimer();
     }
   }
 
@@ -250,7 +236,7 @@ RiseVision.Image = ( function( gadgets ) {
     _viewerPaused = true;
 
     // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
-    _clearErrorTimer();
+    _imageUtils.clearErrorTimer();
 
     if ( _mode === "folder" && _slider && _slider.isReady() ) {
       _slider.pause();
@@ -272,7 +258,7 @@ RiseVision.Image = ( function( gadgets ) {
     _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
-      _startErrorTimer();
+      _imageUtils.startErrorTimer();
       return;
     }
 
@@ -303,7 +289,7 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     if ( !_viewerPaused ) {
-      _startErrorTimer();
+      _imageUtils.startErrorTimer();
     }
   }
 

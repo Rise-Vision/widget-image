@@ -5,7 +5,10 @@ var RiseVision = RiseVision || {};
 RiseVision.ImageUtils = ( function() {
   "use strict";
 
-  var _errorLog = null;
+  var ERROR_TIMER_DELAY = 5000,
+    _prefs = new gadgets.Prefs(),
+    _errorLog = null,
+    _errorTimer = null;
 
   /*
    *  Public  Methods
@@ -13,6 +16,19 @@ RiseVision.ImageUtils = ( function() {
 
   function clearErrorLog() {
     _errorLog = null;
+  }
+
+  function clearErrorTimer() {
+    clearTimeout( _errorTimer );
+    _errorTimer = null;
+  }
+
+  function startErrorTimer() {
+    clearErrorTimer();
+
+    _errorTimer = setTimeout( function() {
+      sendDoneToViewer();
+    }, ERROR_TIMER_DELAY );
   }
 
   function getImageElement( params ) {
@@ -44,17 +60,19 @@ RiseVision.ImageUtils = ( function() {
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), params );
   }
 
-  function sendDoneToViewer( prefs ) {
-    gadgets.rpc.call( "", "rsevent_done", null, prefs.getString( "id" ) );
+  function sendDoneToViewer() {
+    gadgets.rpc.call( "", "rsevent_done", null, _prefs.getString( "id" ) );
   }
 
-  function sendReadyToViewer( prefs ) {
-    gadgets.rpc.call( "", "rsevent_ready", null, prefs.getString( "id" ),
+  function sendReadyToViewer() {
+    gadgets.rpc.call( "", "rsevent_ready", null, _prefs.getString( "id" ),
       true, true, true, true, true );
   }
 
   return {
     "clearErrorLog": clearErrorLog,
+    "clearErrorTimer": clearErrorTimer,
+    "startErrorTimer": startErrorTimer,
     "getImageElement": getImageElement,
     "getTableName": getTableName,
     "logEvent": logEvent,

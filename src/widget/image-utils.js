@@ -8,7 +8,8 @@ RiseVision.ImageUtils = ( function() {
   var ERROR_TIMER_DELAY = 5000,
     _prefs = new gadgets.Prefs(),
     _errorLog = null,
-    _errorTimer = null;
+    _errorTimer = null,
+    _isSingleImageGIF = false;
 
   /*
    *  Public  Methods
@@ -45,6 +46,33 @@ RiseVision.ImageUtils = ( function() {
     return "image_events";
   }
 
+  function handleSingleImageLoad( url, isViewerPaused ) {
+    var image = document.querySelector( "#container #image" );
+
+    image.style.backgroundImage = "none";
+    // handles single quotes
+    image.style.backgroundImage = "url('" + url.replace( "'", "\\'" ) + "')";
+
+    _isSingleImageGIF = url.indexOf( ".gif" ) !== -1;
+
+    // If widget is playing right now make sure the div image element is visible
+    if ( !isViewerPaused && _isSingleImageGIF ) {
+      image.style.visibility = "visible";
+    }
+  }
+
+  function handleSingleImageLoadError( url ) {
+    logEvent( {
+      "event": "error",
+      "event_details": "image load error",
+      "file_url": url
+    }, true );
+  }
+
+  function isSingleImageGIF() {
+    return _isSingleImageGIF;
+  }
+
   function logEvent( params, isError ) {
     if ( isError ) {
       _errorLog = params;
@@ -73,6 +101,9 @@ RiseVision.ImageUtils = ( function() {
     "clearErrorLog": clearErrorLog,
     "clearErrorTimer": clearErrorTimer,
     "startErrorTimer": startErrorTimer,
+    "handleSingleImageLoad": handleSingleImageLoad,
+    "handleSingleImageLoadError": handleSingleImageLoadError,
+    "isSingleImageGIF": isSingleImageGIF,
     "getImageElement": getImageElement,
     "getTableName": getTableName,
     "logEvent": logEvent,

@@ -23,8 +23,7 @@ RiseVision.Image = ( function( gadgets ) {
     _configurationLogged = false,
     _unavailableFlag = false,
     _viewerPaused = true,
-    _img = null,
-    _isGif = false;
+    _img = null;
 
   /*
    *  Private Methods
@@ -114,26 +113,12 @@ RiseVision.Image = ( function( gadgets ) {
   }
 
   function setSingleImage( url ) {
-
     _img.onload = function() {
-      var image = document.querySelector( "#container #image" );
-
-      image.style.backgroundImage = "none";
-      image.style.backgroundImage = "url('" + url + "')";
-      _isGif = url.indexOf( ".gif" ) === -1 ? false : true;
-
-      // If widget is playing right now make sure the div image element is visible
-      if ( !_viewerPaused && _isGif ) {
-        image.style.visibility = "visible";
-      }
+      _imageUtils.handleSingleImageLoad( url, _viewerPaused );
     };
 
     _img.onerror = function() {
-      _imageUtils.logEvent( {
-        "event": "error",
-        "event_details": "image load error",
-        "file_url": url
-      }, true );
+      _imageUtils.handleSingleImageLoadError( url )
     };
 
     // handles special characters
@@ -240,7 +225,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     if ( _mode === "folder" && _slider && _slider.isReady() ) {
       _slider.pause();
-    } else if ( _mode === "file" && image && _isGif ) {
+    } else if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "hidden";
     }
   }
@@ -272,7 +257,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     if ( _mode === "folder" && _slider && _slider.isReady() ) {
       _slider.play();
-    } else if ( _mode === "file" && image && _isGif ) {
+    } else if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "visible";
     }
   }

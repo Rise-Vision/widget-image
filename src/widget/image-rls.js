@@ -20,8 +20,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _errorFlag = false,
     _viewerPaused = true,
     _configurationLogged = false,
-    _img = null,
-    _isGif = false;
+    _img = null;
 
   /*
    *  Private Methods
@@ -73,25 +72,11 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
   function setSingleImage( url ) {
     _img.onload = function() {
-      var image = document.querySelector( "#container #image" );
-
-      image.style.backgroundImage = "none";
-      // handles single quotes
-      image.style.backgroundImage = "url('" + url.replace( "'", "\\'" ) + "')";
-      _isGif = url.indexOf( ".gif" ) === -1 ? false : true;
-
-      // If widget is playing right now make sure the div image element is visible
-      if ( !_viewerPaused && _isGif ) {
-        image.style.visibility = "visible";
-      }
+      _imageUtils.handleSingleImageLoad( url, _viewerPaused );
     };
 
     _img.onerror = function() {
-      _imageUtils.logEvent( {
-        "event": "error",
-        "event_details": "image load error",
-        "file_url": url
-      }, true );
+      _imageUtils.handleSingleImageLoadError( url )
     };
 
     _img.src = url;
@@ -145,7 +130,17 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function pause() {
+    var image = document.querySelector( "#container #image" );
+
     _viewerPaused = true;
+
+    // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
+    _imageUtils.clearErrorTimer();
+
+    // TODO: handle folder
+    if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
+      image.style.visibility = "hidden";
+    }
   }
 
   function play() {
@@ -167,7 +162,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
 
     // TODO: handle folder
-    if ( _mode === "file" && image && _isGif ) {
+    if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "visible";
     }
   }

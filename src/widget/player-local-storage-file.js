@@ -63,7 +63,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
 
   function _handleUnauthorized() {
     imageUtils.logEvent( {
-      "event": "unauthorized",
+      "event": "error",
+      "event_details": "unauthorized",
       "file_url": filePath
     }, true );
 
@@ -100,8 +101,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   function _handleFileNoExist() {
     var params = {
       "event": "error",
-      "event_details": "local storage error",
-      "error_details": "The file does not exist.",
+      "event_details": "The file does not exist.",
       "file_url": filePath
     };
 
@@ -129,7 +129,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
 
     imageUtils.logEvent( params, true );
 
-    /* Possible error messages from Local Storage, Widget will display generic message */
+    /*** Possible error messages from Local Storage ***/
     /*
       "File's host server could not be reached"
 
@@ -142,6 +142,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
       "Invalid response with status code [CODE]"
      */
 
+    // Widget will display generic message
     RiseVision.ImageRLS.showError( "Unable to download the file." );
   }
 
@@ -181,6 +182,10 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     }
   }
 
+  function getFilePath() {
+    return filePath;
+  }
+
   function init() {
     filePath = _getFilePath();
     storage = new playerLocalStorage.default( messaging, _handleEvents );
@@ -191,6 +196,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   }
 
   return {
+    "getFilePath": getFilePath,
     "init": init,
     "retry": retry
   };

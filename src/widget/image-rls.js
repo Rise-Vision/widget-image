@@ -15,7 +15,6 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils = RiseVision.ImageUtils,
     _params = null,
     _storage = null,
-    _currentFiles = [],
     _configurationType = null,
     _errorFlag = false,
     _viewerPaused = true,
@@ -30,8 +29,17 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils.sendDoneToViewer();
 
     // log "done" event
-    // TODO: file_url should be current file
-    _imageUtils.logEvent( { "event": "done", "file_url": null }, false );
+    _imageUtils.logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
+  }
+
+  function _getCurrentFile() {
+    if ( _mode === "file" && _storage ) {
+      return _storage.getFilePath();
+    }
+
+    // TODO: handle folder
+
+    return null;
   }
 
   function _init() {
@@ -88,29 +96,23 @@ RiseVision.ImageRLS = ( function( gadgets ) {
    */
   function onFileInit( urls ) {
     if ( _mode === "file" ) {
-      // urls value will be a string of one url
-      _currentFiles[ 0 ] = urls;
-
       _unavailableFlag = false;
 
       // remove message previously shown
       _message.hide();
 
-      setSingleImage( _currentFiles[ 0 ] );
+      setSingleImage( urls );
     }
   }
 
   function onFileRefresh( urls ) {
     if ( _mode === "file" ) {
-      // urls value will be a string of one url
-      _currentFiles[ 0 ] = urls;
-
       if ( _unavailableFlag ) {
         // remove the message previously shown
         _message.hide();
       }
 
-      setSingleImage( _currentFiles[ 0 ] );
+      setSingleImage( urls );
     }
 
     _errorFlag = false;
@@ -162,8 +164,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _configurationLogged = true;
     }
 
-    // TODO: file_url should be current file
-    _imageUtils.logEvent( { "event": "play", "file_url": null }, false );
+    _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
       _imageUtils.startErrorTimer();

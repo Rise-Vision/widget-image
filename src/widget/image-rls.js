@@ -20,6 +20,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _errorFlag = false,
     _viewerPaused = true,
     _configurationLogged = false,
+    _unavailableFlag = false,
     _img = null;
 
   /*
@@ -90,6 +91,8 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       // urls value will be a string of one url
       _currentFiles[ 0 ] = urls;
 
+      _unavailableFlag = false;
+
       // remove message previously shown
       _message.hide();
 
@@ -102,10 +105,16 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       // urls value will be a string of one url
       _currentFiles[ 0 ] = urls;
 
+      if ( _unavailableFlag ) {
+        // remove the message previously shown
+        _message.hide();
+      }
+
       setSingleImage( _currentFiles[ 0 ] );
     }
 
     _errorFlag = false;
+    _unavailableFlag = false;
     _imageUtils.clearErrorLog();
   }
 
@@ -158,6 +167,14 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     if ( _errorFlag ) {
       _imageUtils.startErrorTimer();
+      return;
+    }
+
+    if ( _unavailableFlag ) {
+      if ( _mode === "file" && _storage ) {
+        _storage.retry();
+      }
+
       return;
     }
 

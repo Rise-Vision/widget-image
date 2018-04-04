@@ -41,11 +41,36 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     return "risemedialibrary-" + params.storage.companyId + "/" + path;
   }
 
-  function _handleAuthorized() {
+  function _handleNoConnection() {
     imageUtils.logEvent( {
-      "event": "authorized"
-    } );
+      "event": "error",
+      "event_details": "no connection",
+      "file_url": filePath
+    }, true );
 
+    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+  }
+
+  function _handleRequiredModulesUnavailable() {
+    imageUtils.logEvent( {
+      "event": "error",
+      "event_details": "required modules unavailable",
+      "file_url": filePath
+    }, true );
+
+    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+  }
+
+  function _handleUnauthorized() {
+    imageUtils.logEvent( {
+      "event": "unauthorized",
+      "file_url": filePath
+    }, true );
+
+    RiseVision.ImageRLS.showError( "Rise Storage subscription is not active." );
+  }
+
+  function _handleAuthorized() {
     if ( !watchInitiated ) {
       // start watching the file
       storage.watchFiles( filePath );
@@ -72,6 +97,54 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     RiseVision.ImageRLS.onFileRefresh( data.fileUrl );
   }
 
+  function _handleFileNoExist() {
+    var params = {
+      "event": "error",
+      "event_details": "local storage error",
+      "error_details": "The file does not exist.",
+      "file_url": filePath
+    };
+
+    imageUtils.logEvent( params, true );
+
+    RiseVision.ImageRLS.showError( params.error_details );
+  }
+
+  function _handleFileDeleted() {
+    imageUtils.logEvent( {
+      "event": "file deleted",
+      "file_url": filePath
+    } );
+  }
+
+  function _handleFileError( data ) {
+    var msg = data.msg || "",
+      detail = data.detail || "",
+      params = {
+        "event": "error",
+        "event_details": msg,
+        "error_details": detail,
+        "file_url": filePath
+      };
+
+    imageUtils.logEvent( params, true );
+
+    /* Possible error messages from Local Storage, Widget will display generic message */
+    /*
+      "File's host server could not be reached"
+
+      "File I/O Error"
+
+      "Could not retrieve signed URL"
+
+      "Insufficient disk space"
+
+      "Invalid response with status code [CODE]"
+     */
+
+    RiseVision.ImageRLS.showError( "Unable to download the file." );
+  }
+
   function _handleEvents( data ) {
     if ( !data || !data.event || typeof data.event !== "string" ) {
       return;
@@ -79,23 +152,16 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
 
     switch ( data.event.toUpperCase() ) {
     case "NO-CONNECTION":
-      imageUtils.logEvent( {
-        "event": "no connection",
-        "event_details": "use rise cache"
-      } );
+      _handleNoConnection();
       break;
     case "REQUIRED-MODULES-UNAVAILABLE":
-      imageUtils.logEvent( {
-        "event": "required modules unavailable"
-      } );
+      _handleRequiredModulesUnavailable();
       break;
     case "AUTHORIZED":
       _handleAuthorized();
       break;
     case "UNAUTHORIZED":
-      imageUtils.logEvent( {
-        "event": "unauthorized"
-      } );
+      _handleUnauthorized();
       break;
     case "FILE-AVAILABLE":
       _handleFileAvailable( data );
@@ -104,13 +170,13 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
       _handleFileProcessing();
       break;
     case "FILE-NO-EXIST":
-      //
+      _handleFileNoExist();
       break;
     case "FILE-DELETED":
-      //
+      _handleFileDeleted();
       break;
     case "FILE-ERROR":
-      //
+      _handleFileError( data );
       break;
     }
   }
@@ -120,7 +186,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     storage = new playerLocalStorage.default( messaging, _handleEvents );
   }
 
+  function retry() {
+    _handleFileProcessing();
+  }
+
   return {
-    "init": init
+    "init": init,
+    "retry": retry
   };
 };

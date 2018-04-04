@@ -187,7 +187,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     // if Widget is playing right now, run the timer
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.startErrorTimer( _getCurrentFile() );
     }
   }
 
@@ -243,7 +243,7 @@ RiseVision.Image = ( function( gadgets ) {
     _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.startErrorTimer( _getCurrentFile() );
       return;
     }
 
@@ -274,7 +274,7 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.startErrorTimer( _getCurrentFile() );
     }
   }
 

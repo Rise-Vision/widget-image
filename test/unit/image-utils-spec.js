@@ -52,4 +52,37 @@ describe( "logEvent", function() {
     expect( logSpy ).to.have.been.calledWith( "image_events", params );
   } );
 
+  it( "should call spy twice if event is 'done' and a previous error exists", function() {
+    var params = {
+      "event": "error",
+      "event_details": "error details",
+      "file_url": "http://www.test.com/file.jpg",
+      "file_format": "jpg",
+      "company_id": "",
+      "display_id": ""
+    };
+
+    RiseVision.ImageUtils.logEvent( {
+      "event": params.event,
+      "event_details": params.event_details,
+      "file_url": params.file_url
+    } );
+
+    RiseVision.ImageUtils.logEvent( {
+      "event": "done",
+      "file_url": params.file_url
+    } );
+
+    expect( logSpy.callCount ).to.equal( 2 );
+    expect( logSpy.args[ 0 ][ 1 ] ).to.deep.equal( params );
+    expect( logSpy.args[ 1 ][ 1 ] ).to.deep.equal( {
+      "event": "done",
+      "file_url": params.file_url,
+      "file_format": "jpg",
+      "company_id": "",
+      "display_id": ""
+    } );
+
+  } );
+
 } );

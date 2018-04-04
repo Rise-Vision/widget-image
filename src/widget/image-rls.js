@@ -81,7 +81,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
   function setSingleImage( url ) {
     _img.onload = function() {
-      _imageUtils.handleSingleImageLoad( url, _viewerPaused );
+      _imageUtils.handleSingleImageLoad( url, _viewerPaused, true );
     };
 
     _img.onerror = function() {
@@ -167,7 +167,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.startErrorTimer( _getCurrentFile() );
       return;
     }
 
@@ -193,7 +193,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     // TODO: handle folder
 
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.startErrorTimer( _getCurrentFile() );
     }
   }
 

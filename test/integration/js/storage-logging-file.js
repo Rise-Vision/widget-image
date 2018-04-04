@@ -133,9 +133,10 @@ suite( "rise storage error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
 
     params.event = "done";
-    params.file_url = window.gadget.settings.additionalParams.selector.url;
+    params.file_url = null;
     delete params.error_details;
     delete params.event_details;
+    delete params.file_format;
 
     clock.tick( 5000 );
 

@@ -28,7 +28,7 @@ RiseVision.ImageUtils = ( function() {
     clearErrorTimer();
 
     _errorTimer = setTimeout( function() {
-      sendDoneToViewer();
+      RiseVision.ImageUtils.sendDoneToViewer();
       logEvent( { "event": "done", "file_url": currentFile }, false );
     }, ERROR_TIMER_DELAY );
   }
@@ -47,17 +47,11 @@ RiseVision.ImageUtils = ( function() {
     return "image_events";
   }
 
-  function handleSingleImageLoad( url, isViewerPaused, replaceSingleQuote ) {
+  function handleSingleImageLoad( url, isViewerPaused ) {
     var image = document.querySelector( "#container #image" );
 
     image.style.backgroundImage = "none";
-
-    if ( replaceSingleQuote ) {
-      // handles single quotes
-      image.style.backgroundImage = "url('" + url.replace( "'", "\\'" ) + "')";
-    } else {
-      image.style.backgroundImage = "url('" + url + "')";
-    }
+    image.style.backgroundImage = "url('" + url + "')";
 
     _isSingleImageGIF = url.indexOf( ".gif" ) !== -1;
 

@@ -101,13 +101,13 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   function _handleFileNoExist() {
     var params = {
       "event": "error",
-      "event_details": "The file does not exist.",
+      "event_details": "file does not exist",
       "file_url": filePath
     };
 
     imageUtils.logEvent( params, true );
 
-    RiseVision.ImageRLS.showError( params.error_details );
+    RiseVision.ImageRLS.showError( "The selected image does not exist or has been moved to Trash." );
   }
 
   function _handleFileDeleted() {

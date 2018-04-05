@@ -13,6 +13,10 @@
     return false;
   };
 
+  function isValidDisplay( displayId ) {
+    return displayId && displayId !== "preview" && displayId !== "display_id" && displayId.indexOf( "displayId" ) === -1;
+  }
+
   function configure( names, values ) {
     var additionalParams,
       mode,
@@ -51,10 +55,8 @@
             // file was selected
             mode = "file";
 
-            if ( displayId && displayId !== "preview" && displayId !== "display_id" && displayId.indexOf( "displayId" ) === -1 ) {
-              // valid display id, running on Player, use RLS for single storage file
-              useRLS = true;
-            }
+            // integration tests set TEST_USE_RLS to true
+            useRLS = config.TEST_USE_RLS || isValidDisplay( displayId );
           }
         } else {
           // non-storage file was selected

@@ -81,7 +81,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
   function setSingleImage( url ) {
     _img.onload = function() {
-      _imageUtils.handleSingleImageLoad( url, _viewerPaused, true );
+      _imageUtils.handleSingleImageLoad( url, _viewerPaused );
     };
 
     _img.onerror = function() {

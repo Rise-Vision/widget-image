@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>Image Widget</title>
+
+  <link rel="stylesheet" type="text/css" href="../../src/widget/css/styles.css">
+  <link rel="stylesheet" href="../../src/components/widget-common/dist/css/message.css">
+
+  <script src="../../src/components/web-component-tester/browser.js"></script>
+</head>
+<body>
+
+<div id="container"></div>
+
+<div id="messageContainer"></div>
+
+<script src="../../node_modules/widget-tester/mocks/gadget-mocks.js"></script>
+<script src="../../node_modules/widget-tester/mocks/logger-mock.js"></script>
+<script src="../../src/components/widget-common/dist/common.js"></script>
+
+<script src="../../src/widget/image-utils.js"></script>
+
+<script>
+  var mainContainer = document.getElementById("container");
+
+  mainContainer.style.height = "778px";
+
+  suite("Image-Utils", function() {
+
+    var imageUtils = RiseVision.ImageUtils;
+
+    suite("getImageElement", function () {
+
+      test("should create image div within the container", function () {
+        var fragment = document.createDocumentFragment(),
+          el = imageUtils.getImageElement( {
+            "scaleToFit": true,
+            "position": "top-left"
+          } );
+
+        fragment.appendChild( el );
+        mainContainer.appendChild( fragment );
+
+        assert.isNotNull( document.getElementById( "image" ) );
+        assert.isNotNull( document.querySelector( ".top-left" ) );
+        assert.isNotNull( document.querySelector( ".scale-to-fit" ) );
+      });
+
+    });
+
+    suite( "handleSingleImageLoad", function() {
+      var jpgImage = "https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+        gifImage = "https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/bells.gif";
+
+      test( "should set background image", function( done ) {
+        imageUtils.handleSingleImageLoad( jpgImage, false, true );
+
+        setTimeout( function() {
+          assert.equal( document.getElementById( "image" ).style.backgroundImage,
+            "url(\"https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg\")" );
+          done();
+        }, 3000 );
+      } );
+
+      test( "should flag is GIF and show GIF when widget playing", function( done ) {
+        imageUtils.handleSingleImageLoad( gifImage, false );
+
+        assert( imageUtils.isSingleImageGIF() );
+
+        setTimeout( function() {
+          assert.equal( document.getElementById( "image" ).style.visibility, "visible" );
+          done();
+        }, 3000 );
+      } );
+
+    } );
+
+    suite( "handleSingleImageLoadError", function() {
+
+      teardown(function() {
+        imageUtils.clearErrorLog();
+      });
+
+      test( "should log error", function() {
+        var table = "image_events",
+          params = {
+            "event": "error",
+            "event_details": "image load error",
+            "file_url": "test-bucket/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+            "file_format": "jpg",
+            "company_id": "",
+            "display_id": ""
+          },
+          logSpy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
+
+        imageUtils.handleSingleImageLoadError( params.file_url );
+
+        assert( logSpy.calledOnce );
+        assert( logSpy.calledWith( table, params ) );
+
+        RiseVision.Common.LoggerUtils.logEvent.restore();
+      });
+
+    } );
+
+    suite( "startErrorTimer", function() {
+
+      test( "should after 5 seconds send done to Viewer and log done", function() {
+        var table = "image_events",
+          params = {
+            "event": "done",
+            "file_url": "test-bucket/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+            "file_format": "jpg",
+            "company_id": "",
+            "display_id": ""
+          },
+          logSpy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent"),
+          sendStub = sinon.stub(imageUtils, "sendDoneToViewer"),
+          clock = sinon.useFakeTimers();
+
+        imageUtils.startErrorTimer( "test-bucket/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg" );
+
+        clock.tick(5000);
+
+        assert( logSpy.calledOnce );
+        assert( logSpy.calledWith( table, params ) );
+        assert( sendStub.calledOnce );
+
+        RiseVision.Common.LoggerUtils.logEvent.restore();
+        imageUtils.sendDoneToViewer.restore();
+        clock.restore();
+      } );
+
+    } );
+
+  });
+</script>
+
+</body>
+</html>

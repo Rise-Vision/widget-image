@@ -1,6 +1,6 @@
 {
   "name": "widget-image",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "The Image Widget allows you to add an image directly into your Presentation.",
   "main": "gulpfile.js",
   "scripts": {

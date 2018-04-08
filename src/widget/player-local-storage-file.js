@@ -61,6 +61,16 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
   }
 
+  function _handleLicensingUnavailable() {
+    imageUtils.logEvent( {
+      "event": "error",
+      "event_details": "licensing unavailable",
+      "file_url": filePath
+    }, true );
+
+    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+  }
+
   function _handleUnauthorized() {
     imageUtils.logEvent( {
       "event": "error",
@@ -157,6 +167,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
       break;
     case "REQUIRED-MODULES-UNAVAILABLE":
       _handleRequiredModulesUnavailable();
+      break;
+    case "LICENSING-UNAVAILABLE":
+      _handleLicensingUnavailable();
       break;
     case "AUTHORIZED":
       _handleAuthorized();

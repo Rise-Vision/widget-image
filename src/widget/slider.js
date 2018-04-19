@@ -107,7 +107,7 @@ RiseVision.Image.Slider = function( params ) {
     // list.appendChild( fragment );
   }
 
-  function onSlideChanged( data ) {
+  function onSlideChanged() {
     if ( isInteracting ) {
       pause();
     } else {
@@ -165,7 +165,7 @@ RiseVision.Image.Slider = function( params ) {
       slideIndex = 1;
     }
     slides[ slideIndex - 1 ].style.display = "block";
-    onSlideChanged( slides[ slideIndex - 1 ] );
+    onSlideChanged();
     slideTimer = setTimeout( carousel, params.pause * 1000 );
   }
 

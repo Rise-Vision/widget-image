@@ -1,4 +1,4 @@
-/* global _, $ */
+/* global _ */
 var RiseVision = RiseVision || {};
 
 RiseVision.Image = RiseVision.Image || {};
@@ -7,44 +7,53 @@ RiseVision.Image.Slider = function( params ) {
   "use strict";
 
   var totalSlides = 0,
-    $api = null,
+    // $api = null,
     currentFiles = null,
     newFiles = null,
-    navTimer = null,
     slideTimer = null,
     isLastSlide = false,
-    refreshSlider = false,
     isLoading = true,
-    isPlaying = false,
     isInteracting = false,
-    navTimeout = 3000,
-    singleImagePUDTimer = null;
+    singleImagePUDTimer = null,
+    slideIndex = 0,
+    refreshSlider = false,
+    slides = [];
 
   /*
    *  Private Methods
    */
   function addSlides() {
-    var list = document.querySelector( ".tp-banner ul" ),
-      fragment = document.createDocumentFragment(),
-      slides = [],
-      slide = null,
+    var container = document.querySelector( ".tp-banner-container" ),
       image = null,
-      position = "";
+      position = "",
+      index = 0;
 
+    slides = [];
+    while ( container.firstChild ) {
+      container.removeChild( container.firstChild );
+    }
     totalSlides = currentFiles.length;
 
     currentFiles.forEach( function( file ) {
-      slide = document.createElement( "li" );
       image = document.createElement( "img" );
 
       // Transition
-      slide.setAttribute( "data-transition", "fade" );
-      slide.setAttribute( "data-masterspeed", 500 );
-      slide.setAttribute( "data-delay", params.duration * 1000 );
+      // slide.setAttribute( "data-transition", "fade" );
+      // slide.setAttribute( "data-masterspeed", 500 );
+      // slide.setAttribute( "data-delay", params.duration * 1000 );
 
       // Lazy load
-      image.src = "";
-      image.setAttribute( "data-lazyload", file.url );
+      image.src = file.url;
+      image.className = "w3-animate-fading";
+
+      if ( index == 0 ) {
+        image.onload = function() {
+          isLoading = false;
+          RiseVision.Image.onSliderReady();
+        }
+      }
+
+      index++;
 
       // Alignment
       switch ( params.position ) {
@@ -83,20 +92,19 @@ RiseVision.Image.Slider = function( params ) {
 
       // Scale to Fit
       if ( params.scaleToFit ) {
-        image.setAttribute( "data-bgfit", "contain" );
-      } else {
-        image.setAttribute( "data-bgfit", "normal" );
+        image.style.height = "100%";
+        image.style.width = "100%";
       }
 
-      slide.appendChild( image );
-      slides.push( slide );
+      container.appendChild( image );
+      slides.push( image );
     } );
 
-    slides.forEach( function( slide ) {
-      fragment.appendChild( slide );
-    } );
+    // slides.forEach( function( slide ) {
+    //   fragment.appendChild( slide );
+    // } );
 
-    list.appendChild( fragment );
+    // list.appendChild( fragment );
   }
 
   function onSlideChanged( data ) {
@@ -110,12 +118,7 @@ RiseVision.Image.Slider = function( params ) {
         RiseVision.Image.onSliderComplete();
 
         if ( refreshSlider ) {
-          // Destroy and recreate the slider if the files have changed.
-          if ( $api ) {
-            destroySlider();
-            init( newFiles );
-          }
-
+          init( newFiles );
           refreshSlider = false;
         }
       }
@@ -126,44 +129,56 @@ RiseVision.Image.Slider = function( params ) {
     }
   }
 
-  function destroySlider() {
-    // Remove event handlers.
-    $( "body" ).off( "touchend" );
-    $api.off( "revolution.slide.onloaded" );
-    $api.off( "revolution.slide.onchange" );
+  // function destroySlider() {
+  //   // Remove event handlers.
+  //   $( "body" ).off( "touchend" );
+  //   $api.off( "revolution.slide.onloaded" );
+  //   $api.off( "revolution.slide.onchange" );
 
-    // Let the slider clean up after itself.
-    $api.revkill();
-    $api = null;
-  }
+  //   // Let the slider clean up after itself.
+  //   $api.revkill();
+  //   $api = null;
+  // }
 
   // User has interacted with the slideshow.
-  function handleUserActivity() {
-    isInteracting = true;
+  // function handleUserActivity() {
+  //   isInteracting = true;
+  //   clearTimeout( slideTimer );
+
+
+  //   // Move to next slide and resume the slideshow after a delay.
+  //   slideTimer = setTimeout( function() {
+  //     isInteracting = false;
+  //     carousel();
+  //   }, params.pause * 1000 );
+  // }
+
+  function carousel() {
+    var i;
+
     clearTimeout( slideTimer );
-
-    // Move to next slide and resume the slideshow after a delay.
-    slideTimer = setTimeout( function() {
-      $api.revnext();
-      $api.revresume();
-
-      isInteracting = false;
-      isPlaying = true;
-    }, params.pause * 1000 );
-
-    hideNav();
+    for ( i = 0; i < slides.length; i++ ) {
+      slides[ i ].style.display = "none";
+    }
+    slideIndex++;
+    if ( slideIndex > slides.length ) {
+      slideIndex = 1;
+    }
+    slides[ slideIndex - 1 ].style.display = "block";
+    onSlideChanged( slides[ slideIndex - 1 ] );
+    slideTimer = setTimeout( carousel, params.pause * 1000 );
   }
 
   // Hide the navigation after a delay.
-  function hideNav() {
-    if ( params.autoHide ) {
-      clearTimeout( navTimer );
+  // function hideNav() {
+  //   if ( params.autoHide ) {
+  //     clearTimeout( navTimer );
 
-      navTimer = setTimeout( function() {
-        $( ".tp-leftarrow, .tp-rightarrow" ).addClass( "hidearrows" );
-      }, navTimeout );
-    }
-  }
+  //     navTimer = setTimeout( function() {
+  //       $( ".tp-leftarrow, .tp-rightarrow" ).addClass( "hidearrows" );
+  //     }, navTimeout );
+  //   }
+  // }
 
   function startSingleImagePUDTimer() {
     var delay = ( ( params.duration === undefined ) || ( params.duration < 1 ) ) ? 10000 : params.duration * 1000;
@@ -178,69 +193,67 @@ RiseVision.Image.Slider = function( params ) {
    *  TODO: Test what happens when folder isn't found.
    */
   function destroy() {
-    if ( $api ) {
-      isLastSlide = false;
-      pause();
-      destroySlider();
-    }
+    isLastSlide = false;
+    pause();
+    // if ( $api ) {
+    //   isLastSlide = false;
+    //   pause();
+    //   destroySlider();
+    // }
   }
 
   function getCurrentSlide() {
-    if ( $api && currentFiles && currentFiles.length > 0 ) {
-      return $api.revcurrentslide();
-    }
-
-    return -1;
+    return slideIndex;
   }
 
   function init( files ) {
-    var tpBannerContainer = document.querySelector( ".tp-banner-container" ),
-      fragment = document.createDocumentFragment(),
-      tpBanner = document.createElement( "div" ),
-      ul = document.createElement( "ul" );
+    // var tpBannerContainer = document.querySelector( ".tp-banner-container" ),
+    //   fragment = document.createDocumentFragment(),
+    //   tpBanner = document.createElement( "div" ),
+    //   ul = document.createElement( "ul" );
 
-    tpBanner.setAttribute( "class", "tp-banner" );
-    tpBanner.appendChild( ul );
-    fragment.appendChild( tpBanner );
-    tpBannerContainer.appendChild( fragment );
+    // tpBanner.setAttribute( "class", "tp-banner" );
+    // tpBanner.appendChild( ul );
+    // fragment.appendChild( tpBanner );
+    // tpBannerContainer.appendChild( fragment );
 
     currentFiles = _.clone( files );
 
     addSlides();
 
     isLoading = true;
-    $api = $( ".tp-banner" ).revolution( {
-      "hideThumbs": 0,
-      "hideTimerBar": "on",
-      "navigationType": "none",
-      "onHoverStop": "off",
-      "startwidth": params.width,
-      "startheight": params.height
-    } );
+    // $api = $( ".tp-banner" ).revolution( {
+    //   "hideThumbs": 0,
+    //   "hideTimerBar": "on",
+    //   "navigationType": "none",
+    //   "onHoverStop": "off",
+    //   "startwidth": params.width,
+    //   "startheight": params.height
+    // } );
 
-    $api.on( "revolution.slide.onloaded", function() {
-      // Pause slideshow since it will autoplay and this is not configurable.
-      pause();
-      isLoading = false;
-      RiseVision.Image.onSliderReady();
-    } );
+    // $api.on( "revolution.slide.onloaded", function() {
+    //   // Pause slideshow since it will autoplay and this is not configurable.
+    //   pause();
+    //   isLoading = false;
+    //   RiseVision.Image.onSliderReady();
+    // } );
 
-    $api.on( "revolution.slide.onchange", function( e, data ) {
-      onSlideChanged( data );
-    } );
+    // $api.on( "revolution.slide.onchange", function( e, data ) {
+    //   onSlideChanged( data );
+    // } );
 
-    // Swipe the slider.
-    $( "body" ).on( "touchend", ".tp-banner", function() {
-      handleUserActivity();
-      $( ".tp-leftarrow, .tp-rightarrow" ).removeClass( "hidearrows" );
-    } );
+    // // Swipe the slider.
+    // $( "body" ).on( "touchend", ".tp-banner", function() {
+    //   handleUserActivity();
+    //   $( ".tp-leftarrow, .tp-rightarrow" ).removeClass( "hidearrows" );
+    // } );
 
-    // Touch the navigation arrows.
-    $( "body" ).on( "touchend", ".tp-leftarrow, .tp-rightarrow", function() {
-      handleUserActivity();
-    } );
+    // // Touch the navigation arrows.
+    // $( "body" ).on( "touchend", ".tp-leftarrow, .tp-rightarrow", function() {
+    //   handleUserActivity();
+    // } );
 
-    hideNav();
+    // hideNav();
   }
 
   function isReady() {
@@ -248,28 +261,19 @@ RiseVision.Image.Slider = function( params ) {
   }
 
   function play() {
-    if ( $api ) {
-      // Reset slideshow to first slide.
-      if ( params.hasOwnProperty( "resume" ) && !params.resume ) {
-        $api.revshowslide( 0 );
-      }
+    if ( params.hasOwnProperty( "resume" ) && !params.resume ) {
+      slideIndex = 0;
+    }
 
-      if ( !isPlaying ) {
-        $api.revresume();
-        isPlaying = true;
-      }
-
-      if ( currentFiles.length === 1 ) {
-        startSingleImagePUDTimer();
-      }
+    if ( currentFiles.length === 1 ) {
+      startSingleImagePUDTimer();
+    } else {
+      carousel();
     }
   }
 
   function pause() {
-    if ( $api && isPlaying ) {
-      $api.revpause();
-      isPlaying = false;
-    }
+    clearTimeout( slideTimer );
 
     if ( singleImagePUDTimer ) {
       clearTimeout( singleImagePUDTimer );
@@ -281,12 +285,8 @@ RiseVision.Image.Slider = function( params ) {
     RiseVision.Common.Utilities.preloadImages( files );
 
     if ( currentFiles.length === 1 ) {
-      // Destroy and recreate the slider immediately if currently only 1 slide and there has been a change.
-      if ( $api ) {
-        clearTimeout( singleImagePUDTimer );
-        destroySlider();
-        init( files );
-      }
+      clearTimeout( singleImagePUDTimer );
+      init( files );
     } else {
       newFiles = _.clone( files );
       refreshSlider = true;

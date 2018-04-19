@@ -124,7 +124,7 @@ RiseVision.Image.Slider = function( params ) {
       }
     }
 
-    if ( data.slideIndex === totalSlides ) {
+    if ( slideIndex === totalSlides ) {
       isLastSlide = true;
     }
   }

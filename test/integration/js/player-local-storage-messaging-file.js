@@ -167,7 +167,8 @@ suite( "file deleted", function() {
         topic: "FILE-UPDATE",
         filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
         status: "CURRENT",
-        ospath: "path/to/file/abc123"
+        ospath: "path/to/file/abc123",
+        osurl: "file:///path/to/file/abc123"
       } );
     } );
 

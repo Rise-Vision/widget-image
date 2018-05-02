@@ -43,7 +43,8 @@ suite( "file added", function() {
         topic: "FILE-UPDATE",
         filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
         status: "CURRENT",
-        ospath: "path/to/file/abc123"
+        ospath: "path/to/file/abc123",
+        osurl: "file:///path/to/file/abc123"
       } );
     } );
   } );
@@ -54,7 +55,7 @@ suite( "file added", function() {
 
   test( "should be able to set single image with correct url", function() {
     assert( onFileInitSpy.calledOnce, "onFileInit() called once" );
-    assert( onFileInitSpy.calledWith( "file://path/to/file/abc123" ), "onFileInit() called with correct url" );
+    assert( onFileInitSpy.calledWith( "file:///path/to/file/abc123" ), "onFileInit() called with correct url" );
   } );
 
   test( "should align image at top left", function() {
@@ -93,11 +94,12 @@ suite( "file changed", function() {
         topic: "FILE-UPDATE",
         filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
         status: "CURRENT",
-        ospath: "path/to/file/def456"
+        ospath: "path/to/file/def456",
+        osurl: "file:///path/to/file/def456"
       } );
     } );
 
     assert( refreshSpy.calledOnce );
-    assert( refreshSpy.calledWith( "file://path/to/file/def456" ), "onFileRefresh() called with correct url" );
+    assert( refreshSpy.calledWith( "file:///path/to/file/def456" ), "onFileRefresh() called with correct url" );
   } );
 } );

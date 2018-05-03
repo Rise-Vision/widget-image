@@ -134,13 +134,12 @@
     });
 
     suite("play", function() {
-
       test("should not log the configuration event", function () {
         spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
 
         RiseVision.Image.play();
 
-        assert(spy.calledOnce);
+        assert(spy.notCalled);
         assert(spy.neverCalledWith(table, {
           "event": "configuration",
           "event_details": "custom",
@@ -148,16 +147,6 @@
           "display_id": params.display_id
         }));
       });
-
-      test("should log the play event", function() {
-        spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
-
-        RiseVision.Image.play();
-
-        assert(spy.calledOnce);
-        assert(spy.calledWith(table, params));
-      });
-
     });
 
     suite("non-storage error", function() {

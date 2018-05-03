@@ -44,9 +44,6 @@ RiseVision.Image = ( function( gadgets ) {
     if ( _errorLog !== null ) {
       logEvent( _errorLog, true );
     }
-
-    // log "done" event
-    logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
   }
 
   function _clearErrorTimer() {
@@ -61,25 +58,6 @@ RiseVision.Image = ( function( gadgets ) {
       // notify Viewer widget is done
       _done();
     }, 5000 );
-  }
-
-  function _getCurrentFile() {
-    var slideNum = -1;
-
-    if ( _currentFiles && _currentFiles.length > 0 ) {
-      if ( _mode === "file" ) {
-        return _currentFiles[ 0 ];
-      } else if ( _mode === "folder" && _slider && _slider.isReady() ) {
-        // retrieve the currently played slide
-        slideNum = _slider.getCurrentSlide();
-
-        if ( slideNum !== -1 ) {
-          return ( _currentFiles[ slideNum ] ) ? ( _currentFiles[ slideNum ] ).url : null;
-        }
-      }
-    }
-
-    return null;
   }
 
   function _localStorageBackgroundTesting() {
@@ -312,8 +290,6 @@ RiseVision.Image = ( function( gadgets ) {
       logEvent( { "event": "configuration", "event_details": _configurationType }, false );
       _configurationLogged = true;
     }
-
-    logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
       _startErrorTimer();

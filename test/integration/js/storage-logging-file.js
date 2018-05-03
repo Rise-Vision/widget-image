@@ -104,7 +104,7 @@ suite( "rise storage error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
     clock.tick( 5000 );
 
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
 
@@ -139,8 +139,7 @@ suite( "rise storage error", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce, "called once" );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled, "called once" );
   } );
 } );
 
@@ -270,7 +269,7 @@ suite( "storage api error", function() {
 
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
 
@@ -300,8 +299,7 @@ suite( "storage api error", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 
 } );
@@ -334,7 +332,7 @@ suite( "storage file not found", function() {
 
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
 
@@ -358,8 +356,7 @@ suite( "storage file not found", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 
 } );
@@ -391,7 +388,7 @@ suite( "storage file throttled", function() {
 
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
 
@@ -415,8 +412,7 @@ suite( "storage file throttled", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );
 
@@ -466,7 +462,7 @@ suite( "storage subscription expired", function() {
 
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
     clock.tick( 5000 );
-    assert( spy.calledTwice );
+    assert( spy.calledOnce );
 
     spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
 
@@ -488,7 +484,6 @@ suite( "storage subscription expired", function() {
 
     clock.tick( 5000 );
 
-    assert( spy.calledOnce );
-    assert( spy.calledWith( table, params ) );
+    assert( spy.notCalled );
   } );
 } );

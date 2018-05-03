@@ -30,29 +30,6 @@ RiseVision.Image = ( function( gadgets ) {
    */
   function _done() {
     _imageUtils.sendDoneToViewer();
-
-    // log "done" event
-    _imageUtils.logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
-  }
-
-
-  function _getCurrentFile() {
-    var slideNum = -1;
-
-    if ( _currentFiles && _currentFiles.length > 0 ) {
-      if ( _mode === "file" ) {
-        return _currentFiles[ 0 ];
-      } else if ( _mode === "folder" && _slider && _slider.isReady() ) {
-        // retrieve the currently played slide
-        slideNum = _slider.getCurrentSlide();
-
-        if ( slideNum !== -1 ) {
-          return ( _currentFiles[ slideNum ] ) ? ( _currentFiles[ slideNum ] ).url : null;
-        }
-      }
-    }
-
-    return null;
   }
 
   function init() {
@@ -239,8 +216,6 @@ RiseVision.Image = ( function( gadgets ) {
       _imageUtils.logEvent( { "event": "configuration", "event_details": _configurationType }, false );
       _configurationLogged = true;
     }
-
-    _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
 
     if ( _errorFlag ) {
       _imageUtils.startErrorTimer( _getCurrentFile() );

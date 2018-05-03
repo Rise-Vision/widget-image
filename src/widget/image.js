@@ -154,7 +154,6 @@ RiseVision.Image = ( function( gadgets ) {
     _errorFlag = false;
     _storageErrorFlag = false;
     _unavailableFlag = false;
-    _imageUtils.clearErrorLog();
   }
 
   function onFileUnavailable( message ) {
@@ -164,7 +163,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     // if Widget is playing right now, run the timer
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer( _getCurrentFile() );
+      _imageUtils.startErrorTimer();
     }
   }
 
@@ -218,7 +217,7 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     if ( _errorFlag ) {
-      _imageUtils.startErrorTimer( _getCurrentFile() );
+      _imageUtils.startErrorTimer();
       return;
     }
 
@@ -249,7 +248,7 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer( _getCurrentFile() );
+      _imageUtils.startErrorTimer();
     }
   }
 

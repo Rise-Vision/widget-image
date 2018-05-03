@@ -195,10 +195,6 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     }
   }
 
-  function getFilePath() {
-    return filePath;
-  }
-
   function init() {
     filePath = _getFilePath();
     storage = new playerLocalStorage.default( messaging, _handleEvents );
@@ -209,7 +205,6 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   }
 
   return {
-    "getFilePath": getFilePath,
     "init": init,
     "retry": retry
   };

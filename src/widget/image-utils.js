@@ -7,7 +7,6 @@ RiseVision.ImageUtils = ( function() {
 
   var ERROR_TIMER_DELAY = 5000,
     _prefs = new gadgets.Prefs(),
-    _errorLog = null,
     _errorTimer = null,
     _isSingleImageGIF = false;
 
@@ -15,21 +14,16 @@ RiseVision.ImageUtils = ( function() {
    *  Public  Methods
    */
 
-  function clearErrorLog() {
-    _errorLog = null;
-  }
-
   function clearErrorTimer() {
     clearTimeout( _errorTimer );
     _errorTimer = null;
   }
 
-  function startErrorTimer( currentFile ) {
+  function startErrorTimer() {
     clearErrorTimer();
 
     _errorTimer = setTimeout( function() {
       RiseVision.ImageUtils.sendDoneToViewer();
-      logEvent( { "event": "done", "file_url": currentFile }, false );
     }, ERROR_TIMER_DELAY );
   }
 
@@ -73,18 +67,7 @@ RiseVision.ImageUtils = ( function() {
     return _isSingleImageGIF;
   }
 
-  function logEvent( params, isError ) {
-    if ( isError ) {
-      _errorLog = params;
-    }
-
-    if ( params.event === "done" ) {
-      // Any errors need to be logged before the done event.
-      if ( _errorLog ) {
-        RiseVision.Common.LoggerUtils.logEvent( getTableName(), _errorLog );
-      }
-    }
-
+  function logEvent( params ) {
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), params );
   }
 
@@ -98,7 +81,6 @@ RiseVision.ImageUtils = ( function() {
   }
 
   return {
-    "clearErrorLog": clearErrorLog,
     "clearErrorTimer": clearErrorTimer,
     "startErrorTimer": startErrorTimer,
     "handleSingleImageLoad": handleSingleImageLoad,

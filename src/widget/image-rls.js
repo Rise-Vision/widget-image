@@ -27,19 +27,6 @@ RiseVision.ImageRLS = ( function( gadgets ) {
    */
   function _done() {
     _imageUtils.sendDoneToViewer();
-
-    // log "done" event
-    _imageUtils.logEvent( { "event": "done", "file_url": _getCurrentFile() }, false );
-  }
-
-  function _getCurrentFile() {
-    if ( _mode === "file" && _storage ) {
-      return _storage.getFilePath();
-    }
-
-    // TODO: handle folder
-
-    return null;
   }
 
   function _init() {
@@ -117,7 +104,6 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     _errorFlag = false;
     _unavailableFlag = false;
-    _imageUtils.clearErrorLog();
   }
 
   function onFileUnavailable( message ) {
@@ -164,10 +150,8 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _configurationLogged = true;
     }
 
-    _imageUtils.logEvent( { "event": "play", "file_url": _getCurrentFile() }, false );
-
     if ( _errorFlag ) {
-      _imageUtils.startErrorTimer( _getCurrentFile() );
+      _imageUtils.startErrorTimer();
       return;
     }
 
@@ -193,7 +177,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     // TODO: handle folder
 
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer( _getCurrentFile() );
+      _imageUtils.startErrorTimer();
     }
   }
 

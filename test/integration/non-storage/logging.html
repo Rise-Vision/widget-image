@@ -139,7 +139,7 @@
 
         RiseVision.Image.play();
 
-        assert(spy.calledOnce);
+        assert(spy.notCalled);
         assert(spy.neverCalledWith(table, {
           "event": "configuration",
           "event_details": "custom",

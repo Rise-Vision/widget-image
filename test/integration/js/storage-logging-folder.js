@@ -80,7 +80,6 @@ suite( "configuration", function() {
 } );
 
 suite( "storage folder empty", function() {
-  var spyCall;
 
   suiteSetup( function() {
     clock = sinon.useFakeTimers();
@@ -102,49 +101,9 @@ suite( "storage folder empty", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage folder empty error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-empty-folder", {
-      "detail": null,
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.Logger.log.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage folder empty error when done is fired if the error has resolved itself on a refresh", function() {
-    var files = [
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGated_Book_Cover.jpg?alt=media",
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGone_Girl_Book_Cover.jpg?alt=media" ];
-
-    storage.dispatchEvent( new CustomEvent( "rise-storage-empty-folder", {
-      "detail": filePath,
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( files );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    params.event = "done";
-    params.file_url = null;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );
 
 suite( "storage folder doesn't exist", function() {
-  var spyCall;
-
   suiteSetup( function() {
     clock = sinon.useFakeTimers();
   } );
@@ -169,50 +128,9 @@ suite( "storage folder doesn't exist", function() {
     assert( spy.calledOnce );
   } );
 
-  test( "should log a storage folder doesn't exist error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-no-folder", {
-      "detail": filePath,
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.Logger.log.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage folder doesn't exist error when done is fired if the error has resolved itself on a refresh", function() {
-    var files = [
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGated_Book_Cover.jpg?alt=media",
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGone_Girl_Book_Cover.jpg?alt=media" ];
-
-    storage.dispatchEvent( new CustomEvent( "rise-storage-no-folder", {
-      "detail": filePath,
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( files );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    delete params.event_details;
-    delete params.error_details;
-    params.event = "done";
-    params.file_url = null;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );
 
 suite( "storage folder invalid format", function() {
-  var spyCall;
-
   suiteSetup( function() {
     clock = sinon.useFakeTimers();
   } );
@@ -232,54 +150,15 @@ suite( "storage folder invalid format", function() {
     params.event = "error";
     params.event_details = "storage folder format(s) invalid";
     delete params.file_url;
+    delete params.error_details;
 
     assert( spy.calledOnce );
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage folder format(s) invalid error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-folder-invalid", {
-      "detail": filePath,
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.Logger.log.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage folder format(s) invalid error when done is fired if the error has resolved itself on a refresh", function() {
-    var files = [
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGated_Book_Cover.jpg?alt=media",
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGone_Girl_Book_Cover.jpg?alt=media" ];
-
-    storage.dispatchEvent( new CustomEvent( "rise-storage-folder-invalid", {
-      "detail": filePath,
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( files );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    params.event = "done";
-    params.file_url = null;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );
 
 suite( "rise storage error", function() {
-  var spyCall;
-
   suiteSetup( function() {
     clock = sinon.useFakeTimers();
   } );
@@ -307,57 +186,6 @@ suite( "rise storage error", function() {
 
     assert( spy.calledOnce );
     assert( spy.calledWith( table, params ) );
-  } );
-
-  test( "should log a rise storage error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-error", {
-      "detail": {
-        "error": {
-          "currentTarget": {
-            "status": 0
-          }
-        } },
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    clock.tick( 5000 );
-
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.Logger.log.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a rise storage error when done is fired if the error has resolved itself on a refresh", function() {
-    var files = [
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGated_Book_Cover.jpg?alt=media",
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGone_Girl_Book_Cover.jpg?alt=media" ];
-
-    storage.dispatchEvent( new CustomEvent( "rise-storage-error", {
-      "detail": {
-        "error": {
-          "currentTarget": {
-            "status": 0
-          }
-        } },
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( files );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-
-    params.event = "done";
-    params.file_url = null;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
   } );
 
   test( "should log a rise cache error", function() {
@@ -438,8 +266,6 @@ suite( "rise storage error", function() {
 } );
 
 suite( "storage subscription expired", function() {
-  var spyCall;
-
   suiteSetup( function() {
     clock = sinon.useFakeTimers();
   } );
@@ -484,48 +310,9 @@ suite( "storage subscription expired", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage subscription expired error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-subscription-expired" ) );
-
-    params.event_details = "storage subscription expired";
-    delete params.error_details;
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.Logger.log.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage subscription expired error when done is fired if the error has resolved itself on a refresh", function() {
-
-    var files = [
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGated_Book_Cover.jpg?alt=media",
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGone_Girl_Book_Cover.jpg?alt=media" ];
-
-    storage.dispatchEvent( new CustomEvent( "rise-storage-subscription-expired" ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( files );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-
-    params.event = "done";
-    params.file_url = null;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );
 
 suite( "storage api error", function() {
-  var spyCall;
-
   suiteSetup( function() {
     clock = sinon.useFakeTimers();
   } );
@@ -555,51 +342,4 @@ suite( "storage api error", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage api error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-api-error", {
-      "detail": {
-        "result": false,
-        "code": 500,
-        "message": "Could not retrieve Bucket Items"
-      },
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.Logger.log.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage api error when done is fired if the error has resolved itself on a refresh", function() {
-    var files = [
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGated_Book_Cover.jpg?alt=media",
-      "https://www.googleapis.com/storage/v1/b/risemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443/o/images%2FGone_Girl_Book_Cover.jpg?alt=media" ];
-
-    storage.dispatchEvent( new CustomEvent( "rise-storage-api-error", {
-      "detail": {
-        "result": false,
-        "code": 500,
-        "message": "Could not retrieve Bucket Items"
-      },
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( files );
-
-    spy = sinon.spy( RiseVision.Common.Logger, "log" );
-    delete params.event_details;
-    delete params.error_details;
-    params.event = "done";
-    params.file_url = null;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );

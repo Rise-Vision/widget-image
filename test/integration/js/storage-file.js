@@ -212,7 +212,7 @@ suite( "storage errors", function() {
 
   setup( function() {
     onShowErrorStub = sinon.stub( RiseVision.Image, "showError", function() {} );
-    onLogEventStub = sinon.stub( RiseVision.Image, "logEvent", function() {} );
+    onLogEventStub = sinon.stub( RiseVision.ImageUtils, "logEvent", function() {} );
   } );
 
   teardown( function() {
@@ -220,7 +220,7 @@ suite( "storage errors", function() {
     delete params.event_details;
 
     RiseVision.Image.showError.restore();
-    RiseVision.Image.logEvent.restore();
+    RiseVision.ImageUtils.logEvent.restore();
   } );
 
   test( "should handle when 'storage api' error occurs", function() {

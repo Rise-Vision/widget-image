@@ -11,18 +11,16 @@ var table = "image_events",
     "file_format": "jpg",
     "company_id": "\"companyId\"",
     "display_id": "\"displayId\"",
-    "version": "0.1.1"
+    "version": "1.0.0"
   },
   ready = false,
   isV2Running = false,
   requests,
   storage,
   spy,
-  clock,
   check = function( done ) {
     if ( ready ) {
       sinon.stub( RiseVision.Image, "play" );
-      clock = sinon.useFakeTimers();
 
       done();
     } else {
@@ -63,7 +61,6 @@ suite( "configuration", function() {
 } );
 
 suite( "rise storage error", function() {
-  var spyCall;
 
   test( "should log a rise storage error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
@@ -86,61 +83,6 @@ suite( "rise storage error", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a rise storage error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-error", {
-      "detail": {
-        "request": {
-          "url": "http://localhost:9494/?url=https%3A%2F%2Fstorage.googleapis.com%2Frisemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443%2FWidgets%2Fsimpson's.jpg"
-        },
-        "error": {
-          "currentTarget": {
-            "status": 404
-          }
-        }
-      },
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    clock.tick( 5000 );
-
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a rise storage error when done is fired if the error has resolved itself on a refresh", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-error", {
-      "detail": {
-        "request": {
-          "url": "http://localhost:9494/?url=https%3A%2F%2Fstorage.googleapis.com%2Frisemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443%2FWidgets%2Fsimpson's.jpg"
-        },
-        "error": {
-          "currentTarget": {
-            "status": 404
-          }
-        }
-      },
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( window.gadget.settings.additionalParams.selector.url );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-
-    params.event = "done";
-    params.file_url = window.gadget.settings.additionalParams.selector.url;
-    delete params.error_details;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled, "called once" );
-  } );
 } );
 
 suite( "rise cache error", function() {
@@ -233,7 +175,6 @@ suite( "rise cache error", function() {
 } );
 
 suite( "storage api error", function() {
-  var spyCall;
 
   test( "should log a storage api error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
@@ -257,55 +198,9 @@ suite( "storage api error", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage api error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-api-error", {
-      "detail": {
-        "result": false,
-        "code": 500,
-        "message": "Could not retrieve Bucket Items"
-      },
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage file not found error when done is fired if the error has resolved itself on a refresh", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-no-file", {
-      "detail": {
-        "result": false,
-        "code": 500,
-        "message": "Could not retrieve Bucket Items"
-      },
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( window.gadget.settings.additionalParams.selector.url );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    params.event = "done";
-    params.file_url = window.gadget.settings.additionalParams.selector.url;
-    params.file_format = "jpg";
-    delete params.event_details;
-    delete params.error_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
-
 } );
 
 suite( "storage file not found", function() {
-  var spyCall;
 
   test( "should log a storage file not found error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
@@ -318,51 +213,16 @@ suite( "storage file not found", function() {
     params.event = "error";
     params.event_details = "storage file not found";
     params.file_url = "Widgets/simpson's.jpg";
+    params.file_format = "jpg";
     delete params.error_details;
 
     assert( spy.calledOnce );
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage file not found error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-no-file", {
-      "detail": "Widgets/simpson's.jpg",
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage file not found error when done is fired if the error has resolved itself on a refresh", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-no-file", {
-      "detail": "Widgets/simpson's.jpg",
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( window.gadget.settings.additionalParams.selector.url );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    params.event = "done";
-    params.file_url = window.gadget.settings.additionalParams.selector.url;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
-
 } );
 
 suite( "storage file throttled", function() {
-  var spyCall;
 
   test( "should log a storage file throttled error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
@@ -380,44 +240,9 @@ suite( "storage file throttled", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage file throttled error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-file-throttled", {
-      "detail": window.gadget.settings.additionalParams.selector.url,
-      "bubbles": true
-    } ) );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage file throttled error when done is fired if the error has resolved itself on a refresh", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-file-throttled", {
-      "detail": window.gadget.settings.additionalParams.selector.url,
-      "bubbles": true
-    } ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( window.gadget.settings.additionalParams.selector.url );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    params.event = "done";
-    params.file_url = window.gadget.settings.additionalParams.selector.url;
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );
 
 suite( "storage subscription expired", function() {
-  var spyCall;
 
   test( "should log a storage subscription expired error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
@@ -454,36 +279,4 @@ suite( "storage subscription expired", function() {
     assert( spy.calledWith( table, params ) );
   } );
 
-  test( "should log a storage subscription expired error when done is fired", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-subscription-expired" ) );
-
-    params.event_details = "storage subscription expired";
-    delete params.error_details;
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    clock.tick( 5000 );
-    assert( spy.calledOnce );
-
-    spyCall = RiseVision.Common.LoggerUtils.logEvent.getCall( 0 );
-
-    assert.equal( spyCall.args[ 0 ], table );
-    assert.deepEqual( spyCall.args[ 1 ], params );
-  } );
-
-  test( "should not log a storage subscription expired error when done is fired if the error has resolved itself on a refresh", function() {
-    storage.dispatchEvent( new CustomEvent( "rise-storage-subscription-expired" ) );
-
-    // Resolve the error.
-    RiseVision.Image.onFileRefresh( window.gadget.settings.additionalParams.selector.url );
-
-    spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
-    params.event = "done";
-    params.file_url = window.gadget.settings.additionalParams.selector.url;
-    params.file_format = "jpg";
-    delete params.event_details;
-
-    clock.tick( 5000 );
-
-    assert( spy.notCalled );
-  } );
 } );

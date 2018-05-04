@@ -1,6 +1,6 @@
 {
   "name": "widget-image",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "The Image Widget allows you to add an image directly into your Presentation.",
   "main": "gulpfile.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "bower": "^1.5.3",
     "chai": "^2.1.2",
     "chai-as-promised": "^4.3.0",
-    "common-component": "git://github.com/Rise-Vision/common-component.git#v1.9.0",
+    "common-component": "git://github.com/Rise-Vision/common-component.git#v1.11.0",
     "del": "~1.1.1",
     "eslint": "^3.8.1",
     "eslint-config-idiomatic": "^2.1.0",

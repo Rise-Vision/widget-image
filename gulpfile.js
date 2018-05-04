@@ -193,8 +193,8 @@
       "node_modules/widget-tester/mocks/logger-mock.js",
       "src/components/widget-common/dist/config.js",
       "src/config/config.js",
-      "src/widget/image.js",
-      "test/unit/image-spec.js"
+      "src/widget/image-utils.js",
+      "test/unit/image-utils-spec.js"
     ]}
   ));
 

@@ -28,10 +28,6 @@ RiseVision.Image = ( function( gadgets ) {
   /*
    *  Private Methods
    */
-  function _done() {
-    _imageUtils.sendDoneToViewer();
-  }
-
   function init() {
     var container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
@@ -188,7 +184,7 @@ RiseVision.Image = ( function( gadgets ) {
   }
 
   function onSliderComplete() {
-    _done();
+    _imageUtils.sendDoneToViewer();
   }
 
   function pause() {

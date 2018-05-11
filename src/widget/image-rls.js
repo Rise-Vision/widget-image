@@ -25,10 +25,6 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   /*
    *  Private Methods
    */
-  function _done() {
-    _imageUtils.sendDoneToViewer();
-  }
-
   function _init() {
     var container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
@@ -110,7 +106,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _message.show( message );
 
     if ( !_viewerPaused ) {
-      _done();
+      _imageUtils.sendDoneToViewer();
     }
   }
 

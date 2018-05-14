@@ -13,8 +13,28 @@
     return false;
   };
 
-  function isValidDisplay( displayId ) {
-    return displayId && displayId !== "preview" && displayId !== "display_id" && displayId.indexOf( "displayId" ) === -1;
+  function canUseRLSSingleFile() {
+    try {
+      if ( top.useRLSSingleFile ) {
+        return true;
+      }
+    } catch ( err ) {
+      console.log( "widget-image", err ); // eslint-disable-line no-console
+    }
+
+    return false;
+  }
+
+  function canUseRLSFolder() {
+    try {
+      if ( top.useRLSFolder ) {
+        return true;
+      }
+    } catch ( err ) {
+      console.log( "widget-image", err ); // eslint-disable-line no-console
+    }
+
+    return false;
   }
 
   function configure( names, values ) {
@@ -51,12 +71,15 @@
           if ( !additionalParams.storage.fileName ) {
             // folder was selected
             mode = "folder";
+
+            // TODO: trigger test coverage for RLS with folder
+            useRLS = canUseRLSFolder();
           } else {
             // file was selected
             mode = "file";
 
             // integration tests set TEST_USE_RLS to true
-            useRLS = config.TEST_USE_RLS || isValidDisplay( displayId );
+            useRLS = config.TEST_USE_RLS || canUseRLSSingleFile();
           }
         } else {
           // non-storage file was selected

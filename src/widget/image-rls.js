@@ -8,12 +8,10 @@ RiseVision.ImageRLS = {};
 RiseVision.ImageRLS = ( function( gadgets ) {
   "use strict";
 
-  var _mode,
-    _displayId,
+  var _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
     _imageUtils = RiseVision.ImageUtils,
-    _params = null,
     _storage = null,
     _configurationType = null,
     _errorFlag = false,
@@ -26,7 +24,8 @@ RiseVision.ImageRLS = ( function( gadgets ) {
    *  Private Methods
    */
   function _init() {
-    var container = document.getElementById( "container" ),
+    var params = _imageUtils.getParams(),
+      container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
       el = document.createElement( "div" );
 
@@ -38,13 +37,13 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _message.show( "Please wait while your image is downloaded." );
 
     // legacy
-    if ( _params.background && Object.keys( _params.background ).length > 0 ) {
-      document.body.style.background = _params.background.color;
+    if ( params.background && Object.keys( params.background ).length > 0 ) {
+      document.body.style.background = params.background.color;
     }
 
-    if ( _mode === "file" ) {
+    if ( _imageUtils.getMode() === "file" ) {
       // create the image <div> within the container <div>
-      el = _imageUtils.getImageElement( _params );
+      el = _imageUtils.getImageElement( params );
       fragment.appendChild( el );
       container.appendChild( fragment );
 
@@ -53,9 +52,9 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _configurationType = "storage file";
 
       // create and initialize the Storage file instance
-      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile( _params, _displayId );
+      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile( params, _displayId );
       _storage.init();
-    } else if ( _mode === "folder" ) {
+    } else if ( _imageUtils.getMode() === "folder" ) {
       // TODO: coming soon
     }
 
@@ -78,7 +77,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
    *  Public Methods
    */
   function onFileInit( urls ) {
-    if ( _mode === "file" ) {
+    if ( _imageUtils.getMode() === "file" ) {
       _unavailableFlag = false;
 
       // remove message previously shown
@@ -89,7 +88,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function onFileRefresh( urls ) {
-    if ( _mode === "file" ) {
+    if ( _imageUtils.getMode() === "file" ) {
       if ( _unavailableFlag ) {
         // remove the message previously shown
         _message.hide();
@@ -111,12 +110,15 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function setAdditionalParams( additionalParams, modeType, displayId ) {
-    _params = _.clone( additionalParams );
-    _mode = modeType;
+    var data = _.clone( additionalParams );
+
+    _imageUtils.setMode( modeType );
     _displayId = displayId;
 
-    _params.width = _prefs.getInt( "rsW" );
-    _params.height = _prefs.getInt( "rsH" );
+    data.width = _prefs.getInt( "rsW" );
+    data.height = _prefs.getInt( "rsH" );
+
+    _imageUtils.setParams( data );
 
     document.getElementById( "container" ).style.height = _prefs.getInt( "rsH" ) + "px";
     _init();
@@ -131,7 +133,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils.clearErrorTimer();
 
     // TODO: handle folder
-    if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
+    if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "hidden";
     }
   }
@@ -152,7 +154,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
 
     if ( _unavailableFlag ) {
-      if ( _mode === "file" && _storage ) {
+      if ( _imageUtils.getMode() === "file" && _storage ) {
         _storage.retry();
       }
 
@@ -160,7 +162,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
 
     // TODO: handle folder
-    if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
+    if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "visible";
     }
   }

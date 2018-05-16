@@ -7,6 +7,8 @@ RiseVision.ImageUtils = ( function() {
 
   var ERROR_TIMER_DELAY = 5000,
     _prefs = new gadgets.Prefs(),
+    _params = null,
+    _mode = null,
     _errorTimer = null,
     _isSingleImageGIF = false;
 
@@ -35,6 +37,14 @@ RiseVision.ImageUtils = ( function() {
     el.className = params.scaleToFit ? el.className + " scale-to-fit" : el.className;
 
     return el;
+  }
+
+  function getMode() {
+    return _mode;
+  }
+
+  function getParams() {
+    return _params;
   }
 
   function getTableName() {
@@ -80,8 +90,18 @@ RiseVision.ImageUtils = ( function() {
       true, true, true, true, true );
   }
 
+  function setMode( mode ) {
+    _mode = mode;
+  }
+
+  function setParams( params ) {
+    _params = params;
+  }
+
   return {
     "clearErrorTimer": clearErrorTimer,
+    "getMode": getMode,
+    "getParams": getParams,
     "startErrorTimer": startErrorTimer,
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,
@@ -90,7 +110,9 @@ RiseVision.ImageUtils = ( function() {
     "getTableName": getTableName,
     "logEvent": logEvent,
     "sendDoneToViewer": sendDoneToViewer,
-    "sendReadyToViewer": sendReadyToViewer
+    "sendReadyToViewer": sendReadyToViewer,
+    "setMode": setMode,
+    "setParams": setParams
   };
 
 } )();

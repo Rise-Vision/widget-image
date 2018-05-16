@@ -7,12 +7,10 @@ RiseVision.Image = {};
 RiseVision.Image = ( function( gadgets ) {
   "use strict";
 
-  var _mode,
-    _displayId,
+  var _displayId,
     _prefs = new gadgets.Prefs(),
     _message = null,
     _imageUtils = RiseVision.ImageUtils,
-    _params = null,
     _storage = null,
     _nonStorage = null,
     _slider = null,
@@ -29,7 +27,8 @@ RiseVision.Image = ( function( gadgets ) {
    *  Private Methods
    */
   function init() {
-    var container = document.getElementById( "container" ),
+    var params = _imageUtils.getParams(),
+      container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
       el = document.createElement( "div" ),
       isStorageFile;
@@ -42,33 +41,33 @@ RiseVision.Image = ( function( gadgets ) {
     _message.show( "Please wait while your image is downloaded." );
 
     // legacy
-    if ( _params.background && Object.keys( _params.background ).length > 0 ) {
-      document.body.style.background = _params.background.color;
+    if ( params.background && Object.keys( params.background ).length > 0 ) {
+      document.body.style.background = params.background.color;
     }
 
-    if ( _mode === "file" ) {
+    if ( _imageUtils.getMode() === "file" ) {
       // create the image <div> within the container <div>
-      el = _imageUtils.getImageElement( _params );
+      el = _imageUtils.getImageElement( params );
       fragment.appendChild( el );
       container.appendChild( fragment );
 
       _img = new Image();
 
-      isStorageFile = ( Object.keys( _params.storage ).length !== 0 );
+      isStorageFile = ( Object.keys( params.storage ).length !== 0 );
 
       if ( !isStorageFile ) {
         _configurationType = "custom";
 
-        _nonStorage = new RiseVision.Image.NonStorage( _params );
+        _nonStorage = new RiseVision.Image.NonStorage( params );
         _nonStorage.init();
       } else {
         _configurationType = "storage file";
 
         // create and initialize the Storage file instance
-        _storage = new RiseVision.Image.StorageFile( _params, _displayId );
+        _storage = new RiseVision.Image.StorageFile( params, _displayId );
         _storage.init();
       }
-    } else if ( _mode === "folder" ) {
+    } else if ( _imageUtils.getMode() === "folder" ) {
       // create the slider container <div> within the container <div>
       el.className = "tp-banner-container";
 
@@ -78,7 +77,7 @@ RiseVision.Image = ( function( gadgets ) {
       _configurationType = "storage folder";
 
       // create and initialize the Storage folder instance
-      _storage = new RiseVision.Image.StorageFolder( _params, _displayId );
+      _storage = new RiseVision.Image.StorageFolder( params, _displayId );
       _storage.init();
     }
 
@@ -106,7 +105,9 @@ RiseVision.Image = ( function( gadgets ) {
   }
 
   function onFileInit( urls ) {
-    if ( _mode === "file" ) {
+    var params = _imageUtils.getParams();
+
+    if ( _imageUtils.getMode() === "file" ) {
       // urls value will be a string
       _currentFiles[ 0 ] = urls;
 
@@ -117,18 +118,18 @@ RiseVision.Image = ( function( gadgets ) {
 
       setSingleImage( _currentFiles[ 0 ] );
 
-    } else if ( _mode === "folder" ) {
+    } else if ( _imageUtils.getMode() === "folder" ) {
       // urls value will be an array
       _currentFiles = urls;
 
       // create slider instance
-      _slider = new RiseVision.Image.Slider( _params );
+      _slider = new RiseVision.Image.Slider( params );
       _slider.init( urls );
     }
   }
 
   function onFileRefresh( urls ) {
-    if ( _mode === "file" ) {
+    if ( _imageUtils.getMode() === "file" ) {
       // urls value will be a string of one url
       _currentFiles[ 0 ] = urls;
 
@@ -139,7 +140,7 @@ RiseVision.Image = ( function( gadgets ) {
 
       setSingleImage( _currentFiles[ 0 ] );
 
-    } else if ( _mode === "folder" ) {
+    } else if ( _imageUtils.getMode() === "folder" ) {
       // urls value will be an array of urls
       _currentFiles = urls;
 
@@ -164,12 +165,15 @@ RiseVision.Image = ( function( gadgets ) {
   }
 
   function setAdditionalParams( additionalParams, modeType, displayId ) {
-    _params = _.clone( additionalParams );
-    _mode = modeType;
+    var data = _.clone( additionalParams );
+
+    _imageUtils.setMode( modeType );
     _displayId = displayId;
 
-    _params.width = _prefs.getInt( "rsW" );
-    _params.height = _prefs.getInt( "rsH" );
+    data.width = _prefs.getInt( "rsW" );
+    data.height = _prefs.getInt( "rsH" );
+
+    _imageUtils.setParams( data );
 
     document.getElementById( "container" ).style.height = _prefs.getInt( "rsH" ) + "px";
     init();
@@ -195,9 +199,9 @@ RiseVision.Image = ( function( gadgets ) {
     // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
     _imageUtils.clearErrorTimer();
 
-    if ( _mode === "folder" && _slider && _slider.isReady() ) {
+    if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
       _slider.pause();
-    } else if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
+    } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "hidden";
     }
   }
@@ -218,16 +222,16 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     if ( _unavailableFlag ) {
-      if ( _mode === "file" && _storage ) {
+      if ( _imageUtils.getMode() === "file" && _storage ) {
         _storage.retry();
       }
 
       return;
     }
 
-    if ( _mode === "folder" && _slider && _slider.isReady() ) {
+    if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
       _slider.play();
-    } else if ( _mode === "file" && image && _imageUtils.isSingleImageGIF() ) {
+    } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "visible";
     }
   }
@@ -239,7 +243,7 @@ RiseVision.Image = ( function( gadgets ) {
     _message.show( message );
 
     // destroy slider if it exists and previously notified ready
-    if ( _mode === "folder" && _slider && _slider.isReady() ) {
+    if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
       _slider.destroy();
     }
 

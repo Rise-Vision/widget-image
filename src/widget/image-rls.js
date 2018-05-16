@@ -8,8 +8,7 @@ RiseVision.ImageRLS = {};
 RiseVision.ImageRLS = ( function( gadgets ) {
   "use strict";
 
-  var _displayId,
-    _prefs = new gadgets.Prefs(),
+  var _prefs = new gadgets.Prefs(),
     _message = null,
     _imageUtils = RiseVision.ImageUtils,
     _storage = null,
@@ -52,7 +51,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _configurationType = "storage file";
 
       // create and initialize the Storage file instance
-      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile( params, _displayId );
+      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile();
       _storage.init();
     } else if ( _imageUtils.getMode() === "folder" ) {
       // TODO: coming soon
@@ -109,11 +108,11 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
   }
 
-  function setAdditionalParams( additionalParams, modeType, displayId ) {
+  function setAdditionalParams( additionalParams, modeType ) {
     var data = _.clone( additionalParams );
 
     _imageUtils.setMode( modeType );
-    _displayId = displayId;
+    _imageUtils.setUseRLSSingleFile();
 
     data.width = _prefs.getInt( "rsW" );
     data.height = _prefs.getInt( "rsH" );

@@ -9,6 +9,7 @@ RiseVision.ImageUtils = ( function() {
     _prefs = new gadgets.Prefs(),
     _params = null,
     _mode = null,
+    _useRLSSingleFile = false,
     _errorTimer = null,
     _isSingleImageGIF = false;
 
@@ -19,6 +20,22 @@ RiseVision.ImageUtils = ( function() {
   function clearErrorTimer() {
     clearTimeout( _errorTimer );
     _errorTimer = null;
+  }
+
+  function getStorageSingleFilePath() {
+    var path = "";
+
+    if ( _params.storage.folder ) {
+      path += _params.storage.folder + ( _params.storage.folder.slice( -1 ) !== "/" ? "/" : "" );
+    }
+
+    path += _params.storage.fileName;
+
+    return "risemedialibrary-" + _params.storage.companyId + "/" + path;
+  }
+
+  function isRLSSingleFile() {
+    return _mode === "file" && _useRLSSingleFile;
   }
 
   function startErrorTimer() {
@@ -77,8 +94,15 @@ RiseVision.ImageUtils = ( function() {
     return _isSingleImageGIF;
   }
 
-  function logEvent( params ) {
-    RiseVision.Common.LoggerUtils.logEvent( getTableName(), params );
+  function logEvent( data ) {
+    var fileUrl = data.file_url;
+
+    if ( RiseVision.ImageUtils.isRLSSingleFile() ) {
+      data.local_url = ( fileUrl ) ? fileUrl : null;
+      data.file_url = RiseVision.ImageUtils.getStorageSingleFilePath();
+    }
+
+    RiseVision.Common.LoggerUtils.logEvent( getTableName(), data );
   }
 
   function sendDoneToViewer() {
@@ -98,6 +122,10 @@ RiseVision.ImageUtils = ( function() {
     _params = params;
   }
 
+  function setUseRLSSingleFile() {
+    _useRLSSingleFile = true;
+  }
+
   return {
     "clearErrorTimer": clearErrorTimer,
     "getMode": getMode,
@@ -105,14 +133,17 @@ RiseVision.ImageUtils = ( function() {
     "startErrorTimer": startErrorTimer,
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,
+    "isRLSSingleFile": isRLSSingleFile,
     "isSingleImageGIF": isSingleImageGIF,
     "getImageElement": getImageElement,
+    "getStorageSingleFilePath": getStorageSingleFilePath,
     "getTableName": getTableName,
     "logEvent": logEvent,
     "sendDoneToViewer": sendDoneToViewer,
     "sendReadyToViewer": sendReadyToViewer,
     "setMode": setMode,
-    "setParams": setParams
+    "setParams": setParams,
+    "setUseRLSSingleFile": setUseRLSSingleFile
   };
 
 } )();

@@ -12,7 +12,7 @@ var table = "image_events",
     "local_url": null,
     "company_id": "\"companyId\"",
     "display_id": "\"displayId\"",
-    "version": "1.0.0"
+    "version": "0.1.1"
   },
   ready = false,
   messageHandlers,

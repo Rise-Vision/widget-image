@@ -5,7 +5,7 @@ var RiseVision = RiseVision || {};
 
 RiseVision.ImageRLS = RiseVision.ImageRLS || {};
 
-RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
+RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   "use strict";
 
   var INITIAL_PROCESSING_DELAY = 10000,
@@ -29,23 +29,10 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
     }, INITIAL_PROCESSING_DELAY );
   }
 
-  function _getFilePath() {
-    var path = "";
-
-    if ( params.storage.folder ) {
-      path += params.storage.folder + ( params.storage.folder.slice( -1 ) !== "/" ? "/" : "" );
-    }
-
-    path += params.storage.fileName;
-
-    return "risemedialibrary-" + params.storage.companyId + "/" + path;
-  }
-
   function _handleNoConnection() {
     imageUtils.logEvent( {
       "event": "error",
-      "event_details": "no connection",
-      "file_url": filePath
+      "event_details": "no connection"
     }, true );
 
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
@@ -54,8 +41,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   function _handleRequiredModulesUnavailable() {
     imageUtils.logEvent( {
       "event": "error",
-      "event_details": "required modules unavailable",
-      "file_url": filePath
+      "event_details": "required modules unavailable"
     }, true );
 
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
@@ -64,8 +50,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   function _handleUnauthorized() {
     imageUtils.logEvent( {
       "event": "error",
-      "event_details": "unauthorized",
-      "file_url": filePath
+      "event_details": "unauthorized"
     }, true );
 
     RiseVision.ImageRLS.showError( "Rise Storage subscription is not active." );
@@ -101,8 +86,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   function _handleFileNoExist() {
     var params = {
       "event": "error",
-      "event_details": "file does not exist",
-      "file_url": filePath
+      "event_details": "file does not exist"
     };
 
     imageUtils.logEvent( params, true );
@@ -112,8 +96,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
 
   function _handleFileDeleted() {
     imageUtils.logEvent( {
-      "event": "file deleted",
-      "file_url": filePath
+      "event": "file deleted"
     } );
   }
 
@@ -123,8 +106,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
       params = {
         "event": "error",
         "event_details": msg,
-        "error_details": detail,
-        "file_url": filePath
+        "error_details": detail
       };
 
     imageUtils.logEvent( params, true );
@@ -183,7 +165,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function( params ) {
   }
 
   function init() {
-    filePath = _getFilePath();
+    filePath = imageUtils.getStorageSingleFilePath();
     storage = new playerLocalStorage.default( messaging, _handleEvents );
   }
 

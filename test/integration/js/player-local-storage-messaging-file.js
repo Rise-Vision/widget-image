@@ -114,19 +114,6 @@ suite( "errors", function() {
   } );
 
   test( "file error", function() {
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-error",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        msg: "File's host server could not be reached",
-        detail: "error details"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "Unable to download the file." );
-  } );
-
-  test( "should call done and have Viewer call play function 5 seconds after an error", function() {
     var clock = sinon.useFakeTimers(),
       spy = sinon.spy( RiseVision.ImageRLS, "play" );
 
@@ -138,6 +125,8 @@ suite( "errors", function() {
         detail: "error details"
       } );
     } );
+
+    assert.equal( document.querySelector( ".message" ).innerHTML, "Unable to download the file." );
 
     clock.tick( 4500 );
     assert( spy.notCalled );

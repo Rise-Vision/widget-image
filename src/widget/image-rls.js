@@ -48,7 +48,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
       _img = new Image();
 
-      _configurationType = "storage file";
+      _configurationType = "storage file (rls)";
 
       // create and initialize the Storage file instance
       _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile();

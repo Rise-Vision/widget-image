@@ -1,4 +1,4 @@
-/* global localMessaging, playerLocalStorage */
+/* global localMessaging, playerLocalStorage, _ */
 /* eslint-disable no-console */
 
 var RiseVision = RiseVision || {};
@@ -15,7 +15,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
     storage = null,
     initialProcessingTimer = null,
     watchInitiated = false,
-    initialLoad = true;
+    initialLoad = true,
+    fileErrorLogParams = null;
 
   function _clearInitialProcessingTimer() {
     clearTimeout( initialProcessingTimer );
@@ -27,6 +28,10 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       // file is still processing/downloading
       RiseVision.ImageRLS.onFileUnavailable( "File is downloading" );
     }, INITIAL_PROCESSING_DELAY );
+  }
+
+  function _resetFileErrorLogParams() {
+    fileErrorLogParams = null;
   }
 
   function _handleNoConnection() {
@@ -65,6 +70,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   }
 
   function _handleFileProcessing() {
+    _resetFileErrorLogParams();
+
     if ( initialLoad && !initialProcessingTimer ) {
       _startInitialProcessingTimer();
     }
@@ -72,6 +79,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
 
   function _handleFileAvailable( data ) {
     _clearInitialProcessingTimer();
+    _resetFileErrorLogParams();
 
     if ( initialLoad ) {
       initialLoad = false;
@@ -109,6 +117,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
         "error_details": detail
       };
 
+    // prevent repetitive logging when widget is receiving messages from other potential widget instances watching same file
+    if ( _.isEqual( params, fileErrorLogParams ) ) {
+      return;
+    }
+
+    fileErrorLogParams = _.clone( params );
     imageUtils.logEvent( params, true );
 
     /*** Possible error messages from Local Storage ***/

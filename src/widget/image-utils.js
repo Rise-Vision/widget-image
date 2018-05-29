@@ -22,6 +22,14 @@ RiseVision.ImageUtils = ( function() {
     _errorTimer = null;
   }
 
+  function getStorageFileName( filePath ) {
+    if ( !filePath || typeof filePath !== "string" ) {
+      return "";
+    }
+
+    return filePath.split( "#" ).shift().split( "?" ).shift().split( "/" ).pop();
+  }
+
   function getStorageSingleFilePath() {
     var path = "";
 
@@ -30,6 +38,14 @@ RiseVision.ImageUtils = ( function() {
     }
 
     path += _params.storage.fileName;
+
+    return "risemedialibrary-" + _params.storage.companyId + "/" + path;
+  }
+
+  function getStorageFolderPath() {
+    var path = "";
+
+    path += _params.storage.folder + ( _params.storage.folder.slice( -1 ) !== "/" ? "/" : "" );
 
     return "risemedialibrary-" + _params.storage.companyId + "/" + path;
   }
@@ -136,7 +152,9 @@ RiseVision.ImageUtils = ( function() {
     "isRLSSingleFile": isRLSSingleFile,
     "isSingleImageGIF": isSingleImageGIF,
     "getImageElement": getImageElement,
+    "getStorageFileName": getStorageFileName,
     "getStorageSingleFilePath": getStorageSingleFilePath,
+    "getStorageFolderPath": getStorageFolderPath,
     "getTableName": getTableName,
     "logEvent": logEvent,
     "sendDoneToViewer": sendDoneToViewer,

@@ -110,7 +110,11 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     if ( _imageUtils.getMode() === "file" ) {
       setSingleImage( urls );
     } else if ( _imageUtils.getMode() === "folder" ) {
-      _slider.refresh( urls );
+      if ( _errorFlag ) {
+        _slider.init( urls );
+      } else {
+        _slider.refresh( urls );
+      }
     }
 
     _errorFlag = false;
@@ -141,7 +145,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     var data = _.clone( additionalParams );
 
     _imageUtils.setMode( modeType );
-    _imageUtils.setUseRLSSingleFile();
+    _imageUtils.setUsingRLS();
 
     data.width = _prefs.getInt( "rsW" );
     data.height = _prefs.getInt( "rsH" );

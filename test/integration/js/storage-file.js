@@ -238,7 +238,7 @@ suite( "storage errors", function() {
     } ) );
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
-    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+    assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
     assert( onShowErrorStub.calledOnce, "showError() called once" );
     assert( onShowErrorStub.calledWith( "Sorry, there was a problem communicating with Rise Storage." ),
       "showError() called with correct message" );
@@ -259,7 +259,7 @@ suite( "storage errors", function() {
     } ) );
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
-    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+    assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
     assert( onShowErrorStub.calledOnce, "showError() called once" );
     assert( onShowErrorStub.calledWith( "The selected image does not exist or has been moved to Trash." ),
       "showError() called with correct message" );
@@ -276,7 +276,7 @@ suite( "storage errors", function() {
     } ) );
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
-    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+    assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
     assert( onShowErrorStub.calledOnce, "showError() called once" );
     assert( onShowErrorStub.calledWith( "The selected image is temporarily unavailable." ),
       "showError() called with correct message" );
@@ -299,7 +299,7 @@ suite( "storage errors", function() {
     } ) );
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
-    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+    assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
     assert( onShowErrorStub.calledOnce, "showError() called once" );
     assert( onShowErrorStub.calledWith( "Sorry, there was a problem communicating with Rise Storage." ),
       "showError() called with correct message" );
@@ -320,7 +320,7 @@ suite( "storage errors", function() {
     } ) );
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
-    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+    assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
     assert( onShowErrorStub.calledOnce, "showError() called once" );
     assert( onShowErrorStub.calledWith( "There was a problem retrieving the file from Rise Cache." ),
       "showError() called with correct message" );
@@ -362,7 +362,7 @@ suite( "storage errors", function() {
     }
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
-    assert( onLogEventStub.calledWith( params, true ), "logEvent() called with correct params" );
+    assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
 
   } );
 

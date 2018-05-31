@@ -52,7 +52,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "error_details": "Response code: " + e.detail.code + ", message: " + e.detail.message
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "Sorry, there was a problem communicating with Rise Storage." );
     } );
 
@@ -67,7 +67,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
       // clear the existing image
       img.style.background = "";
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "The selected image does not exist or has been moved to Trash." );
     } );
 
@@ -78,7 +78,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "file_url": e.detail
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "The selected image is temporarily unavailable." );
     } );
 
@@ -89,7 +89,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
     } );
 
     storage.addEventListener( "rise-storage-subscription-expired", function() {
@@ -98,7 +98,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "event_details": "storage subscription expired"
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "Rise Storage subscription is not active." );
     } );
 
@@ -111,7 +111,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
           "file_url": fileUrl
         };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "Sorry, there was a problem communicating with Rise Storage.", true );
     } );
 
@@ -127,7 +127,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         errorMessage;
 
       // log the error
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
 
       if ( riseCache.isV2Running() ) {
         errorMessage = riseCache.getErrorMessage( statusCode );
@@ -162,7 +162,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         }
       }
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
 
       if ( e.detail && e.detail.isPlayerRunning ) {
         RiseVision.Image.showError( "Waiting for Rise Cache", true );

@@ -72,7 +72,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       if ( !managedFile ) {
         managedFile = {
           filePath: filePath,
-          fileUrl: fileUrl,
+          url: fileUrl,
           name: imageUtils.getStorageFileName( filePath )
         };
 
@@ -80,7 +80,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
         files.push( managedFile );
       } else {
         // file has been updated
-        managedFile.fileUrl = fileUrl
+        managedFile.url = fileUrl
       }
     }
 
@@ -209,7 +209,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       params = {
         "event": "file deleted",
         "file_url": data.filePath,
-        "local_url": ( file && file.fileUrl ) ? file.fileUrl : ""
+        "local_url": ( file && file.url ) ? file.url : ""
       };
 
     _manageFile( data, "deleted" );

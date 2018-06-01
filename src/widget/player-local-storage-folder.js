@@ -11,6 +11,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
   var INITIAL_PROCESSING_DELAY = 15000,
     imageUtils = RiseVision.ImageUtils,
     messaging = new localMessaging.default(),
+    defaultFileFormat = "unknown",
     folderPath = "",
     storage = null,
     watchInitiated = false,
@@ -125,7 +126,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     imageUtils.logEvent( {
       "event": "error",
       "event_details": "no connection",
-      "file_url": folderPath
+      "file_url": folderPath,
+      "file_format": defaultFileFormat
     } );
 
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
@@ -135,7 +137,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     imageUtils.logEvent( {
       "event": "error",
       "event_details": "required modules unavailable",
-      "file_url": folderPath
+      "file_url": folderPath,
+      "file_format": defaultFileFormat
     } );
 
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
@@ -145,7 +148,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     imageUtils.logEvent( {
       "event": "error",
       "event_details": "unauthorized",
-      "file_url": folderPath
+      "file_url": folderPath,
+      "file_format": defaultFileFormat
     } );
 
     RiseVision.ImageRLS.showError( "Rise Storage subscription is not active." );
@@ -187,11 +191,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     RiseVision.ImageRLS.onFileRefresh( files );
   }
 
-  function _handleFolderNoExist( data ) {
+  function _handleFolderNoExist() {
     var params = {
       "event": "error",
       "event_details": "folder does not exist",
-      "file_url": data.filePath
+      "file_url": folderPath,
+      "file_format": defaultFileFormat
     };
 
     imageUtils.logEvent( params );
@@ -299,7 +304,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       _handleFileProcessing();
       break;
     case "FOLDER-NO-EXIST":
-      _handleFolderNoExist( data );
+      _handleFolderNoExist();
       break;
     case "FILE-DELETED":
       _handleFileDeleted( data );

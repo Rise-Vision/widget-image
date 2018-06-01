@@ -172,12 +172,24 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function play() {
-    var image = document.querySelector( "#container #image" );
+    var image = document.querySelector( "#container #image" ),
+      configParams = {
+        "event": "configuration",
+        "event_details": _configurationType
+      },
+      mode = _imageUtils.getMode();
 
     _viewerPaused = false;
 
     if ( !_configurationLogged ) {
-      _imageUtils.logEvent( { "event": "configuration", "event_details": _configurationType }, false );
+      if ( mode === "file" ) {
+        configParams.file_url = _imageUtils.getStorageSingleFilePath();
+      } else if ( mode === "folder" ) {
+        configParams.file_url = _imageUtils.getStorageFolderPath();
+        configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
+      }
+
+      _imageUtils.logEvent( configParams );
       _configurationLogged = true;
     }
 

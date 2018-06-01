@@ -96,7 +96,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       setSingleImage( urls );
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create slider instance
-      _slider = new RiseVision.Image.Slider( _imageUtils.getParams() );
+      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.ImageRLS );
       _slider.init( urls );
     }
   }

@@ -105,8 +105,6 @@ RiseVision.Image = ( function( gadgets ) {
   }
 
   function onFileInit( urls ) {
-    var params = _imageUtils.getParams();
-
     if ( _imageUtils.getMode() === "file" ) {
       // urls value will be a string
       _currentFiles[ 0 ] = urls;
@@ -123,7 +121,7 @@ RiseVision.Image = ( function( gadgets ) {
       _currentFiles = urls;
 
       // create slider instance
-      _slider = new RiseVision.Image.Slider( params );
+      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.Image );
       _slider.init( urls );
     }
   }

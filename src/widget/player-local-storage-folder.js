@@ -97,6 +97,22 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     } );
   }
 
+  function _onFileRemoved() {
+    if ( files.length < 1 ) {
+      // No files to show anymore, log and display a message
+      imageUtils.logEvent( {
+        "event": "warning",
+        "event_details": "No files to display",
+        "file_url": folderPath,
+        "file_format": "unknown"
+      } );
+
+      RiseVision.ImageRLS.showError( "Unable to display any files." );
+    } else {
+      RiseVision.ImageRLS.onFileRefresh( files );
+    }
+  }
+
   function _clearInitialProcessingTimer() {
     clearTimeout( initialProcessingTimer );
     initialProcessingTimer = null;
@@ -104,9 +120,19 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
   function _startInitialProcessingTimer() {
     initialProcessingTimer = setTimeout( function() {
+      // explicitly set to null for integration test purposes
+      initialProcessingTimer = null;
+
       if ( files.length < 1 ) {
         if ( filesInError.length > 0 ) {
-          // Some files during initial processing had a file error and no files became available, display error message
+          // Some files during initial processing had a file error and no files became available
+          imageUtils.logEvent( {
+            "event": "warning",
+            "event_details": "No files to display (startup)",
+            "file_url": folderPath,
+            "file_format": "unknown"
+          } );
+
           RiseVision.ImageRLS.showError( "Unable to download the files." );
           return;
         }
@@ -204,6 +230,19 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     RiseVision.ImageRLS.showError( "The selected folder does not exist or has been moved to Trash." );
   }
 
+  function _handleFolderEmpty() {
+    var params = {
+      "event": "warning",
+      "event_details": "folder empty",
+      "file_url": folderPath,
+      "file_format": defaultFileFormat
+    };
+
+    imageUtils.logEvent( params );
+
+    RiseVision.ImageRLS.showError( "The selected folder does not contain any images." );
+  }
+
   function _handleFileDeleted( data ) {
     var file = _getFile( data.filePath ),
       params = {
@@ -218,12 +257,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     imageUtils.logEvent( params );
 
     if ( !initialLoad && !initialProcessingTimer ) {
-      if ( files.length < 1 ) {
-        // No files to show, display an error message
-        RiseVision.ImageRLS.showError( "Unable to download the files." );
-      } else {
-        RiseVision.ImageRLS.onFileRefresh( files );
-      }
+      _onFileRemoved();
     }
   }
 
@@ -267,15 +301,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       if ( _getFile( data.filePath ) ) {
         // remove this file from the file list since there was a problem with its new version being provided
         _manageFile( { filePath: data.filePath }, "deleted" );
+        _onFileRemoved();
       }
-
-      if ( files.length < 1 ) {
-        // No files to show anymore, display an error message
-        RiseVision.ImageRLS.showError( "Unable to download the files." );
-      } else {
-        RiseVision.ImageRLS.onFileRefresh( files );
-      }
-
     }
   }
 
@@ -306,6 +333,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     case "FOLDER-NO-EXIST":
       _handleFolderNoExist();
       break;
+    case "FOLDER-EMPTY":
+      _handleFolderEmpty();
+      break;
     case "FILE-DELETED":
       _handleFileDeleted( data );
       break;
@@ -321,7 +351,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
   }
 
   function retry() {
-    _handleFileProcessing();
+    if ( initialLoad && !initialProcessingTimer ) {
+      _startInitialProcessingTimer();
+    }
   }
 
   return {

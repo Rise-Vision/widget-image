@@ -139,6 +139,37 @@ suite( "errors", function() {
 
 } );
 
+suite( "file downloading", function() {
+  var clock;
+
+  setup( function() {
+    clock = sinon.useFakeTimers();
+  } );
+
+  teardown( function() {
+    clock.restore();
+  } );
+
+  test( "should show message after 15 seconds of processing", function() {
+
+    // file is getting processed, starts the initial processing timer
+    messageHandlers.forEach( function( handler ) {
+      handler( {
+        topic: "FILE-UPDATE",
+        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+        status: "STALE"
+      } );
+    } );
+
+    // expire initial processing timer
+    clock.tick( 15000 );
+
+    assert.equal( document.querySelector( ".message" ).innerHTML, "File is downloading." );
+
+  } );
+
+} );
+
 suite( "file deleted", function() {
   test( "file deleted", function() {
     // mock receiving file-update to notify file is downloading

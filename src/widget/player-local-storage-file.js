@@ -26,7 +26,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   function _startInitialProcessingTimer() {
     initialProcessingTimer = setTimeout( function() {
       // file is still processing/downloading
-      RiseVision.ImageRLS.onFileUnavailable( "File is downloading" );
+      RiseVision.ImageRLS.onFileUnavailable( "File is downloading." );
     }, INITIAL_PROCESSING_DELAY );
   }
 

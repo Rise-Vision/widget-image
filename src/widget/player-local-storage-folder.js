@@ -133,12 +133,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
             "file_format": "unknown"
           } );
 
-          RiseVision.ImageRLS.showError( "Unable to download the files." );
+          RiseVision.ImageRLS.showError( "Unable to download any files." );
           return;
         }
 
         // files are still processing/downloading
-        RiseVision.ImageRLS.onFileUnavailable( "Files are downloading" );
+        RiseVision.ImageRLS.onFileUnavailable( "Files are downloading." );
         return;
       }
 
@@ -156,7 +156,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     } );
 
-    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+    RiseVision.ImageRLS.showError( "There was a problem retrieving the files." );
   }
 
   function _handleRequiredModulesUnavailable() {
@@ -167,7 +167,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     } );
 
-    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+    RiseVision.ImageRLS.showError( "There was a problem retrieving the files." );
   }
 
   function _handleUnauthorized() {

@@ -71,6 +71,8 @@ suite( "configuration", function() {
     assert( spy.calledWith( table, {
       "event": "configuration",
       "event_details": "storage folder",
+      "file_url": "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/",
+      "file_format": "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP",
       "company_id": params.company_id,
       "display_id": params.display_id,
       "version": params.version

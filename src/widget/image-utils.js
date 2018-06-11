@@ -9,7 +9,7 @@ RiseVision.ImageUtils = ( function() {
     _prefs = new gadgets.Prefs(),
     _params = null,
     _mode = null,
-    _useRLSSingleFile = false,
+    _usingRLS = false,
     _errorTimer = null,
     _isSingleImageGIF = false;
 
@@ -20,6 +20,14 @@ RiseVision.ImageUtils = ( function() {
   function clearErrorTimer() {
     clearTimeout( _errorTimer );
     _errorTimer = null;
+  }
+
+  function getStorageFileName( filePath ) {
+    if ( !filePath || typeof filePath !== "string" ) {
+      return "";
+    }
+
+    return filePath.split( "#" ).shift().split( "?" ).shift().split( "/" ).pop();
   }
 
   function getStorageSingleFilePath() {
@@ -34,8 +42,12 @@ RiseVision.ImageUtils = ( function() {
     return "risemedialibrary-" + _params.storage.companyId + "/" + path;
   }
 
-  function isRLSSingleFile() {
-    return _mode === "file" && _useRLSSingleFile;
+  function getStorageFolderPath() {
+    var path = "";
+
+    path += _params.storage.folder + ( _params.storage.folder.slice( -1 ) !== "/" ? "/" : "" );
+
+    return "risemedialibrary-" + _params.storage.companyId + "/" + path;
   }
 
   function startErrorTimer() {
@@ -83,11 +95,19 @@ RiseVision.ImageUtils = ( function() {
   }
 
   function handleSingleImageLoadError( url ) {
-    logEvent( {
+    var params = {
       "event": "error",
-      "event_details": "image load error",
-      "file_url": url
-    }, true );
+      "event_details": "image load error"
+    };
+
+    if ( _usingRLS ) {
+      params.file_url = RiseVision.ImageUtils.getStorageSingleFilePath();
+      params.local_url = url;
+    } else {
+      params.file_url = url;
+    }
+
+    logEvent( params );
   }
 
   function isSingleImageGIF() {
@@ -95,13 +115,6 @@ RiseVision.ImageUtils = ( function() {
   }
 
   function logEvent( data ) {
-    var fileUrl = data.file_url;
-
-    if ( RiseVision.ImageUtils.isRLSSingleFile() ) {
-      data.local_url = ( fileUrl ) ? fileUrl : null;
-      data.file_url = RiseVision.ImageUtils.getStorageSingleFilePath();
-    }
-
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), data );
   }
 
@@ -122,8 +135,8 @@ RiseVision.ImageUtils = ( function() {
     _params = params;
   }
 
-  function setUseRLSSingleFile() {
-    _useRLSSingleFile = true;
+  function setUsingRLS() {
+    _usingRLS = true;
   }
 
   return {
@@ -133,17 +146,18 @@ RiseVision.ImageUtils = ( function() {
     "startErrorTimer": startErrorTimer,
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,
-    "isRLSSingleFile": isRLSSingleFile,
     "isSingleImageGIF": isSingleImageGIF,
     "getImageElement": getImageElement,
+    "getStorageFileName": getStorageFileName,
     "getStorageSingleFilePath": getStorageSingleFilePath,
+    "getStorageFolderPath": getStorageFolderPath,
     "getTableName": getTableName,
     "logEvent": logEvent,
     "sendDoneToViewer": sendDoneToViewer,
     "sendReadyToViewer": sendReadyToViewer,
     "setMode": setMode,
     "setParams": setParams,
-    "setUseRLSSingleFile": setUseRLSSingleFile
+    "setUsingRLS": setUsingRLS
   };
 
 } )();

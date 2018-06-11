@@ -12,6 +12,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _message = null,
     _imageUtils = RiseVision.ImageUtils,
     _storage = null,
+    _slider = null,
     _configurationType = null,
     _errorFlag = false,
     _viewerPaused = true,
@@ -54,7 +55,17 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile();
       _storage.init();
     } else if ( _imageUtils.getMode() === "folder" ) {
-      // TODO: coming soon
+      // create the slider container <div> within the container <div>
+      el.className = "tp-banner-container";
+
+      fragment.appendChild( el );
+      container.appendChild( fragment );
+
+      _configurationType = "storage folder (rls)";
+
+      // create and initialize the Storage folder instance
+      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFolder();
+      _storage.init();
     }
 
     _imageUtils.sendReadyToViewer();
@@ -76,24 +87,34 @@ RiseVision.ImageRLS = ( function( gadgets ) {
    *  Public Methods
    */
   function onFileInit( urls ) {
-    if ( _imageUtils.getMode() === "file" ) {
-      _unavailableFlag = false;
+    _unavailableFlag = false;
 
+    if ( _imageUtils.getMode() === "file" ) {
       // remove message previously shown
       _message.hide();
 
       setSingleImage( urls );
+    } else if ( _imageUtils.getMode() === "folder" ) {
+      // create slider instance
+      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.ImageRLS );
+      _slider.init( urls );
     }
   }
 
   function onFileRefresh( urls ) {
-    if ( _imageUtils.getMode() === "file" ) {
-      if ( _unavailableFlag ) {
-        // remove the message previously shown
-        _message.hide();
-      }
+    if ( _unavailableFlag ) {
+      // remove the message previously shown
+      _message.hide();
+    }
 
+    if ( _imageUtils.getMode() === "file" ) {
       setSingleImage( urls );
+    } else if ( _imageUtils.getMode() === "folder" ) {
+      if ( _errorFlag ) {
+        _slider.init( urls );
+      } else {
+        _slider.refresh( urls );
+      }
     }
 
     _errorFlag = false;
@@ -108,11 +129,23 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
   }
 
+  function onSliderReady() {
+    _message.hide();
+
+    if ( !_viewerPaused ) {
+      _slider.play();
+    }
+  }
+
+  function onSliderComplete() {
+    _imageUtils.sendDoneToViewer();
+  }
+
   function setAdditionalParams( additionalParams, modeType ) {
     var data = _.clone( additionalParams );
 
     _imageUtils.setMode( modeType );
-    _imageUtils.setUseRLSSingleFile();
+    _imageUtils.setUsingRLS();
 
     data.width = _prefs.getInt( "rsW" );
     data.height = _prefs.getInt( "rsH" );
@@ -131,19 +164,32 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
     _imageUtils.clearErrorTimer();
 
-    // TODO: handle folder
-    if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
+    if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
+      _slider.pause();
+    } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "hidden";
     }
   }
 
   function play() {
-    var image = document.querySelector( "#container #image" );
+    var image = document.querySelector( "#container #image" ),
+      configParams = {
+        "event": "configuration",
+        "event_details": _configurationType
+      },
+      mode = _imageUtils.getMode();
 
     _viewerPaused = false;
 
     if ( !_configurationLogged ) {
-      _imageUtils.logEvent( { "event": "configuration", "event_details": _configurationType }, false );
+      if ( mode === "file" ) {
+        configParams.file_url = _imageUtils.getStorageSingleFilePath();
+      } else if ( mode === "folder" ) {
+        configParams.file_url = _imageUtils.getStorageFolderPath();
+        configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
+      }
+
+      _imageUtils.logEvent( configParams );
       _configurationLogged = true;
     }
 
@@ -152,16 +198,15 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       return;
     }
 
-    if ( _unavailableFlag ) {
-      if ( _imageUtils.getMode() === "file" && _storage ) {
-        _storage.retry();
-      }
+    if ( _unavailableFlag && _storage ) {
+      _storage.retry();
 
       return;
     }
 
-    // TODO: handle folder
-    if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
+    if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
+      _slider.play();
+    } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
       image.style.visibility = "visible";
     }
   }
@@ -171,7 +216,10 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     _message.show( message );
 
-    // TODO: handle folder
+    // destroy slider if it exists and previously notified ready
+    if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
+      _slider.destroy();
+    }
 
     if ( !_viewerPaused ) {
       _imageUtils.startErrorTimer();
@@ -186,6 +234,8 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     "onFileInit": onFileInit,
     "onFileRefresh": onFileRefresh,
     "onFileUnavailable": onFileUnavailable,
+    "onSliderComplete": onSliderComplete,
+    "onSliderReady": onSliderReady,
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,

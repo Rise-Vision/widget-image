@@ -1,9 +1,7 @@
 /* global _, $ */
 var RiseVision = RiseVision || {};
 
-RiseVision.Image = RiseVision.Image || {};
-
-RiseVision.Image.Slider = function( params ) {
+RiseVision.Slider = function( params, imageRef ) {
   "use strict";
 
   var totalSlides = 0,
@@ -107,7 +105,7 @@ RiseVision.Image.Slider = function( params ) {
       if ( isLastSlide ) {
         isLastSlide = false;
         pause();
-        RiseVision.Image.onSliderComplete();
+        imageRef.onSliderComplete();
 
         if ( refreshSlider ) {
           // Destroy and recreate the slider if the files have changed.
@@ -169,7 +167,7 @@ RiseVision.Image.Slider = function( params ) {
     var delay = ( ( params.duration === undefined ) || ( params.duration < 1 ) ) ? 10000 : params.duration * 1000;
 
     singleImagePUDTimer = setTimeout( function() {
-      RiseVision.Image.onSliderComplete();
+      imageRef.onSliderComplete();
     }, delay );
   }
 
@@ -222,7 +220,7 @@ RiseVision.Image.Slider = function( params ) {
       // Pause slideshow since it will autoplay and this is not configurable.
       pause();
       isLoading = false;
-      RiseVision.Image.onSliderReady();
+      imageRef.onSliderReady();
     } );
 
     $api.on( "revolution.slide.onchange", function( e, data ) {

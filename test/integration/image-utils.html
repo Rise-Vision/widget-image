@@ -50,6 +50,56 @@
 
     });
 
+    suite( "getStorageSingleFilePath", function() {
+
+      teardown( function() {
+        imageUtils.setParams( null );
+      } );
+
+      test( "should provide single file path (bucket only)", function() {
+        imageUtils.setParams( {
+          storage: {
+            companyId: "abc123",
+            fileName: "test-file.jpg"
+          }
+        } );
+
+        assert.equal( imageUtils.getStorageSingleFilePath(), "risemedialibrary-abc123/test-file.jpg" );
+      } );
+
+      test( "should provide single file path (with subfolder)", function() {
+        imageUtils.setParams( {
+          storage: {
+            companyId: "abc123",
+            fileName: "test-file.jpg",
+            folder: "test-folder/nested-folder/"
+          }
+        } );
+
+        assert.equal( imageUtils.getStorageSingleFilePath(), "risemedialibrary-abc123/test-folder/nested-folder/test-file.jpg" );
+      } );
+
+    } );
+
+    suite( "getStorageFolderPath", function() {
+
+      teardown( function() {
+        imageUtils.setParams( null );
+      } );
+
+      test( "should provide folder path", function() {
+        imageUtils.setParams( {
+          storage: {
+            companyId: "abc123",
+            folder: "test-folder/"
+          }
+        } );
+
+        assert.equal( imageUtils.getStorageFolderPath(), "risemedialibrary-abc123/test-folder/" );
+      } );
+
+    } );
+
     suite( "handleSingleImageLoad", function() {
       var jpgImage = "https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
         gifImage = "https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/bells.gif";
@@ -78,25 +128,48 @@
     } );
 
     suite( "handleSingleImageLoadError", function() {
+      var table = "image_events",
+        params = {
+          "event": "error",
+          "event_details": "image load error",
+          "file_url": "test-bucket/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+          "file_format": "jpg",
+          "company_id": "",
+          "display_id": ""
+        },
+        logSpy;
+
+      setup( function() {
+        logSpy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
+      } );
+
+      teardown( function () {
+        logSpy.restore();
+        imageUtils.setParams( null );
+      } );
 
       test( "should log error", function() {
-        var table = "image_events",
-          params = {
-            "event": "error",
-            "event_details": "image load error",
-            "file_url": "test-bucket/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-            "file_format": "jpg",
-            "company_id": "",
-            "display_id": ""
-          },
-          logSpy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
-
         imageUtils.handleSingleImageLoadError( params.file_url );
 
         assert( logSpy.calledOnce );
         assert( logSpy.calledWith( table, params ) );
+      });
 
-        RiseVision.Common.LoggerUtils.logEvent.restore();
+      test( "should apply file_url and local_url (RLS)", function() {
+        imageUtils.setUsingRLS();
+        imageUtils.setParams( {
+          storage: {
+            companyId: "abc123",
+            fileName: "test-file.jpg"
+          }
+        } );
+        imageUtils.handleSingleImageLoadError( "file://machine-test-path/test-file.jpg" );
+
+        params.file_url = "risemedialibrary-abc123/test-file.jpg";
+        params.local_url = "file://machine-test-path/test-file.jpg";
+
+        assert( logSpy.calledOnce );
+        assert( logSpy.calledWith( table, params ) );
       });
 
     } );

@@ -103,7 +103,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "error_details": "Response code: " + e.detail.code + ", message: " + e.detail.message
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "Sorry, there was a problem communicating with Rise Storage." );
     } );
 
@@ -113,7 +113,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "storage folder empty"
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "The selected folder does not contain any images." );
     } );
 
@@ -124,7 +124,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "error_details": e.detail
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "The selected folder does not exist or has been moved to Trash." );
     } );
 
@@ -135,7 +135,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "storage folder format(s) invalid"
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "The selected folder does not contain any supported image formats." );
     } );
 
@@ -146,7 +146,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
     } );
 
     storage.addEventListener( "rise-storage-subscription-expired", function() {
@@ -155,7 +155,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "storage subscription expired"
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "Rise Storage subscription is not active." );
     } );
 
@@ -165,7 +165,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "The request failed with status code: " + e.detail.error.currentTarget.status
       };
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
       RiseVision.Image.showError( "Sorry, there was a problem communicating with Rise Storage.", true );
     } );
 
@@ -177,7 +177,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         statusCode = 0,
         errorMessage;
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
 
       if ( riseCache.isV2Running() ) {
         errorMessage = riseCache.getErrorMessage( statusCode );
@@ -211,7 +211,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         }
       }
 
-      imageUtils.logEvent( params, true );
+      imageUtils.logEvent( params );
 
       if ( e.detail && e.detail.isPlayerRunning ) {
         RiseVision.Image.showError( "Waiting for Rise Cache", true );

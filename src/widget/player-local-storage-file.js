@@ -26,7 +26,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   function _startInitialProcessingTimer() {
     initialProcessingTimer = setTimeout( function() {
       // file is still processing/downloading
-      RiseVision.ImageRLS.onFileUnavailable( "File is downloading" );
+      RiseVision.ImageRLS.onFileUnavailable( "File is downloading." );
     }, INITIAL_PROCESSING_DELAY );
   }
 
@@ -37,8 +37,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   function _handleNoConnection() {
     imageUtils.logEvent( {
       "event": "error",
-      "event_details": "no connection"
-    }, true );
+      "event_details": "no connection",
+      "file_url": filePath
+    } );
 
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
   }
@@ -46,8 +47,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   function _handleRequiredModulesUnavailable() {
     imageUtils.logEvent( {
       "event": "error",
-      "event_details": "required modules unavailable"
-    }, true );
+      "event_details": "required modules unavailable",
+      "file_url": filePath
+    } );
 
     RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
   }
@@ -55,8 +57,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   function _handleUnauthorized() {
     imageUtils.logEvent( {
       "event": "error",
-      "event_details": "unauthorized"
-    }, true );
+      "event_details": "unauthorized",
+      "file_url": filePath
+    } );
 
     RiseVision.ImageRLS.showError( "Rise Storage subscription is not active." );
   }
@@ -91,20 +94,22 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
     RiseVision.ImageRLS.onFileRefresh( data.fileUrl );
   }
 
-  function _handleFileNoExist() {
+  function _handleFileNoExist( data ) {
     var params = {
       "event": "error",
-      "event_details": "file does not exist"
+      "event_details": "file does not exist",
+      "file_url": data.filePath
     };
 
-    imageUtils.logEvent( params, true );
+    imageUtils.logEvent( params );
 
     RiseVision.ImageRLS.showError( "The selected image does not exist or has been moved to Trash." );
   }
 
-  function _handleFileDeleted() {
+  function _handleFileDeleted( data ) {
     imageUtils.logEvent( {
-      "event": "file deleted"
+      "event": "file deleted",
+      "file_url": data.filePath
     } );
   }
 
@@ -114,7 +119,8 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       params = {
         "event": "error",
         "event_details": msg,
-        "error_details": detail
+        "error_details": detail,
+        "file_url": data.filePath
       };
 
     // prevent repetitive logging when widget is receiving messages from other potential widget instances watching same file
@@ -123,7 +129,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
     }
 
     fileErrorLogParams = _.clone( params );
-    imageUtils.logEvent( params, true );
+    imageUtils.logEvent( params );
 
     /*** Possible error messages from Local Storage ***/
     /*
@@ -167,10 +173,10 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       _handleFileProcessing();
       break;
     case "FILE-NO-EXIST":
-      _handleFileNoExist();
+      _handleFileNoExist( data );
       break;
     case "FILE-DELETED":
-      _handleFileDeleted();
+      _handleFileDeleted( data );
       break;
     case "FILE-ERROR":
       _handleFileError( data );

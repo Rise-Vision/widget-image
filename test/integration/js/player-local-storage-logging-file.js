@@ -110,6 +110,7 @@ suite( "errors", function() {
       } );
     } );
 
+    params.event = "warning";
     params.event_details = "unauthorized";
 
     assert( logSpy.calledOnce );
@@ -145,6 +146,7 @@ suite( "errors", function() {
       } );
     } );
 
+    params.event = "error";
     params.event_details = "file does not exist";
 
     assert( logSpy.calledOnce );

@@ -172,7 +172,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
   function _handleUnauthorized() {
     imageUtils.logEvent( {
-      "event": "error",
+      "event": "warning",
       "event_details": "unauthorized",
       "file_url": folderPath,
       "file_format": defaultFileFormat

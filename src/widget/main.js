@@ -88,7 +88,7 @@
 
         if ( useRLS ) {
           // proceed with using RLS for single file
-          RiseVision.ImageRLS.setAdditionalParams( additionalParams, mode, displayId );
+          RiseVision.ImageRLS.setAdditionalParams( additionalParams, mode, companyId );
           return;
         }
 

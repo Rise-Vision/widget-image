@@ -22,12 +22,13 @@ top.RiseVision.Viewer.LocalMessaging = {
   }
 };
 
-sinon.stub( RiseVision.ImageRLS, "setAdditionalParams", function( params, mode, displayId ) {
+sinon.stub( RiseVision.ImageRLS, "setAdditionalParams", function( params, mode ) {
   ready = true; // eslint-disable-line no-undef
 
   // spy on log call
   logSpy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" ); // eslint-disable-line no-undef
 
   RiseVision.ImageRLS.setAdditionalParams.restore();
-  RiseVision.ImageRLS.setAdditionalParams( params, mode, displayId );
+  // override company id to be the same company from the test data to bypass making direct licensing authorization request
+  RiseVision.ImageRLS.setAdditionalParams( params, mode, "30007b45-3df0-4c7b-9f7f-7d8ce6443013" );
 } );

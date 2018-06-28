@@ -141,7 +141,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils.sendDoneToViewer();
   }
 
-  function setAdditionalParams( additionalParams, modeType ) {
+  function setAdditionalParams( additionalParams, modeType, companyId ) {
     var data = _.clone( additionalParams );
 
     _imageUtils.setMode( modeType );
@@ -149,6 +149,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     data.width = _prefs.getInt( "rsW" );
     data.height = _prefs.getInt( "rsH" );
+    data.companyId = companyId;
 
     _imageUtils.setParams( data );
 

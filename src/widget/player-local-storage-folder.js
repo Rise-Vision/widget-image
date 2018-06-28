@@ -1,4 +1,4 @@
-/* global localMessaging, playerLocalStorage, _ */
+/* global localMessaging, playerLocalStorage, playerLocalStorageLicensing, config _ */
 /* eslint-disable no-console */
 
 var RiseVision = RiseVision || {};
@@ -13,6 +13,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     messaging = new localMessaging.default(),
     defaultFileFormat = "unknown",
     folderPath = "",
+    licensing = null,
     storage = null,
     watchInitiated = false,
     files = [],
@@ -189,6 +190,18 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     }
   }
 
+  function _handleAuthorizationError( data ) {
+    var detail = data.detail || "";
+
+    imageUtils.logEvent( {
+      "event": "error",
+      "event_details": "authorization error",
+      "error_details": ( typeof detail === "string" ) ? detail : JSON.stringify( detail ),
+      "file_url": folderPath,
+      "file_format": defaultFileFormat
+    } );
+  }
+
   function _handleFileProcessing() {
     if ( initialLoad && !initialProcessingTimer ) {
       _startInitialProcessingTimer();
@@ -324,6 +337,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     case "UNAUTHORIZED":
       _handleUnauthorized();
       break;
+    case "AUTHORIZATION-ERROR":
+      _handleAuthorizationError;
+      break;
     case "FILE-AVAILABLE":
       _handleFileAvailable( data );
       break;
@@ -346,8 +362,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
   }
 
   function init() {
+    var params = imageUtils.getParams(),
+      companyId = ( params.storage.companyId !== params.companyId ) ? params.storage.companyId : "";
+
     folderPath = imageUtils.getStorageFolderPath();
-    storage = new playerLocalStorage.default( messaging, _handleEvents );
+    licensing = new playerLocalStorageLicensing.default( messaging, _handleEvents, companyId, config.STORAGE_ENV );
+    storage = new playerLocalStorage.default( messaging, licensing, _handleEvents );
   }
 
   function retry() {

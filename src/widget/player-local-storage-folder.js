@@ -185,7 +185,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
   function _handleAuthorized() {
     if ( !watchInitiated ) {
       // start watching the folder
-      storage.watchFiles( folderPath );
+      storage.watchFiles( folderPath, "image" );
       watchInitiated = true;
     }
   }

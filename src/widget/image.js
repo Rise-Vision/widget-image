@@ -206,6 +206,7 @@ RiseVision.Image = ( function( gadgets ) {
 
   function play() {
     var image = document.querySelector( "#container #image" ),
+      params = _imageUtils.getParams(),
       configParams = {
         "event": "configuration",
         "event_details": _configurationType
@@ -215,8 +216,12 @@ RiseVision.Image = ( function( gadgets ) {
     _viewerPaused = false;
 
     if ( !_configurationLogged ) {
-      if ( mode === "file" && _configurationType !== "custom" ) {
-        configParams.file_url = _imageUtils.getStorageSingleFilePath();
+      if ( mode === "file" ) {
+        if ( _configurationType !== "custom" ) {
+          configParams.file_url = _imageUtils.getStorageSingleFilePath();
+        } else {
+          configParams.file_url = ( params.url && params.url !== "" ) ? params.url : params.selector.url;
+        }
       } else if ( mode === "folder" ) {
         configParams.file_url = _imageUtils.getStorageFolderPath();
         configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";

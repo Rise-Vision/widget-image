@@ -72,7 +72,7 @@
             // folder was selected
             mode = "folder";
 
-            // TODO: trigger test coverage for RLS with folder
+            // integration tests set TEST_USE_RLS to true
             useRLS = config.TEST_USE_RLS || canUseRLSFolder();
           } else {
             // file was selected

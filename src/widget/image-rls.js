@@ -13,7 +13,6 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils = RiseVision.ImageUtils,
     _storage = null,
     _slider = null,
-    _configurationType = null,
     _errorFlag = false,
     _viewerPaused = true,
     _configurationLogged = false,
@@ -23,6 +22,26 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   /*
    *  Private Methods
    */
+  function _logConfiguration( type ) {
+    var configParams = {
+        "event": "configuration",
+        "event_details": type
+      },
+      mode = _imageUtils.getMode();
+
+    if ( !_configurationLogged ) {
+      if ( mode === "file" ) {
+        configParams.file_url = _imageUtils.getStorageSingleFilePath();
+      } else if ( mode === "folder" ) {
+        configParams.file_url = _imageUtils.getStorageFolderPath();
+        configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
+      }
+
+      _imageUtils.logEvent( configParams );
+      _configurationLogged = true;
+    }
+  }
+
   function _init() {
     var params = _imageUtils.getParams(),
       container = document.getElementById( "container" ),
@@ -49,11 +68,10 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
       _img = new Image();
 
-      _configurationType = "storage file (rls)";
+      _imageUtils.setConfigurationType( "storage file (rls)" );
 
       // create and initialize the Storage file instance
       _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile();
-      _storage.init();
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create the slider container <div> within the container <div>
       el.className = "tp-banner-container";
@@ -61,13 +79,14 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       fragment.appendChild( el );
       container.appendChild( fragment );
 
-      _configurationType = "storage folder (rls)";
+      _imageUtils.setConfigurationType( "storage folder (rls)" );
 
       // create and initialize the Storage folder instance
       _storage = new RiseVision.ImageRLS.PlayerLocalStorageFolder();
-      _storage.init();
     }
 
+    _storage.init();
+    _logConfiguration( _imageUtils.getConfigurationType() );
     _imageUtils.sendReadyToViewer();
   }
 
@@ -173,26 +192,9 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function play() {
-    var image = document.querySelector( "#container #image" ),
-      configParams = {
-        "event": "configuration",
-        "event_details": _configurationType
-      },
-      mode = _imageUtils.getMode();
+    var image = document.querySelector( "#container #image" );
 
     _viewerPaused = false;
-
-    if ( !_configurationLogged ) {
-      if ( mode === "file" ) {
-        configParams.file_url = _imageUtils.getStorageSingleFilePath();
-      } else if ( mode === "folder" ) {
-        configParams.file_url = _imageUtils.getStorageFolderPath();
-        configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
-      }
-
-      _imageUtils.logEvent( configParams );
-      _configurationLogged = true;
-    }
 
     if ( _errorFlag ) {
       _imageUtils.startErrorTimer();

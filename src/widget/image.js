@@ -15,7 +15,6 @@ RiseVision.Image = ( function( gadgets ) {
     _nonStorage = null,
     _slider = null,
     _currentFiles = [],
-    _configurationType = null,
     _errorFlag = false,
     _storageErrorFlag = false,
     _configurationLogged = false,
@@ -26,6 +25,31 @@ RiseVision.Image = ( function( gadgets ) {
   /*
    *  Private Methods
    */
+  function _logConfiguration( type ) {
+    var params = _imageUtils.getParams(),
+      configParams = {
+        "event": "configuration",
+        "event_details": type
+      },
+      mode = _imageUtils.getMode();
+
+    if ( !_configurationLogged ) {
+      if ( mode === "file" ) {
+        if ( type !== "custom" ) {
+          configParams.file_url = _imageUtils.getStorageSingleFilePath();
+        } else {
+          configParams.file_url = ( params.url && params.url !== "" ) ? params.url : params.selector.url;
+        }
+      } else if ( mode === "folder" ) {
+        configParams.file_url = _imageUtils.getStorageFolderPath();
+        configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
+      }
+
+      _imageUtils.logEvent( configParams );
+      _configurationLogged = true;
+    }
+  }
+
   function init() {
     var params = _imageUtils.getParams(),
       container = document.getElementById( "container" ),
@@ -56,12 +80,12 @@ RiseVision.Image = ( function( gadgets ) {
       isStorageFile = ( Object.keys( params.storage ).length !== 0 );
 
       if ( !isStorageFile ) {
-        _configurationType = "custom";
+        _imageUtils.setConfigurationType( "custom" );
 
         _nonStorage = new RiseVision.Image.NonStorage( params );
         _nonStorage.init();
       } else {
-        _configurationType = "storage file";
+        _imageUtils.setConfigurationType( "storage file" );
 
         // create and initialize the Storage file instance
         _storage = new RiseVision.Image.StorageFile( params, _displayId );
@@ -74,13 +98,14 @@ RiseVision.Image = ( function( gadgets ) {
       fragment.appendChild( el );
       container.appendChild( fragment );
 
-      _configurationType = "storage folder";
+      _imageUtils.setConfigurationType( "storage folder" );
 
       // create and initialize the Storage folder instance
       _storage = new RiseVision.Image.StorageFolder( params, _displayId );
       _storage.init();
     }
 
+    _logConfiguration( _imageUtils.getConfigurationType() );
     _imageUtils.sendReadyToViewer();
   }
 
@@ -205,31 +230,9 @@ RiseVision.Image = ( function( gadgets ) {
   }
 
   function play() {
-    var image = document.querySelector( "#container #image" ),
-      params = _imageUtils.getParams(),
-      configParams = {
-        "event": "configuration",
-        "event_details": _configurationType
-      },
-      mode = _imageUtils.getMode();
+    var image = document.querySelector( "#container #image" );
 
     _viewerPaused = false;
-
-    if ( !_configurationLogged ) {
-      if ( mode === "file" ) {
-        if ( _configurationType !== "custom" ) {
-          configParams.file_url = _imageUtils.getStorageSingleFilePath();
-        } else {
-          configParams.file_url = ( params.url && params.url !== "" ) ? params.url : params.selector.url;
-        }
-      } else if ( mode === "folder" ) {
-        configParams.file_url = _imageUtils.getStorageFolderPath();
-        configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
-      }
-
-      _imageUtils.logEvent( configParams );
-      _configurationLogged = true;
-    }
 
     if ( _errorFlag ) {
       _imageUtils.startErrorTimer();

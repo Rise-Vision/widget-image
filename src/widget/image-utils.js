@@ -9,6 +9,7 @@ RiseVision.ImageUtils = ( function() {
     _prefs = new gadgets.Prefs(),
     _params = null,
     _mode = null,
+    _configurationType = null,
     _usingRLS = false,
     _errorTimer = null,
     _isSingleImageGIF = false;
@@ -20,6 +21,10 @@ RiseVision.ImageUtils = ( function() {
   function clearErrorTimer() {
     clearTimeout( _errorTimer );
     _errorTimer = null;
+  }
+
+  function getConfigurationType() {
+    return _configurationType;
   }
 
   function getStorageFileName( filePath ) {
@@ -127,6 +132,10 @@ RiseVision.ImageUtils = ( function() {
       true, true, true, true, true );
   }
 
+  function setConfigurationType( type ) {
+    _configurationType = type;
+  }
+
   function setMode( mode ) {
     _mode = mode;
   }
@@ -141,6 +150,7 @@ RiseVision.ImageUtils = ( function() {
 
   return {
     "clearErrorTimer": clearErrorTimer,
+    "getConfigurationType": getConfigurationType,
     "getMode": getMode,
     "getParams": getParams,
     "startErrorTimer": startErrorTimer,
@@ -153,6 +163,7 @@ RiseVision.ImageUtils = ( function() {
     "getStorageFolderPath": getStorageFolderPath,
     "getTableName": getTableName,
     "logEvent": logEvent,
+    "setConfigurationType": setConfigurationType,
     "sendDoneToViewer": sendDoneToViewer,
     "sendReadyToViewer": sendReadyToViewer,
     "setMode": setMode,

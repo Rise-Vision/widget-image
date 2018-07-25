@@ -138,9 +138,7 @@ jobs:
           then
             echo Deploying version $(grep version package.json |grep -o '[0-9.]*') to $BUCKET_NAME-test/$STAGE_ENV-dev
             STAGE_ENV="$STAGE_ENV-dev"
-          fi
-          if [ "$STAGE_ENV" == '' ]
-          then
+          else
             echo Deploying version $(grep version package.json |grep -o '[0-9.]*') to $BUCKET_NAME-test/stage-0-dev
             STAGE_ENV='stage-0-dev'
           fi
@@ -172,9 +170,7 @@ jobs:
           if [ "$STAGE_ENV" != '' ]
           then
             echo Deploying version $(grep version package.json |grep -o '[0-9.]*') to $BUCKET_NAME-test/$STAGE_ENV
-          fi
-          if [ "$STAGE_ENV" == '' ]
-          then
+          else
             echo Deploying version $(grep version package.json |grep -o '[0-9.]*') to $BUCKET_NAME-test/stage-0
             STAGE_ENV='stage-0'
           fi

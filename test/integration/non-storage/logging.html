@@ -44,6 +44,7 @@
         "event": "play",
         "file_url": "http://s3.amazonaws.com/rise-common/images/logo-small.png",
         "file_format": "png",
+        "configuration": "custom",
         "company_id": '"companyId"',
         "display_id": '"displayId"',
         "version": "0.1.1"
@@ -125,9 +126,10 @@
 
         assert(spy.calledWith(table, {
           "event": "configuration",
-          "event_details": "custom",
+          "event_details": params.configuration,
           "file_url": params.file_url,
           "file_format": params.file_format,
+          "configuration": params.configuration,
           "company_id": params.company_id,
           "display_id": params.display_id,
           "version": params.version

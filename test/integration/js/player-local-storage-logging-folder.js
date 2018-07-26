@@ -9,6 +9,7 @@ var table = "image_events",
     "event_details": "",
     "file_url": "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/",
     "file_format": "unknown",
+    "configuration": "storage folder (rls)",
     "company_id": "\"companyId\"",
     "display_id": "\"displayId\"",
     "version": "0.1.1"
@@ -48,9 +49,10 @@ suite( "configuration", function() {
 
     assert( logSpy.calledWith( table, {
       "event": "configuration",
-      "event_details": "storage folder (rls)",
+      "event_details": params.configuration,
       "file_url": params.file_url,
       "file_format": "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP",
+      "configuration": params.configuration,
       "company_id": params.company_id,
       "display_id": params.display_id,
       "version": params.version
@@ -335,6 +337,7 @@ suite( "folder file deleted", function() {
       event_details: "No files to display",
       file_url: params.file_url,
       file_format: "unknown",
+      configuration: params.configuration,
       company_id: params.company_id,
       display_id: params.display_id,
       version: params.version

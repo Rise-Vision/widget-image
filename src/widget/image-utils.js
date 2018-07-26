@@ -120,7 +120,7 @@ RiseVision.ImageUtils = ( function() {
   }
 
   function logEvent( data ) {
-    data.configuration = getConfigurationType();
+    data.configuration = getConfigurationType() || "";
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), data );
   }
 

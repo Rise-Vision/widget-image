@@ -9,6 +9,7 @@ var table = "image_events",
     "event_details": "",
     "file_url": "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
     "file_format": "jpg",
+    "configuration": "storage file (rls)",
     "company_id": "\"companyId\"",
     "display_id": "\"displayId\"",
     "version": "0.1.1"
@@ -41,9 +42,10 @@ suite( "configuration", function() {
 
     assert( logSpy.calledWith( table, {
       "event": "configuration",
-      "event_details": "storage file (rls)",
+      "event_details": params.configuration,
       "file_url": params.file_url,
       "file_format": params.file_format,
+      "configuration": params.configuration,
       "company_id": params.company_id,
       "display_id": params.display_id,
       "version": params.version

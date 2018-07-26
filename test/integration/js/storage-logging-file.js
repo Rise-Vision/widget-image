@@ -9,6 +9,7 @@ var table = "image_events",
     "error_details": "The request failed with status code: 404",
     "file_url": "http://localhost:9494/?url=https%3A%2F%2Fstorage.googleapis.com%2Frisemedialibrary-b428b4e8-c8b9-41d5-8a10-b4193c789443%2FWidgets%2Fsimpson's.jpg",
     "file_format": "jpg",
+    "configuration": "storage file",
     "company_id": "\"companyId\"",
     "display_id": "\"displayId\"",
     "version": "0.1.1"
@@ -51,9 +52,10 @@ suite( "configuration", function() {
 
     assert( spy.calledWith( table, {
       "event": "configuration",
-      "event_details": "storage file",
+      "event_details": params.configuration,
       "file_url": "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
       "file_format": "jpg",
+      "configuration": params.configuration,
       "company_id": params.company_id,
       "display_id": params.display_id,
       "version": params.version

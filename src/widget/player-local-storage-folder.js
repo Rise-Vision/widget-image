@@ -212,16 +212,30 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     _manageFile( data, "available" );
     _manageFileInError( data, true );
 
+    function ready() {
+      _clearInitialProcessingTimer();
+      initialLoad = false;
+
+      RiseVision.ImageRLS.onFileInit( files );
+    }
+
     if ( initialLoad ) {
       /* Try to wait for at least 2 files to load before initializing the slider. Otherwise, the
          revolution.slide.onchange event will never fire, and this event is used to check whether or not the slider should refresh.
-         If there's only 1 file in the folder, the initialProcessingTimer will ensure the slider does get initialized anyway
+
+         If there's only 1 file in the folder and the initialProcessingTimer is running, it will ensure the slider does get initialized anyway.
+
+         If there's only 1 file in the folder and the initialProcessingTimer is not running, then this 1 file was already downloaded so slider can be initialized.
       */
       if ( files.length > 1 ) {
-        _clearInitialProcessingTimer();
-        initialLoad = false;
-
-        RiseVision.ImageRLS.onFileInit( files );
+        ready();
+      } else if ( files.length === 1 && !initialProcessingTimer ) {
+        // set a 2 sec delay to account for receiving possible further messages where a second (or more) file has been added to the folder
+        setTimeout( function() {
+          if ( files.length === 1 && initialLoad ) {
+            ready();
+          }
+        }, 2000 );
       }
 
       return;

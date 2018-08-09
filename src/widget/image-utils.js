@@ -32,7 +32,7 @@ RiseVision.ImageUtils = ( function() {
       return "";
     }
 
-    return filePath.split( "#" ).shift().split( "?" ).shift().split( "/" ).pop();
+    return filePath.split( "risemedialibrary-" ).pop().split( "/" ).pop();
   }
 
   function getStorageSingleFilePath() {

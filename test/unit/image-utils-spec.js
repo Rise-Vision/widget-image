@@ -10,6 +10,30 @@ describe( "getTableName", function() {
   } );
 } );
 
+describe( "getStorageFileName", function() {
+  it( "should provide file name from storage file path (bucket only)", function() {
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test-file.jpg" ) ).to.equal( "test-file.jpg" );
+  } );
+
+  it( "should provide file name from storage file path (with subfolder)", function() {
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test-folder/nested-folder/test-file.jpg" ) ).to.equal( "test-file.jpg" );
+  } );
+
+  it( "should provide file name from storage file path (bucket only) when name has special characters", function() {
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/([!@?,#$])=1+2-A | <>.jpg" ) ).to.equal( "([!@?,#$])=1+2-A | <>.jpg" );
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test %.jpg" ) ).to.equal( "test %.jpg" );
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test *.jpg" ) ).to.equal( "test *.jpg" );
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test Ü.jpg" ) ).to.equal( "test Ü.jpg" );
+  } );
+
+  it( "should provide file name from storage file path (with subfolder) when name has special characters", function() {
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test-folder/nested-folder/([!@?,#$])=1+2-A | <>.jpg" ) ).to.equal( "([!@?,#$])=1+2-A | <>.jpg" );
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test-folder/nested-folder/test %.jpg" ) ).to.equal( "test %.jpg" );
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test-folder/nested-folder/test *.jpg" ) ).to.equal( "test *.jpg" );
+    expect( RiseVision.ImageUtils.getStorageFileName( "risemedialibrary-abc123/test-folder/nested-folder/test Ü.jpg" ) ).to.equal( "test Ü.jpg" );
+  } );
+} );
+
 describe( "logEvent", function() {
   var logSpy;
 

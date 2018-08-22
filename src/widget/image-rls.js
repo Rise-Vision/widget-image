@@ -91,6 +91,18 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function setSingleImage( url ) {
+    var filePath = _imageUtils.getStorageSingleFilePath();
+
+    if ( _imageUtils.isSVGImage( filePath ) ) {
+      _imageUtils.convertSVGToDataURL( filePath, url, function( dataUrl ) {
+        if ( dataUrl ) {
+          _imageUtils.handleSingleImageLoad( dataUrl, _viewerPaused );
+        }
+      } );
+
+      return;
+    }
+
     _img.onload = function() {
       _imageUtils.handleSingleImageLoad( url, _viewerPaused );
     };

@@ -23,6 +23,61 @@ RiseVision.ImageUtils = ( function() {
     _errorTimer = null;
   }
 
+  function convertSVGToDataURL( filePath, localUrl, callback ) {
+    var xhr = new XMLHttpRequest();
+
+    function handleFailure( type ) {
+      logEvent( {
+        event: "error",
+        event_details: type,
+        file_url: filePath,
+        local_url: localUrl
+      } );
+
+      callback( null );
+    }
+
+    if ( !callback || typeof callback !== "function" ) {
+      return;
+    }
+
+    xhr.overrideMimeType( "image/svg+xml" );
+
+    xhr.onload = function() {
+      var reader = new FileReader();
+
+      reader.onloadend = function() {
+        if ( reader.error ) {
+          handleFailure( "svg read error" );
+          return;
+        }
+
+        logEvent( {
+          event: "info",
+          event_details: JSON.stringify( {
+            type: "svg file",
+            blob_size: xhr.response.size,
+            data_url_length: reader.result.length
+          } ),
+          file_url: filePath,
+          local_url: localUrl
+        } );
+
+        callback( reader.result );
+      };
+
+      reader.readAsDataURL( xhr.response );
+    };
+
+    xhr.onerror = function() {
+      handleFailure( "svg xhr error" );
+    };
+
+    xhr.open( "GET", localUrl );
+    xhr.responseType = "blob";
+    xhr.send();
+  }
+
   function getConfigurationType() {
     return _configurationType;
   }
@@ -119,6 +174,10 @@ RiseVision.ImageUtils = ( function() {
     return _isSingleImageGIF;
   }
 
+  function isSVGImage( filePath ) {
+    return filePath.toLowerCase().indexOf( ".svg" ) > 0;
+  }
+
   function logEvent( data ) {
     data.configuration = getConfigurationType() || "";
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), data );
@@ -151,6 +210,7 @@ RiseVision.ImageUtils = ( function() {
 
   return {
     "clearErrorTimer": clearErrorTimer,
+    "convertSVGToDataURL": convertSVGToDataURL,
     "getConfigurationType": getConfigurationType,
     "getMode": getMode,
     "getParams": getParams,
@@ -158,6 +218,7 @@ RiseVision.ImageUtils = ( function() {
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,
     "isSingleImageGIF": isSingleImageGIF,
+    "isSVGImage": isSVGImage,
     "getImageElement": getImageElement,
     "getStorageFileName": getStorageFileName,
     "getStorageSingleFilePath": getStorageSingleFilePath,

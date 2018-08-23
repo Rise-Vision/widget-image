@@ -34,6 +34,16 @@ describe( "getStorageFileName", function() {
   } );
 } );
 
+describe( "isSVGImage", function() {
+  it( "should return true when file path is for an SVG file", function() {
+    expect( RiseVision.ImageUtils.isSVGImage( "risemedialibrary-abc123/test-folder/test-file.svg" ) ).to.be.true;
+  } );
+
+  it( "should return false when file path is not for an SVG file", function() {
+    expect( RiseVision.ImageUtils.isSVGImage( "risemedialibrary-abc123/test-folder/test-file.jpg" ) ).to.be.false;
+  } );
+} );
+
 describe( "logEvent", function() {
   var logSpy;
 

@@ -1,4 +1,4 @@
-/* global _, $ */
+/* global _, $, jQuery */
 var RiseVision = RiseVision || {};
 
 RiseVision.Slider = function( params, imageRef ) {
@@ -16,78 +16,115 @@ RiseVision.Slider = function( params, imageRef ) {
     isPlaying = false,
     isInteracting = false,
     navTimeout = 3000,
-    singleImagePUDTimer = null;
+    singleImagePUDTimer = null,
+    imageUtils = RiseVision.ImageUtils;
 
   /*
    *  Private Methods
    */
-  function addSlides() {
+  function getFileUrls() {
+    var dfd = jQuery.Deferred(),
+      urls = [],
+      count = 0,
+      i;
+
+    function resolveCheck() {
+      count += 1;
+
+      if ( count === currentFiles.length ) {
+        dfd.resolve( urls );
+      }
+    }
+
+    for ( i = 0; i < currentFiles.length; i += 1 ) {
+      if ( imageUtils.isUsingRLS() && imageUtils.isSVGImage( currentFiles[ i ].filePath ) ) {
+        imageUtils.convertSVGToDataURL( currentFiles[ i ].filePath, currentFiles[ i ].url, function( dataUrl ) {
+          if ( dataUrl ) {
+            urls.push( dataUrl );
+          }
+          resolveCheck();
+        } );
+      } else {
+        urls.push( currentFiles[ i ].url );
+        resolveCheck();
+      }
+    }
+
+    // Return the Promise so caller can't change the Deferred
+    return dfd.promise();
+  }
+
+  function getSlideToAdd( url ) {
+    var slide = document.createElement( "li" ),
+      image = document.createElement( "img" ),
+      position = "";
+
+    // Transition
+    slide.setAttribute( "data-transition", "fade" );
+    slide.setAttribute( "data-masterspeed", 500 );
+    slide.setAttribute( "data-delay", params.duration * 1000 );
+
+    // Lazy load
+    image.setAttribute( "src", "" );
+    image.setAttribute( "data-lazyload", url );
+
+    // Alignment
+    switch ( params.position ) {
+    case "top-left":
+      position = "left top";
+      break;
+    case "top-center":
+      position = "center top";
+      break;
+    case "top-right":
+      position = "right top";
+      break;
+    case "middle-left":
+      position = "left center";
+      break;
+    case "middle-center":
+      position = "center center";
+      break;
+    case "middle-right":
+      position = "right center";
+      break;
+    case "bottom-left":
+      position = "left bottom";
+      break;
+    case "bottom-center":
+      position = "center bottom";
+      break;
+    case "bottom-right":
+      position = "right bottom";
+      break;
+    default:
+      position = "left top";
+    }
+
+    image.setAttribute( "data-bgposition", position );
+
+    // Scale to Fit
+    if ( params.scaleToFit ) {
+      image.setAttribute( "data-bgfit", "contain" );
+    } else {
+      image.setAttribute( "data-bgfit", "normal" );
+    }
+
+    slide.appendChild( image );
+
+    return slide;
+  }
+
+
+  function addSlides( urls ) {
     var list = document.querySelector( ".tp-banner ul" ),
       fragment = document.createDocumentFragment(),
-      slides = [],
-      slide = null,
-      image = null,
-      position = "";
+      slides = [];
 
     totalSlides = currentFiles.length;
 
-    currentFiles.forEach( function( file ) {
-      slide = document.createElement( "li" );
-      image = document.createElement( "img" );
-
-      // Transition
-      slide.setAttribute( "data-transition", "fade" );
-      slide.setAttribute( "data-masterspeed", 500 );
-      slide.setAttribute( "data-delay", params.duration * 1000 );
-
-      // Lazy load
-      image.src = "";
-      image.setAttribute( "data-lazyload", file.url );
-
-      // Alignment
-      switch ( params.position ) {
-      case "top-left":
-        position = "left top";
-        break;
-      case "top-center":
-        position = "center top";
-        break;
-      case "top-right":
-        position = "right top";
-        break;
-      case "middle-left":
-        position = "left center";
-        break;
-      case "middle-center":
-        position = "center center";
-        break;
-      case "middle-right":
-        position = "right center";
-        break;
-      case "bottom-left":
-        position = "left bottom";
-        break;
-      case "bottom-center":
-        position = "center bottom";
-        break;
-      case "bottom-right":
-        position = "right bottom";
-        break;
-      default:
-        position = "left top";
-      }
-
-      image.setAttribute( "data-bgposition", position );
-
-      // Scale to Fit
-      if ( params.scaleToFit ) {
-        image.setAttribute( "data-bgfit", "contain" );
-      } else {
-        image.setAttribute( "data-bgfit", "normal" );
-      }
-
-      slide.appendChild( image );
-      slides.push( slide );
+    urls.forEach( function( url ) {
+      slides.push( getSlideToAdd( url ) );
     } );
 
     slides.forEach( function( slide ) {
@@ -95,6 +132,42 @@ RiseVision.Slider = function( params, imageRef ) {
     } );
 
     list.appendChild( fragment );
+  }
+
+  function initSlider() {
+    isLoading = true;
+    $api = $( ".tp-banner" ).revolution( {
+      "hideThumbs": 0,
+      "hideTimerBar": "on",
+      "navigationType": "none",
+      "onHoverStop": "off",
+      "startwidth": params.width,
+      "startheight": params.height
+    } );
+
+    $api.on( "revolution.slide.onloaded", function() {
+      // Pause slideshow since it will autoplay and this is not configurable.
+      pause();
+      isLoading = false;
+      imageRef.onSliderReady();
+    } );
+
+    $api.on( "revolution.slide.onchange", function( e, data ) {
+      onSlideChanged( data );
+    } );
+
+    // Swipe the slider.
+    $( "body" ).on( "touchend", ".tp-banner", function() {
+      handleUserActivity();
+      $( ".tp-leftarrow, .tp-rightarrow" ).removeClass( "hidearrows" );
+    } );
+
+    // Touch the navigation arrows.
+    $( "body" ).on( "touchend", ".tp-leftarrow, .tp-rightarrow", function() {
+      handleUserActivity();
+    } );
+
+    hideNav();
   }
 
   function onSlideChanged( data ) {
@@ -204,41 +277,11 @@ RiseVision.Slider = function( params, imageRef ) {
 
     currentFiles = _.clone( files );
 
-    addSlides();
-
-    isLoading = true;
-    $api = $( ".tp-banner" ).revolution( {
-      "hideThumbs": 0,
-      "hideTimerBar": "on",
-      "navigationType": "none",
-      "onHoverStop": "off",
-      "startwidth": params.width,
-      "startheight": params.height
-    } );
-
-    $api.on( "revolution.slide.onloaded", function() {
-      // Pause slideshow since it will autoplay and this is not configurable.
-      pause();
-      isLoading = false;
-      imageRef.onSliderReady();
-    } );
-
-    $api.on( "revolution.slide.onchange", function( e, data ) {
-      onSlideChanged( data );
-    } );
-
-    // Swipe the slider.
-    $( "body" ).on( "touchend", ".tp-banner", function() {
-      handleUserActivity();
-      $( ".tp-leftarrow, .tp-rightarrow" ).removeClass( "hidearrows" );
-    } );
-
-    // Touch the navigation arrows.
-    $( "body" ).on( "touchend", ".tp-leftarrow, .tp-rightarrow", function() {
-      handleUserActivity();
-    } );
-
-    hideNav();
+    $.when( getFileUrls() )
+      .then( function( urls ) {
+        addSlides( urls );
+        initSlider();
+      } );
   }
 
   function isReady() {

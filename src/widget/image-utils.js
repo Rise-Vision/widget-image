@@ -178,6 +178,10 @@ RiseVision.ImageUtils = ( function() {
     return filePath.toLowerCase().indexOf( ".svg" ) > 0;
   }
 
+  function isUsingRLS() {
+    return _usingRLS;
+  }
+
   function logEvent( data ) {
     data.configuration = getConfigurationType() || "";
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), data );
@@ -219,6 +223,7 @@ RiseVision.ImageUtils = ( function() {
     "handleSingleImageLoadError": handleSingleImageLoadError,
     "isSingleImageGIF": isSingleImageGIF,
     "isSVGImage": isSVGImage,
+    "isUsingRLS": isUsingRLS,
     "getImageElement": getImageElement,
     "getStorageFileName": getStorageFileName,
     "getStorageSingleFilePath": getStorageSingleFilePath,

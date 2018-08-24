@@ -175,7 +175,11 @@ RiseVision.ImageUtils = ( function() {
   }
 
   function isSVGImage( filePath ) {
-    return filePath.toLowerCase().indexOf( ".svg" ) > 0;
+    if ( !filePath || typeof filePath !== "string" ) {
+      return false;
+    }
+
+    return filePath.toLowerCase().split( "." ).pop().split( /\#|\?/ )[ 0 ] === "svg";
   }
 
   function isUsingRLS() {

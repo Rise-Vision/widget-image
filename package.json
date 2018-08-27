@@ -5,7 +5,8 @@
   "main": "gulpfile.js",
   "scripts": {
     "test": "gulp test",
-    "build": "gulp build && ./include-deps.sh"
+    "build": "gulp build && ./include-deps.sh",
+    "build-dev": "gulp build-dev && ./include-deps.sh"
   },
   "repository": {
     "type": "git",

@@ -103,3 +103,28 @@ suite( "file changed", function() {
     assert( refreshSpy.calledWith( "file:///path/to/file/def456" ), "onFileRefresh() called with correct url" );
   } );
 } );
+
+suite( "file deleted", function() {
+  var onFileDeletedStub;
+
+  suiteSetup( function() {
+    onFileDeletedStub = sinon.stub( RiseVision.ImageRLS, "onFileDeleted" );
+
+    messageHandlers.forEach( function( handler ) {
+      handler( {
+        topic: "file-update",
+        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+        status: "deleted"
+      } );
+    } );
+
+  } );
+
+  suiteTeardown( function() {
+    RiseVision.ImageRLS.onFileDeleted.restore();
+  } );
+
+  test( "should display error and clear image", function() {
+    assert.equal( onFileDeletedStub.calledOnce, true );
+  } );
+} );

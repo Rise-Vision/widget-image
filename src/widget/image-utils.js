@@ -146,7 +146,7 @@ RiseVision.ImageUtils = ( function() {
     image.style.backgroundImage = "none";
     image.style.backgroundImage = "url('" + url + "')";
 
-    _isSingleImageGIF = url.indexOf( ".gif" ) !== -1;
+    setSingleImageGIF( url.indexOf( ".gif" ) !== -1 );
 
     // If widget is playing right now make sure the div image element is visible
     if ( !isViewerPaused && _isSingleImageGIF ) {
@@ -168,6 +168,10 @@ RiseVision.ImageUtils = ( function() {
     }
 
     logEvent( params );
+  }
+
+  function setSingleImageGIF( status ) {
+    _isSingleImageGIF = status;
   }
 
   function isSingleImageGIF() {
@@ -225,6 +229,7 @@ RiseVision.ImageUtils = ( function() {
     "startErrorTimer": startErrorTimer,
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,
+    "setSingleImageGIF": setSingleImageGIF,
     "isSingleImageGIF": isSingleImageGIF,
     "isSVGImage": isSVGImage,
     "isUsingRLS": isUsingRLS,

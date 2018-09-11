@@ -160,6 +160,22 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
   }
 
+  function onFileDeleted( message ) {
+    var image = document.querySelector( "#container #image" );
+
+    // clears image
+    _imageUtils.setSingleImageGIF( false );
+    image.style.backgroundImage = "none";
+    image.style.visibility = "hidden";
+
+    // displays message
+    _message.show( message );
+
+    if ( !_viewerPaused ) {
+      _imageUtils.sendDoneToViewer();
+    }
+  }
+
   function onSliderReady() {
     _message.hide();
 
@@ -249,6 +265,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     "onFileInit": onFileInit,
     "onFileRefresh": onFileRefresh,
     "onFileUnavailable": onFileUnavailable,
+    "onFileDeleted": onFileDeleted,
     "onSliderComplete": onSliderComplete,
     "onSliderReady": onSliderReady,
     "pause": pause,

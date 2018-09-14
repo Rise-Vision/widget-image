@@ -166,7 +166,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     // clears image
     _imageUtils.setSingleImageGIF( false );
     image.style.backgroundImage = "none";
-    image.style.visibility = "hidden";
+    image.style.visibility = "visible";
 
     // displays message
     _message.show( message );

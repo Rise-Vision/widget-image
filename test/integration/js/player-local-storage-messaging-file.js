@@ -201,7 +201,8 @@ suite( "file deleted", function() {
       } );
     } );
 
-    assert.isTrue( ( document.getElementById( "container" ).style.visibility === "visible" ), "image container is showing" );
-    assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "none" ), "message container is hidden" );
+    assert.isTrue( ( document.getElementById( "container" ).style.visibility === "hidden" ), "image container is hidden" );
+    assert.isFalse( ( document.getElementById( "messageContainer" ).style.display === "none" ), "message container is visibile" );
+    assert.equal( document.querySelector( ".message" ).innerHTML, "The selected image has been moved to Trash." );
   } );
 } );

@@ -139,6 +139,9 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
 
     if ( _imageUtils.getMode() === "file" ) {
+      // in case of file deletion, remove message previously shown
+      _message.hide();
+
       setSingleImage( urls );
     } else if ( _imageUtils.getMode() === "folder" ) {
       if ( _errorFlag ) {

@@ -202,7 +202,32 @@ suite( "file deleted", function() {
     } );
 
     assert.isTrue( ( document.getElementById( "container" ).style.visibility === "hidden" ), "image container is hidden" );
-    assert.isFalse( ( document.getElementById( "messageContainer" ).style.display === "none" ), "message container is visibile" );
+    assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "block" ), "message container is visible" );
     assert.equal( document.querySelector( ".message" ).innerHTML, "The selected image has been moved to Trash." );
+  } );
+
+  test( "file re-added", function() {
+    // mock receiving file-update to notify file is downloading
+    messageHandlers.forEach( function( handler ) {
+      handler( {
+        topic: "FILE-UPDATE",
+        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+        status: "STALE"
+      } );
+    } );
+
+    // mock receiving file-update to notify file is available
+    messageHandlers.forEach( function( handler ) {
+      handler( {
+        topic: "FILE-UPDATE",
+        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+        status: "CURRENT",
+        ospath: "path/to/file/abc123",
+        osurl: "file:///path/to/file/abc123"
+      } );
+    } );
+
+    assert.isTrue( ( document.getElementById( "container" ).style.visibility === "visible" ), "image container is visible" );
+    assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "none" ), "message container is hidden" );
   } );
 } );

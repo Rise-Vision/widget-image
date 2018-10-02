@@ -124,7 +124,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": data.filePath
     } );
 
-    RiseVision.ImageRLS.onFileDeleted( "The selected image has been moved to Trash." );
+    RiseVision.ImageRLS.onFileDeleted();
   }
 
   function _handleFileError( data ) {

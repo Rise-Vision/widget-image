@@ -160,20 +160,10 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
   }
 
-  function onFileDeleted( message ) {
-    var image = document.querySelector( "#container #image" );
+  function onFileDeleted() {
+    _imageUtils.handleSingleImageDeletion();
 
-    // clears image
-    _imageUtils.setSingleImageGIF( false );
-    image.style.backgroundImage = "none";
-    image.style.visibility = "visible";
-
-    // displays message
-    _message.show( message );
-
-    if ( !_viewerPaused ) {
-      _imageUtils.sendDoneToViewer();
-    }
+    showError( "The selected image has been moved to Trash." );
   }
 
   function onSliderReady() {

@@ -170,6 +170,15 @@ RiseVision.ImageUtils = ( function() {
     logEvent( params );
   }
 
+  function handleSingleImageDeletion() {
+    var image = document.querySelector( "#container #image" );
+
+    image.style.backgroundImage = "none";
+    image.style.visibility = "visible";
+
+    setSingleImageGIF( false );
+  }
+
   function setSingleImageGIF( status ) {
     _isSingleImageGIF = status;
   }
@@ -227,6 +236,7 @@ RiseVision.ImageUtils = ( function() {
     "getMode": getMode,
     "getParams": getParams,
     "startErrorTimer": startErrorTimer,
+    "handleSingleImageDeletion": handleSingleImageDeletion,
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,
     "setSingleImageGIF": setSingleImageGIF,

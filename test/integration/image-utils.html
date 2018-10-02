@@ -127,6 +127,25 @@
 
     } );
 
+    suite( "handleSingleImageDeletion", function () {
+
+      test( "should clear image", function() {
+        var jpgImage = "https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg";
+
+        imageUtils.handleSingleImageLoad( jpgImage, false );
+
+        assert.equal( document.getElementById( "image" ).style.backgroundImage,
+          "url(\"https://storage.googleapis.com/risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg\")" );
+
+        imageUtils.handleSingleImageDeletion();
+
+        assert.equal( document.getElementById( "image" ).style.backgroundImage, "none" );
+        assert.equal( document.getElementById( "image" ).style.visibility, "visible" );
+        assert.isFalse( imageUtils.isSingleImageGIF() );
+      } );
+
+    } );
+
     suite( "handleSingleImageLoadError", function() {
       var table = "image_events",
         params = {

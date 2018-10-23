@@ -1,5 +1,4 @@
 /* global gadgets, _ */
-/* eslint-disable no-console */
 
 var RiseVision = RiseVision || {};
 

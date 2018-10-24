@@ -206,6 +206,12 @@ RiseVision.Slider = function( params, imageRef ) {
     // Let the slider clean up after itself.
     $api.revkill();
     $api = null;
+    totalSlides = 0;
+    isLastSlide = false;
+    refreshSlider = false;
+    isLoading = true;
+    isPlaying = false;
+    isInteracting = false;
   }
 
   // User has interacted with the slideshow.
@@ -326,7 +332,7 @@ RiseVision.Slider = function( params, imageRef ) {
       if ( $api ) {
         clearTimeout( singleImagePUDTimer );
         destroySlider();
-        init( files );
+        init( _.clone( files ) );
       }
     } else {
       newFiles = _.clone( files );

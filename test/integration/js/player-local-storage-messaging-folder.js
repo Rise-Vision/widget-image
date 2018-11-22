@@ -1,5 +1,4 @@
-/* global suiteSetup, suite, setup, teardown, test, assert,
- RiseVision, sinon */
+/* global suiteSetup, suite, setup, teardown, test, assert, sinon */
 
 /* eslint-disable func-names */
 
@@ -80,7 +79,20 @@ suite( "startup errors", function() {
     assert.equal( document.querySelector( ".message" ).innerHTML, "Rise Storage subscription is not active." );
   } );
 
-  test( "folder does not exist", function() {
+} );
+
+suite( "files downloading", function() {
+
+  setup( function() {
+    clock = sinon.useFakeTimers();
+  } );
+
+  teardown( function() {
+    clock.restore();
+  } );
+
+  test( "should show message after 15 seconds of processing", function() {
+
     // mock receiving client-list message
     messageHandlers.forEach( function( handler ) {
       handler( {
@@ -97,46 +109,6 @@ suite( "startup errors", function() {
         userFriendlyStatus: "authorized"
       } );
     } );
-
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-update",
-        filePath: folderPath,
-        status: "NOEXIST"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "The selected folder does not exist or has been moved to Trash." );
-
-  } );
-
-  test( "folder is empty", function() {
-
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-update",
-        filePath: folderPath,
-        status: "EMPTYFOLDER"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "The selected folder does not contain any images." );
-
-  } );
-
-} );
-
-suite( "files downloading", function() {
-
-  setup( function() {
-    clock = sinon.useFakeTimers();
-  } );
-
-  teardown( function() {
-    clock.restore();
-  } );
-
-  test( "should show message after 15 seconds of processing", function() {
 
     // files are getting processed, starts the initial processing timer
     messageHandlers.forEach( function( handler ) {
@@ -160,74 +132,6 @@ suite( "files downloading", function() {
 
     assert.equal( document.querySelector( ".message" ).innerHTML, "Files are downloading." );
 
-  } );
-
-} );
-
-suite( "file error", function() {
-
-  setup( function() {
-    sinon.stub( RiseVision.ImageRLS, "onFileInit" );
-    sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
-    clock = sinon.useFakeTimers();
-  } );
-
-  teardown( function() {
-    RiseVision.ImageRLS.onFileInit.restore();
-    RiseVision.ImageRLS.onFileRefresh.restore();
-    clock.restore();
-  } );
-
-  test( "should display message when all files in error", function() {
-    var spy = sinon.spy( RiseVision.ImageRLS, "play" );
-
-    // successfully initialize widget and clear messages
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "FILE-UPDATE",
-        filePath: folderPath + "test-file.jpg",
-        status: "CURRENT",
-        ospath: "path/to/file/abc123",
-        osurl: "file:///path/to/file/abc123"
-      } );
-    } );
-
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "FILE-UPDATE",
-        filePath: folderPath + "test-file-2.jpg",
-        status: "CURRENT",
-        ospath: "path/to/file/def456",
-        osurl: "file:///path/to/file/def456"
-      } );
-    } );
-
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-error",
-        filePath: folderPath + "test-file.jpg",
-        msg: "File's host server could not be reached",
-        detail: "error details"
-      } );
-    } );
-
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-error",
-        filePath: folderPath + "test-file-2.jpg",
-        msg: "File's host server could not be reached",
-        detail: "error details"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "Unable to display any files." );
-
-    clock.tick( 4500 );
-    assert( spy.notCalled );
-    clock.tick( 500 );
-    assert( spy.calledOnce );
-
-    RiseVision.ImageRLS.play.restore();
   } );
 
 } );

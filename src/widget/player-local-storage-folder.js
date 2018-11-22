@@ -245,7 +245,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
   function _handleFolderNoExist() {
     var params = {
-      "event": "error",
+      "event": "warning",
       "event_details": "folder does not exist",
       "file_url": folderPath,
       "file_format": defaultFileFormat

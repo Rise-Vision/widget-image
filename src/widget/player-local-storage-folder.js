@@ -1,5 +1,4 @@
 /* global localMessaging, playerLocalStorage, playerLocalStorageLicensing, config _ */
-/* eslint-disable no-console */
 
 var RiseVision = RiseVision || {};
 
@@ -108,7 +107,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
         "file_format": "unknown"
       } );
 
-      RiseVision.ImageRLS.showError( "Unable to display any files." );
+      RiseVision.ImageRLS.onFolderUnavailable();
     } else {
       RiseVision.ImageRLS.onFileRefresh( files );
     }
@@ -254,7 +253,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
     imageUtils.logEvent( params );
 
-    RiseVision.ImageRLS.showError( "The selected folder does not exist or has been moved to Trash." );
+    RiseVision.ImageRLS.onFolderUnavailable();
   }
 
   function _handleFolderEmpty() {
@@ -267,7 +266,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
     imageUtils.logEvent( params );
 
-    RiseVision.ImageRLS.showError( "The selected folder does not contain any images." );
+    RiseVision.ImageRLS.onFolderUnavailable();
   }
 
   function _handleFileDeleted( data ) {

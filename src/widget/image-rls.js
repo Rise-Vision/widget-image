@@ -16,6 +16,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _viewerPaused = true,
     _configurationLogged = false,
     _unavailableFlag = false,
+    _folderUnavailableFlag = false,
     _img = null;
 
   /*
@@ -152,6 +153,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     _errorFlag = false;
     _unavailableFlag = false;
+    _folderUnavailableFlag = false;
   }
 
   function onFileUnavailable( message ) {
@@ -166,6 +168,17 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils.handleSingleImageDeletion();
 
     showError( "The selected image has been moved to Trash." );
+  }
+
+  function onFolderUnavailable() {
+    _folderUnavailableFlag = true;
+
+    // set to a blank message so the image container gets hidden and nothing is displayed on screen
+    _message.show( "" );
+
+    if ( !_viewerPaused ) {
+      _imageUtils.sendDoneToViewer();
+    }
   }
 
   function onSliderReady() {
@@ -227,6 +240,12 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       return;
     }
 
+    if ( _folderUnavailableFlag ) {
+      _imageUtils.sendDoneToViewer();
+
+      return;
+    }
+
     if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
       _slider.play();
     } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
@@ -258,6 +277,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     "onFileRefresh": onFileRefresh,
     "onFileUnavailable": onFileUnavailable,
     "onFileDeleted": onFileDeleted,
+    "onFolderUnavailable": onFolderUnavailable,
     "onSliderComplete": onSliderComplete,
     "onSliderReady": onSliderReady,
     "pause": pause,

@@ -114,11 +114,17 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _img.src = url;
   }
 
+  function _resetFlags() {
+    _errorFlag = false;
+    _unavailableFlag = false;
+    _folderUnavailableFlag = false;
+  }
+
   /*
    *  Public Methods
    */
   function onFileInit( urls ) {
-    _unavailableFlag = false;
+    _resetFlags();
 
     if ( _imageUtils.getMode() === "file" ) {
       // remove message previously shown
@@ -151,9 +157,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       }
     }
 
-    _errorFlag = false;
-    _unavailableFlag = false;
-    _folderUnavailableFlag = false;
+    _resetFlags();
   }
 
   function onFileUnavailable( message ) {

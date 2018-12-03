@@ -123,6 +123,16 @@
       expect( element( by.css( "form[name=settingsForm].ng-valid" ) ).isPresent() ).to.eventually.be.false;
     } );
 
+    it( "Should not hang with invalid url", function() {
+      // This was causing a hang similar to that of widget-web-page issue 98
+      var badUrl = "dfasfadfsadfsadfasdfafsadfsafsadfadfafaddsfasdfsdasfdadsafafafsdfs";
+
+      element( by.name( "customBtn" ) ).click();
+      element( by.name( "url" ) ).sendKeys( badUrl );
+
+      expect( element( by.css( "form[name=settingsForm].ng-valid" ) ).isPresent() ).to.eventually.be.false;
+    } );
+
     // Saving
     it( "Should correctly save settings", function() {
       var settings = {

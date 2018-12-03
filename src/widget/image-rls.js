@@ -150,7 +150,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
       setSingleImage( urls );
     } else if ( _imageUtils.getMode() === "folder" ) {
-      if ( _errorFlag ) {
+      if ( _errorFlag || _folderUnavailableFlag ) {
         _slider.init( urls );
       } else {
         _slider.refresh( urls );
@@ -186,6 +186,12 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   }
 
   function onSliderReady() {
+    if ( _folderUnavailableFlag ) {
+      // onSliderReady can be triggered from previously having 1 file to show, now there's none, destroy slider
+      _slider.destroy();
+      return;
+    }
+
     _message.hide();
 
     if ( !_viewerPaused ) {

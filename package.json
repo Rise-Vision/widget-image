@@ -47,6 +47,7 @@
     "gulp-util": "~2.2.17",
     "gulp-watch": "^0.6.8",
     "hoek": "5.0.3",
+    "https-proxy-agent": "^2.2.0",
     "run-sequence": "^0.3.2",
     "uglify-js": "^2.6.0",
     "web-component-tester": "5.0.0",

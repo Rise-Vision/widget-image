@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Rise-Vision/widget-image",
   "devDependencies": {
+    "adm-zip": "^0.4.11",
     "babel-core": "^6.26.0",
     "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
     "babel-env": "^2.4.1",
@@ -26,6 +27,8 @@
     "chai": "^2.1.2",
     "chai-as-promised": "^4.3.0",
     "common-component": "git://github.com/Rise-Vision/common-component.git#v1.14.1",
+    "cryptiles": "^4.1.2",
+    "deep-extend": "^0.5.1",
     "del": "~1.1.1",
     "eslint": "^3.8.1",
     "eslint-config-idiomatic": "^2.1.0",
@@ -45,10 +48,11 @@
     "gulp-util": "~2.2.17",
     "gulp-watch": "^0.6.8",
     "hoek": "5.0.3",
+    "https-proxy-agent": "^2.2.0",
     "run-sequence": "^0.3.2",
     "uglify-js": "^2.6.0",
     "web-component-tester": "5.0.0",
-    "widget-tester": "git://github.com/Rise-Vision/widget-tester.git#v1.8.1"
+    "widget-tester": "git://github.com/Rise-Vision/widget-tester.git#v1.9.0"
   },
   "optionalDependencies": {
     "wct-local": "<2.0.16"

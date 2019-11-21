@@ -180,7 +180,7 @@
       "src/components/widget-settings-ui-components/dist/js/**/*.js",
       "src/components/widget-settings-ui-core/dist/*.js",
       "src/components/component-storage-selector/dist/storage-selector.js",
-      "src/components/component-subscription-status/dist/js/subscription-status.js",
+      "src/components/common-header/dist/js/components/subscription-status.js",
       "src/config/version.js",
       "src/config/test.js",
       "src/settings/settings-app.js",

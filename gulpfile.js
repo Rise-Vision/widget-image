@@ -101,12 +101,12 @@
   });
 
   gulp.task("fonts", function() {
-    return gulp.src("src/components/rv-common-style/dist/fonts/**/*")
+    return gulp.src("src/components/common-header/dist/fonts/**/*")
       .pipe(gulp.dest("dist/fonts"));
   });
 
   gulp.task("i18n", function(cb) {
-    return gulp.src(["src/components/rv-common-i18n/dist/locales/**/*"])
+    return gulp.src(["src/components/common-header/dist/locales/**/*"])
       .pipe(gulp.dest("dist/locales"));
   });
 

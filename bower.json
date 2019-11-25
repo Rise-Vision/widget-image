@@ -26,11 +26,12 @@
     "angular-bootstrap": "~0.13.4",
     "angular-route": "~1.7.0",
     "common-header": "https://github.com/Rise-Vision/common-header.git#v4.0.0",
+    "compare-versions": "3.5.1",
     "jquery": "~3.3.1",
     "rise-storage": "https://github.com/Rise-Vision/web-component-rise-storage.git#1.14.0",
     "rise-storage-v2": "https://github.com/Rise-Vision/rise-storage.git#2.1.0",
     "webcomponentsjs": "v1.1.0",
-    "widget-common": "https://github.com/Rise-Vision/widget-common.git#3.6.2",
+    "widget-common": "https://github.com/Rise-Vision/widget-common.git#v3.9.3",
     "widget-settings-ui-components": "https://github.com/Rise-Vision/widget-settings-ui-components.git#3.5.0",
     "widget-settings-ui-core": "https://github.com/Rise-Vision/widget-settings-ui-core.git#0.4.2",
     "underscore": "~1.8.3"

@@ -101,12 +101,12 @@
   });
 
   gulp.task("fonts", function() {
-    return gulp.src("src/components/rv-common-style/dist/fonts/**/*")
+    return gulp.src("src/components/common-header/dist/fonts/**/*")
       .pipe(gulp.dest("dist/fonts"));
   });
 
   gulp.task("i18n", function(cb) {
-    return gulp.src(["src/components/rv-common-i18n/dist/locales/**/*"])
+    return gulp.src(["src/components/common-header/dist/locales/**/*"])
       .pipe(gulp.dest("dist/locales"));
   });
 
@@ -180,7 +180,7 @@
       "src/components/widget-settings-ui-components/dist/js/**/*.js",
       "src/components/widget-settings-ui-core/dist/*.js",
       "src/components/component-storage-selector/dist/storage-selector.js",
-      "src/components/component-subscription-status/dist/js/subscription-status.js",
+      "src/components/common-header/dist/js/components/subscription-status.js",
       "src/config/version.js",
       "src/config/test.js",
       "src/settings/settings-app.js",

@@ -204,7 +204,7 @@
   });
 
   gulp.task("test", function(cb) {
-    runSequence("version", "es6-modules", "test:unit", "test:e2e", cb);
+    runSequence("version", "es6-modules", "test:unit", "test:e2e", "test:integration", cb);
   });
 
   gulp.task("bower-update", function (cb) {

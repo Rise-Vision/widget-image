@@ -1,5 +1,4 @@
 /* global RiseVision, gadgets, config, version */
-/* eslint-disable no-unused-vars */
 ( function( window, document, gadgets ) {
   "use strict";
 
@@ -97,7 +96,6 @@
         RiseVision.Common.RiseCache.isRCV2Player( function( isV2 ) {
           var fragment = document.createDocumentFragment(),
             link = document.createElement( "link" ),
-            webcomponents = document.createElement( "script" ),
             href = config.COMPONENTS_PATH + ( ( isV2 ) ? "rise-storage-v2" : "rise-storage" ) + "/rise-storage.html",
             storage = document.createElement( "rise-storage" );
 
@@ -109,11 +107,6 @@
             storage.removeEventListener( "rise-storage-ready", onStorageReady );
             init();
           }
-
-          webcomponents.src = config.COMPONENTS_PATH + "webcomponentsjs/webcomponents.js";
-
-          // add the webcomponents polyfill source to the document head
-          document.getElementsByTagName( "head" )[ 0 ].appendChild( webcomponents );
 
           link.setAttribute( "rel", "import" );
           link.setAttribute( "href", href );
@@ -162,9 +155,9 @@
   }
 
   if ( id && id !== "" ) {
-    // gadgets.rpc.register( "rscmd_play_" + id, play );
-    // gadgets.rpc.register( "rscmd_pause_" + id, pause );
-    // gadgets.rpc.register( "rscmd_stop_" + id, stop );
+    gadgets.rpc.register( "rscmd_play_" + id, play );
+    gadgets.rpc.register( "rscmd_pause_" + id, pause );
+    gadgets.rpc.register( "rscmd_stop_" + id, stop );
     gadgets.rpc.register( "rsparam_set_" + id, configure );
     gadgets.rpc.call( "", "rsparam_get", null, id, [ "companyId", "displayId", "additionalParams" ] );
   }

@@ -161,9 +161,9 @@
   }
 
   if ( id && id !== "" ) {
-    gadgets.rpc.register( "rscmd_play_" + id, play );
-    gadgets.rpc.register( "rscmd_pause_" + id, pause );
-    gadgets.rpc.register( "rscmd_stop_" + id, stop );
+    // gadgets.rpc.register( "rscmd_play_" + id, play );
+    // gadgets.rpc.register( "rscmd_pause_" + id, pause );
+    // gadgets.rpc.register( "rscmd_stop_" + id, stop );
     gadgets.rpc.register( "rsparam_set_" + id, configure );
     gadgets.rpc.call( "", "rsparam_get", null, id, [ "companyId", "displayId", "additionalParams" ] );
   }

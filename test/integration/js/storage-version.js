@@ -1,4 +1,4 @@
-/* global suiteSetup, suiteTeardown, test, assert, RiseVision, sinon, config */
+/* global suiteSetup, suiteTeardown, test, assert, RiseVision, sinon */
 
 /* eslint-disable func-names */
 

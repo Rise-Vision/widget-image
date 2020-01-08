@@ -1,4 +1,5 @@
 /* global RiseVision, gadgets, config, version */
+/* eslint-disable no-unused-vars */
 ( function( window, document, gadgets ) {
   "use strict";
 

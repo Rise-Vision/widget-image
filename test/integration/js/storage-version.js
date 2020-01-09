@@ -1,4 +1,4 @@
-/* global suiteSetup, suiteTeardown, test, assert, RiseVision, sinon, config */
+/* global suiteSetup, suiteTeardown, test, assert, RiseVision, sinon */
 
 /* eslint-disable func-names */
 
@@ -37,10 +37,4 @@ suiteTeardown( function() {
 
 test( "rise-storage element should be added to body", function() {
   assert.isNotNull( document.querySelector( "rise-storage" ) );
-} );
-
-test( "polyfill added to document head", function() {
-  var head = document.getElementsByTagName( "head" )[ 0 ];
-
-  assert.isNotNull( head.querySelector( "script[src='" + config.COMPONENTS_PATH + "webcomponentsjs/webcomponents-loader.js'" ) );
 } );

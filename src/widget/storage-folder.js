@@ -92,7 +92,8 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
    *  Public Methods
    */
   function init() {
-    var storage = document.querySelector( "rise-storage" );
+    var storage = document.querySelector( "rise-storage" ),
+      envVerifierParams = utils.getEnvVerifierParams();
 
     storage.addEventListener( "rise-storage-response", handleResponse );
 
@@ -223,6 +224,9 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
     storage.setAttribute( "displayId", displayId );
     storage.setAttribute( "folder", data.storage.folder );
     storage.setAttribute( "env", config.STORAGE_ENV );
+
+    envVerifierParams && storage.setAttribute( "endpointType", envVerifierParams.endpoint_type );
+    envVerifierParams && storage.setAttribute( "viewerId", envVerifierParams.viewer_id );
 
     storage.go();
   }

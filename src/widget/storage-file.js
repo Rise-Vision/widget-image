@@ -15,7 +15,8 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
    *  Public Methods
    */
   function init() {
-    var storage = document.querySelector( "rise-storage" );
+    var storage = document.querySelector( "rise-storage" ),
+      envVerifierParams = utils.getEnvVerifierParams();
 
     storage.addEventListener( "rise-storage-response", function( e ) {
       var url;
@@ -178,6 +179,10 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
     storage.setAttribute( "companyId", params.storage.companyId );
     storage.setAttribute( "displayId", displayId );
     storage.setAttribute( "env", config.STORAGE_ENV );
+
+    envVerifierParams && storage.setAttribute( "endpointType", envVerifierParams.endpoint_type );
+    envVerifierParams && storage.setAttribute( "viewerId", envVerifierParams.viewer_id );
+
     storage.go();
   }
 

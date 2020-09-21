@@ -28,10 +28,10 @@
     "common-header": "https://github.com/Rise-Vision/common-header.git#v4.0.0",
     "compare-versions": "3.5.1",
     "jquery": "~3.3.1",
-    "rise-storage": "https://github.com/Rise-Vision/web-component-rise-storage.git#1.14.0",
-    "rise-storage-v2": "https://github.com/Rise-Vision/rise-storage.git#2.1.0",
+    "rise-storage": "https://github.com/Rise-Vision/web-component-rise-storage.git#chore/env-verifier-params",
+    "rise-storage-v2": "https://github.com/Rise-Vision/rise-storage.git#chore/env-verifier-params",
     "webcomponentsjs": "v0.7.24",
-    "widget-common": "https://github.com/Rise-Vision/widget-common.git#v3.11.0",
+    "widget-common": "https://github.com/Rise-Vision/widget-common.git#feature/data-usage",
     "widget-settings-ui-components": "https://github.com/Rise-Vision/widget-settings-ui-components.git#3.5.0",
     "widget-settings-ui-core": "https://github.com/Rise-Vision/widget-settings-ui-core.git#0.4.2",
     "underscore": "~1.8.3"
@@ -43,6 +43,7 @@
     "font-awesome": "~4.7.0",
     "lodash": "~4.17.15",
     "jquery": "~3.3.1",
-    "webcomponentsjs": "v0.7.24"
+    "webcomponentsjs": "v0.7.24",
+    "widget-common": "feature/data-usage"
   }
 }

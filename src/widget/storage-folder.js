@@ -225,7 +225,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
     storage.setAttribute( "folder", data.storage.folder );
     storage.setAttribute( "env", config.STORAGE_ENV );
 
-    envVerifierParams && storage.setAttribute( "endpointType", envVerifierParams.endpoint_type );
+    envVerifierParams && storage.setAttribute( "endpointType", envVerifierParams.env );
     envVerifierParams && storage.setAttribute( "viewerId", envVerifierParams.viewer_id );
 
     storage.go();

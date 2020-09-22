@@ -180,7 +180,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
     storage.setAttribute( "displayId", displayId );
     storage.setAttribute( "env", config.STORAGE_ENV );
 
-    envVerifierParams && storage.setAttribute( "endpointType", envVerifierParams.endpoint_type );
+    envVerifierParams && storage.setAttribute( "endpointType", envVerifierParams.env );
     envVerifierParams && storage.setAttribute( "viewerId", envVerifierParams.viewer_id );
 
     storage.go();

@@ -2,19 +2,9 @@
 
 /* eslint-disable func-names, no-global-assign */
 
-var xhr;
-
 sinon.stub( RiseVision.Common.RiseCache, "isV2Running", function( callback ) {
-  xhr = sinon.useFakeXMLHttpRequest();
-
-  xhr.onCreate = function( xhr ) {
-    requests.push( xhr );
-  };
-
-  requests = [];
-
   RiseVision.Common.RiseCache.isV2Running.restore();
-  RiseVision.Common.RiseCache.isV2Running( callback );
+  RiseVision.Common.RiseCache.isV2Running( callback(isV2Running) );
 } );
 
 sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode, displayId ) {

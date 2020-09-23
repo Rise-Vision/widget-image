@@ -7,31 +7,23 @@ var isV2Running = false,
   requests;
 
 sinon.stub( RiseVision.Common.RiseCache, "isV2Running", function( callback ) {
-  xhr = sinon.useFakeXMLHttpRequest();
-
-  xhr.onCreate = function( xhr ) {
-    requests.push( xhr );
-  };
-
-  requests = [];
-
   sinon.stub( RiseVision.Image, "setAdditionalParams" );
 
   RiseVision.Common.RiseCache.isV2Running.restore();
-  RiseVision.Common.RiseCache.isV2Running( callback );
+  RiseVision.Common.RiseCache.isV2Running( callback(isV2Running) );
 } );
 
-suiteSetup( function() {
+/*suiteSetup( function() {
+  console.log("hello");
   if ( !isV2Running ) {
     requests[ 0 ].respond( 200 );
   } else {
     requests[ 0 ].respond( 404 );
     requests[ 1 ].respond( 200 );
   }
-} );
+} );*/
 
 suiteTeardown( function() {
-  xhr.restore();
   RiseVision.Image.setAdditionalParams.restore();
 } );
 

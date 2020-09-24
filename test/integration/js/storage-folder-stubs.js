@@ -1,10 +1,10 @@
-/* global RiseVision, sinon, requests, storage */
+/* global RiseVision, sinon, storage, isV2Running */
 
 /* eslint-disable func-names, no-global-assign */
 
 sinon.stub( RiseVision.Common.RiseCache, "isV2Running", function( callback ) {
   RiseVision.Common.RiseCache.isV2Running.restore();
-  RiseVision.Common.RiseCache.isV2Running( callback(isV2Running) );
+  RiseVision.Common.RiseCache.isV2Running( callback( isV2Running ) );
 } );
 
 sinon.stub( RiseVision.Image, "setAdditionalParams", function( params, mode, displayId ) {

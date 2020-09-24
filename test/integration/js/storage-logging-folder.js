@@ -1,4 +1,4 @@
-/* global requests, suiteSetup, suite, suiteTeardown, teardown, test, assert, RiseVision, sinon */
+/* global suiteSetup, suite, suiteTeardown, teardown, test, assert, RiseVision, sinon */
 
 /* eslint-disable func-names */
 
@@ -14,7 +14,6 @@ var table = "image_events",
   },
   ready = false,
   isV2Running = false,
-  requests,
   storage,
   spy,
   clock,

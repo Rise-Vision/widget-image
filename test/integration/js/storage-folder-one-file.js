@@ -1,10 +1,9 @@
-/* global requests, suiteSetup, suite, test, assert, suiteTeardown */
+/* global suiteSetup, suite, test, assert, suiteTeardown */
 
 /* eslint-disable func-names */
 
 var ready = false,
-  isV2Running = false,
-  requests,
+  isV2Running = false, // eslint-disable-line no-unused-vars
   storage,
   check = function( done ) {
     if ( ready ) {

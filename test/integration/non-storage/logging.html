@@ -8,6 +8,7 @@
   <link rel="stylesheet" type="text/css" href="../../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../../src/components/widget-common/dist/css/message.css">
 
+  <script src="../../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../../src/components/web-component-tester/browser.js"></script>
 
 </head>
@@ -65,19 +66,6 @@
       }
     };
 
-    sinon.stub(RiseVision.Common.RiseCache, "isV2Running", function (callback) {
-      xhr = sinon.useFakeXMLHttpRequest();
-
-      xhr.onCreate = function (xhr) {
-        requests.push(xhr);
-      };
-
-      requests = [];
-
-      RiseVision.Common.RiseCache.isV2Running.restore();
-      RiseVision.Common.RiseCache.isV2Running(callback);
-    });
-
     sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode, displayId) {
       ready = true;
 
@@ -100,15 +88,7 @@
     });
 
     suiteSetup(function (done) {
-      // Rise Cache V1 not running
-      requests[0].respond(0);
-      requests[1].respond(0);
-
       check(done);
-    });
-
-    suiteTeardown(function() {
-      xhr.restore();
     });
 
     setup(function() {
@@ -156,10 +136,21 @@
 
     suite("non-storage error", function() {
       var nonStorage = new RiseVision.Image.NonStorage({ "url": params.file_url }),
-        riseCache = RiseVision.Common.RiseCache;
+        riseCache = RiseVision.Common.RiseCache,
+        xhr;
 
       setup(function() {
+        xhr = sinon.useFakeXMLHttpRequest();
+
+        xhr.onCreate = function (xhr) {
+          requests.push(xhr);
+        };
+
         requests = [];
+      });
+
+      teardown(function(){
+        xhr.restore();
       });
 
       test("should log a non-storage error", function() {

@@ -1,4 +1,4 @@
-/* global requests, suiteSetup, suite, setup, teardown, test, assert,
+/* global suiteSetup, suite, setup, teardown, test, assert,
  RiseVision, sinon, config */
 
 /* eslint-disable func-names */
@@ -6,7 +6,6 @@
 var ready = false,
   isV2Running = false,
   refreshSpy = null,
-  requests,
   storage,
   check = function( done ) {
     if ( ready ) {
@@ -19,13 +18,6 @@ var ready = false,
   };
 
 suiteSetup( function( done ) {
-  if ( isV2Running ) {
-    requests[ 0 ].respond( 404 );
-    requests[ 1 ].respond( 200 );
-  } else {
-    requests[ 0 ].respond( 200 );
-  }
-
   check( done );
 } );
 

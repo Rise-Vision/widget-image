@@ -1,10 +1,9 @@
-/* global requests, suiteSetup, suite, test, assert, suiteTeardown */
+/* global suiteSetup, suite, test, assert, suiteTeardown */
 
 /* eslint-disable func-names */
 
 var ready = false,
-  isV2Running = false,
-  requests,
+  isV2Running = false, // eslint-disable-line no-unused-vars
   storage,
   check = function( done ) {
     if ( ready ) {
@@ -17,13 +16,6 @@ var ready = false,
   };
 
 suiteSetup( function( done ) {
-  if ( isV2Running ) {
-    requests[ 0 ].respond( 404 );
-    requests[ 1 ].respond( 200 );
-  } else {
-    requests[ 0 ].respond( 200 );
-  }
-
   check( done );
 } );
 

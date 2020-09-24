@@ -8,6 +8,7 @@
   <link rel="stylesheet" type="text/css" href="../../../src/widget/css/styles.css">
   <link rel="stylesheet" href="../../../src/components/widget-common/dist/css/message.css">
 
+  <script src="../../../src/components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="../../../src/components/web-component-tester/browser.js"></script>
 
 </head>
@@ -42,7 +43,7 @@
 
     var ready = false;
 
-    var xhr, requests, storage;
+    var storage;
 
     var check = function(done) {
       if (ready) {
@@ -54,19 +55,6 @@
         }, 1000);
       }
     };
-
-    sinon.stub(RiseVision.Common.RiseCache, "isV2Running", function (callback) {
-      xhr = sinon.useFakeXMLHttpRequest();
-
-      xhr.onCreate = function (xhr) {
-        requests.push(xhr);
-      };
-
-      requests = [];
-
-      RiseVision.Common.RiseCache.isV2Running.restore();
-      RiseVision.Common.RiseCache.isV2Running(callback);
-    });
 
     sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode, displayId) {
       ready = true;
@@ -82,15 +70,7 @@
     });
 
     suiteSetup(function (done) {
-      // Rise Cache V1 not running
-      requests[0].respond(0);
-      requests[1].respond(0);
-
       check(done);
-    });
-
-    suiteTeardown(function() {
-      xhr.restore();
     });
 
     suite("downloading message", function() {
@@ -112,12 +92,17 @@
     suite("non-storage error message", function() {
       var nonStorage = new RiseVision.Image.NonStorage({ "url": "http://www.test.com/test.jpg" }),
         riseCache = RiseVision.Common.RiseCache,
-        clock;
-
+        xhr, clock;
 
       setup(function() {
-        requests = [];
+        xhr = sinon.useFakeXMLHttpRequest();
         clock = sinon.useFakeTimers();
+
+        xhr.onCreate = function (xhr) {
+          requests.push(xhr);
+        };
+
+        requests = [];
 
         riseCache.ping(function(){});
         // Rise Cache V1 running
@@ -127,6 +112,7 @@
 
       teardown(function () {
         clock.restore();
+        xhr.restore();
       });
 
       test("should show non-storage error message", function() {

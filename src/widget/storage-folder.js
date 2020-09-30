@@ -163,7 +163,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
     storage.addEventListener( "rise-storage-error", function( e ) {
       var params = {
         "event": "rise storage error",
-        "event_details": "The request failed with status code: " + e.detail.error.currentTarget.status
+        "event_details": "The request failed with status code: " + e.detail.error.currentTarget.status + " | error object: " + JSON.stringify( e.detail.error )
       };
 
       imageUtils.logEvent( params );

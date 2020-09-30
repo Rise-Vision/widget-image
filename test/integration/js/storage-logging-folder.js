@@ -177,7 +177,7 @@ suite( "rise storage error", function() {
     } ) );
 
     params.event = "rise storage error";
-    params.event_details = "The request failed with status code: 0";
+    params.event_details = "The request failed with status code: 0 | error object: " + JSON.stringify( { "currentTarget": { "status": 0 } } );
     delete params.file_url;
 
     assert( spy.calledOnce );

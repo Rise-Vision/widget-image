@@ -61,6 +61,8 @@ suite( "rise storage error", function() {
   test( "should log a rise storage error", function() {
     spy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
 
+    params.error_details += " | error object: " + JSON.stringify( { "currentTarget": { "status": 404 } } );
+
     storage.dispatchEvent( new CustomEvent( "rise-storage-error", {
       "detail": {
         "request": {

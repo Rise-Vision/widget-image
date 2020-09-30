@@ -277,7 +277,7 @@ suite( "storage errors", function() {
   test( "should handle when a rise storage error occurs", function() {
     params.event = "error";
     params.event_details = "rise storage error";
-    params.error_details = "The request failed with status code: 0";
+    params.error_details = "The request failed with status code: 0 | error object: " + JSON.stringify( { "currentTarget": { "status": 0 } } );
     params.file_url = null;
 
     storage.dispatchEvent( new CustomEvent( "rise-storage-error", {

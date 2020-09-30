@@ -108,7 +108,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         params = {
           "event": "error",
           "event_details": "rise storage error",
-          "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status,
+          "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status + " | error object: " + JSON.stringify( e.detail.error ),
           "file_url": fileUrl
         };
 

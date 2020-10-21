@@ -53,7 +53,7 @@
 
     var ready = false;
 
-    var xhr, requests, storage, spy, clock;
+    var storage, spy, clock;
 
     var check = function(done) {
       if (ready) {
@@ -131,46 +131,6 @@
           "company_id": params.company_id,
           "display_id": params.display_id
         }));
-      });
-    });
-
-    suite("non-storage error", function() {
-      var nonStorage = new RiseVision.Image.NonStorage({ "url": params.file_url }),
-        riseCache = RiseVision.Common.RiseCache,
-        xhr;
-
-      setup(function() {
-        xhr = sinon.useFakeXMLHttpRequest();
-
-        xhr.onCreate = function (xhr) {
-          requests.push(xhr);
-        };
-
-        requests = [];
-      });
-
-      teardown(function(){
-        xhr.restore();
-      });
-
-      test("should log a non-storage error", function() {
-        spy = sinon.spy(RiseVision.Common.LoggerUtils, "logEvent");
-
-        params.event = "error";
-        params.event_details = "non-storage error";
-        params.error_details = "The request failed with status code: 0";
-        params.file_url = "http://localhost:9494/?url=http%3A%2F%2Fs3.amazonaws.com%2Frise-common%2Fimages%2Flogo-small.png";
-
-        riseCache.ping(function(){});
-        // Rise Cache V1 is running
-        requests[0].respond(200);
-
-        nonStorage.init();
-        requests[1].respond(0); // HEAD request
-        requests[2].respond(0); // GET request
-
-        assert(spy.calledOnce);
-        assert(spy.calledWith(table, params));
       });
     });
   });

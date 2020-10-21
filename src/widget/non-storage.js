@@ -5,73 +5,16 @@ RiseVision.Image = RiseVision.Image || {};
 RiseVision.Image.NonStorage = function( data ) {
   "use strict";
 
-  var riseCache = RiseVision.Common.RiseCache,
-    utils = RiseVision.Common.Utilities,
-    imageUtils = RiseVision.ImageUtils,
+  var utils = RiseVision.Common.Utilities,
     // 5 minutes
     _refreshDuration = 300000,
     _refreshIntervalId = null,
-    _isLoading = true,
     _url = "";
-
-  function _getFile( omitCacheBuster ) {
-    var params;
-
-    riseCache.getFile( _url, function( response, error ) {
-      var statusCode = 0,
-        errorMessage;
-
-      if ( !error ) {
-
-        if ( _isLoading ) {
-          _isLoading = false;
-
-          RiseVision.Image.onFileInit( response.url );
-
-          // start the refresh interval
-          _startRefreshInterval();
-
-        } else {
-          RiseVision.Image.onFileRefresh( response.url );
-        }
-
-      } else {
-
-        if ( error.message && error.message === "File is downloading" ) {
-          RiseVision.Image.onFileUnavailable( error.message );
-        } else {
-
-          // error occurred
-          params = {
-            "event": "error",
-            "event_details": "non-storage error",
-            "error_details": error.message,
-            "file_url": response.url
-          };
-
-          imageUtils.logEvent( params, true );
-
-          if ( riseCache.isV2Running() ) {
-            errorMessage = riseCache.getErrorMessage( statusCode );
-          } else {
-            // Show a different message if there is a 404 coming from rise cache
-            if ( error.message ) {
-              statusCode = +error.message.substring( error.message.indexOf( ":" ) + 2 );
-            }
-
-            errorMessage = utils.getRiseCacheErrorMessage( statusCode );
-          }
-
-          RiseVision.Image.showError( errorMessage );
-        }
-      }
-    }, omitCacheBuster );
-  }
 
   function _startRefreshInterval() {
     if ( _refreshIntervalId === null ) {
       _refreshIntervalId = setInterval( function() {
-        _getFile( true );
+        RiseVision.Image.onFileRefresh( _url );
       }, _refreshDuration );
     }
   }
@@ -85,7 +28,10 @@ RiseVision.Image.NonStorage = function( data ) {
 
     _url = utils.addProtocol( _url );
 
-    _getFile( true );
+    RiseVision.Image.onFileInit( _url );
+
+    // start the refresh interval
+    _startRefreshInterval();
   }
 
   return {

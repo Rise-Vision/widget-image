@@ -162,4 +162,7 @@
     gadgets.rpc.call( "", "rsparam_get", null, id, [ "companyId", "displayId", "additionalParams" ] );
   }
 
+  // TODO: remove RC for 3rd party files
+  // TODO: stop displaying messages
+
 } )( window, document, gadgets );

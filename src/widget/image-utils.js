@@ -5,23 +5,16 @@ var RiseVision = RiseVision || {};
 RiseVision.ImageUtils = ( function() {
   "use strict";
 
-  var ERROR_TIMER_DELAY = 0,
-    _prefs = new gadgets.Prefs(),
+  var _prefs = new gadgets.Prefs(),
     _params = null,
     _mode = null,
     _configurationType = null,
     _usingRLS = false,
-    _errorTimer = null,
     _isSingleImageGIF = false;
 
   /*
    *  Public  Methods
    */
-
-  function clearErrorTimer() {
-    clearTimeout( _errorTimer );
-    _errorTimer = null;
-  }
 
   function convertSVGToDataURL( filePath, localUrl, callback ) {
     var xhr = new XMLHttpRequest();
@@ -108,14 +101,6 @@ RiseVision.ImageUtils = ( function() {
     path += _params.storage.folder + ( _params.storage.folder.slice( -1 ) !== "/" ? "/" : "" );
 
     return "risemedialibrary-" + _params.storage.companyId + "/" + path;
-  }
-
-  function startErrorTimer() {
-    clearErrorTimer();
-
-    _errorTimer = setTimeout( function() {
-      RiseVision.ImageUtils.sendDoneToViewer();
-    }, ERROR_TIMER_DELAY );
   }
 
   function getImageElement( params ) {
@@ -230,12 +215,10 @@ RiseVision.ImageUtils = ( function() {
   }
 
   return {
-    "clearErrorTimer": clearErrorTimer,
     "convertSVGToDataURL": convertSVGToDataURL,
     "getConfigurationType": getConfigurationType,
     "getMode": getMode,
     "getParams": getParams,
-    "startErrorTimer": startErrorTimer,
     "handleSingleImageDeletion": handleSingleImageDeletion,
     "handleSingleImageLoad": handleSingleImageLoad,
     "handleSingleImageLoadError": handleSingleImageLoadError,

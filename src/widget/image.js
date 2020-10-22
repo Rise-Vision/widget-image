@@ -183,7 +183,7 @@ RiseVision.Image = ( function( gadgets ) {
 
     // if Widget is playing right now, run the timer
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.sendDoneToViewer();
     }
   }
 
@@ -219,9 +219,6 @@ RiseVision.Image = ( function( gadgets ) {
 
     _viewerPaused = true;
 
-    // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
-    _imageUtils.clearErrorTimer();
-
     if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
       _slider.pause();
     } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
@@ -235,7 +232,7 @@ RiseVision.Image = ( function( gadgets ) {
     _viewerPaused = false;
 
     if ( _errorFlag ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.sendDoneToViewer();
       return;
     }
 
@@ -258,7 +255,9 @@ RiseVision.Image = ( function( gadgets ) {
     _errorFlag = true;
     _storageErrorFlag = typeof isStorageError !== "undefined";
 
-    _message.show( message );
+    // 22/10/2020 requirement to stop displaying error messages
+    // set to a blank message so the image container gets hidden and nothing is displayed on screen
+    _message.show( "" );
 
     // destroy slider if it exists and previously notified ready
     if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
@@ -266,7 +265,7 @@ RiseVision.Image = ( function( gadgets ) {
     }
 
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.sendDoneToViewer();
     }
   }
 

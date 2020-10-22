@@ -5,7 +5,7 @@ var RiseVision = RiseVision || {};
 RiseVision.ImageUtils = ( function() {
   "use strict";
 
-  var ERROR_TIMER_DELAY = 5000,
+  var ERROR_TIMER_DELAY = 0,
     _prefs = new gadgets.Prefs(),
     _params = null,
     _mode = null,

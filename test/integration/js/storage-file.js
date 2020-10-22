@@ -362,11 +362,13 @@ suite( "storage errors", function() {
 
 suite( "Network Recovery", function() {
   setup( function() {
+    sinon.stub( RiseVision.Image, "play" );
     refreshSpy = sinon.spy( RiseVision.Image, "onFileRefresh" );
   } )
 
   teardown( function() {
     RiseVision.Image.onFileRefresh.restore();
+    RiseVision.Image.play.restore();
   } );
 
   test( "should call onFileRefresh() if in state of storage error and network recovered", function() {

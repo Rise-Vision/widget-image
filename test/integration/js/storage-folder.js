@@ -179,9 +179,17 @@ suite( "delete", function() {
 } );
 
 suite( "network recovery", function() {
-  test( "should call onFileRefresh() if in state of storage error and network recovered", function() {
-    var onRefreshStub = sinon.stub( RiseVision.Image, "onFileRefresh", function() {} );
+  setup( function() {
+    sinon.stub( RiseVision.Image, "play" );
+    sinon.spy( RiseVision.Image, "onFileRefresh" );
+  } )
 
+  teardown( function() {
+    RiseVision.Image.onFileRefresh.restore();
+    RiseVision.Image.play.restore();
+  } );
+
+  test( "should call onFileRefresh() if in state of storage error and network recovered", function() {
     // force a storage error in the scenario of a network failure
     storage.dispatchEvent( new CustomEvent( "rise-storage-error", {
       "detail": {
@@ -203,9 +211,7 @@ suite( "network recovery", function() {
       "bubbles": true
     } ) );
 
-    assert( onRefreshStub.calledOnce );
-
-    RiseVision.Image.onFileRefresh.restore();
+    assert( RiseVision.Image.onFileRefresh.calledOnce );
   } );
 } );
 

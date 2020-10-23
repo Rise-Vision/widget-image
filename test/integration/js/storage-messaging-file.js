@@ -3,6 +3,7 @@
 /* eslint-disable func-names */
 
 var ready = false,
+  isV2Running = false, // eslint-disable-line
   storage,
   check = function( done ) {
     if ( ready ) {

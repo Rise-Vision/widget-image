@@ -79,3 +79,27 @@ suite( "file downloading", function() {
   } );
 
 } );
+
+suite( "errors", function() {
+  setup( function() {
+    sinon.stub( RiseVision.ImageRLS, "play" );
+  } );
+
+  teardown( function() {
+    RiseVision.ImageRLS.play.restore();
+  } );
+
+  test( "nothing is displayed", function() {
+    messageHandlers.forEach( function( handler ) {
+      handler( {
+        topic: "file-update",
+        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
+        status: "NOEXIST"
+      } );
+    } );
+
+    assert.isTrue( ( document.getElementById( "container" ).style.visibility === "hidden" ), "image container is hidden" );
+    assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "block" ), "message container is visible" );
+    assert.equal( document.querySelector( ".message" ).innerHTML, "", "message is empty" );
+  } );
+} );

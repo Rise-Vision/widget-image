@@ -217,11 +217,11 @@ suite( "network recovery", function() {
 
 suite( "storage errors", function() {
   var params = { "event": "" },
-    onShowErrorStub,
+    onHandleErrorStub,
     onLogEventStub;
 
   setup( function() {
-    onShowErrorStub = sinon.stub( RiseVision.Image, "showError", function() {} );
+    onHandleErrorStub = sinon.stub( RiseVision.Image, "handleError", function() {} );
     onLogEventStub = sinon.stub( RiseVision.ImageUtils, "logEvent", function() {} );
   } );
 
@@ -229,7 +229,7 @@ suite( "storage errors", function() {
     delete params.url;
     delete params.event_details;
 
-    RiseVision.Image.showError.restore();
+    RiseVision.Image.handleError.restore();
     RiseVision.ImageUtils.logEvent.restore();
   } );
 
@@ -253,9 +253,7 @@ suite( "storage errors", function() {
         "bubbles": true
       } ) );
 
-      assert( onShowErrorStub.calledOnce, "showError() called once" );
-      assert( onShowErrorStub.calledWith( "Waiting for Rise Cache" ),
-        "showError() called with correct message" );
+      assert( onHandleErrorStub.calledOnce, "showError() called once" );
 
     } else {
       storage.dispatchEvent( new CustomEvent( "rise-cache-not-running", {

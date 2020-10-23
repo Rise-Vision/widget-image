@@ -82,3 +82,29 @@ suite( "files downloading", function() {
   } );
 
 } );
+
+suite( "errors", function() {
+  setup( function() {
+    clock = sinon.useFakeTimers();
+    sinon.stub( RiseVision.ImageRLS, "play" );
+  } );
+
+  teardown( function() {
+    clock.restore();
+    RiseVision.ImageRLS.play.restore();
+  } );
+
+  test( "nothing is displayed", function() {
+    messageHandlers.forEach( function( handler ) {
+      handler( {
+        topic: "FILE-UPDATE",
+        filePath: folderPath,
+        status: "EMPTYFOLDER"
+      } );
+    } );
+
+    assert.isTrue( ( document.getElementById( "container" ).style.visibility === "hidden" ), "image container is hidden" );
+    assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "block" ), "message container is visible" );
+    assert.equal( document.querySelector( ".message" ).innerHTML, "", "message is empty" );
+  } );
+} );

@@ -251,7 +251,7 @@ RiseVision.Image = ( function( gadgets ) {
     }
   }
 
-  function showError( message, isStorageError ) {
+  function handleError( isStorageError ) {
     _errorFlag = true;
     _storageErrorFlag = typeof isStorageError !== "undefined";
 
@@ -283,7 +283,7 @@ RiseVision.Image = ( function( gadgets ) {
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,
-    "showError": showError,
+    "handleError": handleError,
     "stop": stop
   };
 } )( gadgets );

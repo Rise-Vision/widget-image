@@ -42,7 +42,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": filePath
     } );
 
-    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+    RiseVision.ImageRLS.handleError();
   }
 
   function _handleRequiredModulesUnavailable() {
@@ -52,7 +52,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": filePath
     } );
 
-    RiseVision.ImageRLS.showError( "There was a problem retrieving the file." );
+    RiseVision.ImageRLS.handleError();
   }
 
   function _handleUnauthorized() {
@@ -62,7 +62,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": filePath
     } );
 
-    RiseVision.ImageRLS.showError( "Rise Storage subscription is not active." );
+    RiseVision.ImageRLS.handleError();
   }
 
   function _handleAuthorized() {
@@ -115,7 +115,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
 
     imageUtils.logEvent( params );
 
-    RiseVision.ImageRLS.showError( "The selected image does not exist or has been moved to Trash." );
+    RiseVision.ImageRLS.handleError();
   }
 
   function _handleFileDeleted( data ) {
@@ -158,8 +158,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "Invalid response with status code [CODE]"
      */
 
-    // Widget will display generic message
-    RiseVision.ImageRLS.showError( "Unable to download the file." );
+    RiseVision.ImageRLS.handleError();
   }
 
   function _handleEvents( data ) {

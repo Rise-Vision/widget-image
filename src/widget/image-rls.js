@@ -171,7 +171,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   function onFileDeleted() {
     _imageUtils.handleSingleImageDeletion();
 
-    showError( "The selected image has been moved to Trash." );
+    handleError( "The selected image has been moved to Trash." );
   }
 
   function onFolderUnavailable() {
@@ -260,7 +260,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
   }
 
-  function showError() {
+  function handleError() {
     _errorFlag = true;
 
     // 22/10/2020 requirement to stop displaying error messages
@@ -292,7 +292,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,
-    "showError": showError,
+    "handleError": handleError,
     "stop": stop
   };
 } )( gadgets );

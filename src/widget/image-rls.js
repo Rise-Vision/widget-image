@@ -171,7 +171,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
   function onFileDeleted() {
     _imageUtils.handleSingleImageDeletion();
 
-    showError( "The selected image has been moved to Trash." );
+    handleError( "The selected image has been moved to Trash." );
   }
 
   function onFolderUnavailable() {
@@ -224,9 +224,6 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
     _viewerPaused = true;
 
-    // in case error timer still running (no conditional check on errorFlag, it may have been reset in onFileRefresh)
-    _imageUtils.clearErrorTimer();
-
     if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
       _slider.pause();
     } else if ( _imageUtils.getMode() === "file" && image && _imageUtils.isSingleImageGIF() ) {
@@ -240,7 +237,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _viewerPaused = false;
 
     if ( _errorFlag ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.sendDoneToViewer();
       return;
     }
 
@@ -263,10 +260,12 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
   }
 
-  function showError( message ) {
+  function handleError() {
     _errorFlag = true;
 
-    _message.show( message );
+    // 22/10/2020 requirement to stop displaying error messages
+    // set to a blank message so the image container gets hidden and nothing is displayed on screen
+    _message.show( "" );
 
     // destroy slider if it exists and previously notified ready
     if ( _imageUtils.getMode() === "folder" && _slider && _slider.isReady() ) {
@@ -274,7 +273,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     }
 
     if ( !_viewerPaused ) {
-      _imageUtils.startErrorTimer();
+      _imageUtils.sendDoneToViewer();
     }
   }
 
@@ -293,7 +292,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     "pause": pause,
     "play": play,
     "setAdditionalParams": setAdditionalParams,
-    "showError": showError,
+    "handleError": handleError,
     "stop": stop
   };
 } )( gadgets );

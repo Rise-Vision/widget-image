@@ -30,61 +30,20 @@ suite( "waiting", function() {
   } );
 } );
 
-suite( "errors", function() {
+suite( "file downloading", function() {
   var clock;
 
   setup( function() {
     clock = sinon.useFakeTimers();
+    sinon.stub( RiseVision.ImageRLS, "play" );
   } );
 
   teardown( function() {
     clock.restore();
+    RiseVision.ImageRLS.play.restore();
   } );
 
-  test( "required modules unavailable", function() {
-    var i;
-
-    function receiveClientList() {
-      // mock receiving client-list message
-      messageHandlers.forEach( function( handler ) {
-        handler( {
-          topic: "client-list",
-          clients: [ "local-messaging" ]
-        } );
-      } );
-    }
-
-    // mock 30 more client-list messages sent/received
-    for ( i = 30; i >= 0; i-- ) {
-      receiveClientList();
-      clock.tick( 1000 );
-    }
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "There was a problem retrieving the file." );
-  } );
-
-  test( "unauthorized", function() {
-    // mock receiving client-list message
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "client-list",
-        clients: [ "local-storage", "licensing" ]
-      } );
-    } );
-
-    // mock receiving storage-licensing message
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "storage-licensing-update",
-        isAuthorized: false,
-        userFriendlyStatus: "unauthorized"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "Rise Storage subscription is not active." );
-  } );
-
-  test( "file does not exist", function() {
+  test( "should show message after 15 seconds of processing", function() {
     // mock receiving client-list message
     messageHandlers.forEach( function( handler ) {
       handler( {
@@ -102,55 +61,6 @@ suite( "errors", function() {
       } );
     } );
 
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-update",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        status: "NOEXIST"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "The selected image does not exist or has been moved to Trash." );
-  } );
-
-  test( "file error", function() {
-    var clock = sinon.useFakeTimers(),
-      spy = sinon.spy( RiseVision.ImageRLS, "play" );
-
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "file-error",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        msg: "File's host server could not be reached",
-        detail: "error details"
-      } );
-    } );
-
-    assert.equal( document.querySelector( ".message" ).innerHTML, "Unable to download the file." );
-
-    clock.tick( 4500 );
-    assert( spy.notCalled );
-    clock.tick( 500 );
-    assert( spy.calledOnce );
-
-    clock.restore();
-    RiseVision.ImageRLS.play.restore();
-  } );
-
-} );
-
-suite( "file downloading", function() {
-  var clock;
-
-  setup( function() {
-    clock = sinon.useFakeTimers();
-  } );
-
-  teardown( function() {
-    clock.restore();
-  } );
-
-  test( "should show message after 15 seconds of processing", function() {
 
     // file is getting processed, starts the initial processing timer
     messageHandlers.forEach( function( handler ) {
@@ -170,64 +80,26 @@ suite( "file downloading", function() {
 
 } );
 
-suite( "file deleted", function() {
-  test( "file deleted", function() {
-    // mock receiving file-update to notify file is downloading
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "FILE-UPDATE",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        status: "STALE"
-      } );
-    } );
+suite( "errors", function() {
+  setup( function() {
+    sinon.stub( RiseVision.ImageRLS, "play" );
+  } );
 
-    // mock receiving file-update to notify file is available
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "FILE-UPDATE",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        status: "CURRENT",
-        ospath: "path/to/file/abc123",
-        osurl: "file:///path/to/file/abc123"
-      } );
-    } );
+  teardown( function() {
+    RiseVision.ImageRLS.play.restore();
+  } );
 
-    // mock receiving file-update to notify file is deleted
+  test( "nothing is displayed", function() {
     messageHandlers.forEach( function( handler ) {
       handler( {
         topic: "file-update",
         filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        status: "deleted"
+        status: "NOEXIST"
       } );
     } );
 
     assert.isTrue( ( document.getElementById( "container" ).style.visibility === "hidden" ), "image container is hidden" );
     assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "block" ), "message container is visible" );
-    assert.equal( document.querySelector( ".message" ).innerHTML, "The selected image has been moved to Trash." );
-  } );
-
-  test( "file re-added", function() {
-    // mock receiving file-update to notify file is downloading
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "FILE-UPDATE",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        status: "STALE"
-      } );
-    } );
-
-    // mock receiving file-update to notify file is available
-    messageHandlers.forEach( function( handler ) {
-      handler( {
-        topic: "FILE-UPDATE",
-        filePath: "risemedialibrary-30007b45-3df0-4c7b-9f7f-7d8ce6443013/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg",
-        status: "CURRENT",
-        ospath: "path/to/file/abc123",
-        osurl: "file:///path/to/file/abc123"
-      } );
-    } );
-
-    assert.isTrue( ( document.getElementById( "container" ).style.visibility === "visible" ), "image container is visible" );
-    assert.isTrue( ( document.getElementById( "messageContainer" ).style.display === "none" ), "message container is hidden" );
+    assert.equal( document.querySelector( ".message" ).innerHTML, "", "message is empty" );
   } );
 } );

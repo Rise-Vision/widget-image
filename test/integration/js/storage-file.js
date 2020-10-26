@@ -199,11 +199,11 @@ suite( "file unchanged", function() {
 
 suite( "storage errors", function() {
   var params = { "event": "" },
-    onShowErrorStub,
+    onHandleErrorStub,
     onLogEventStub;
 
   setup( function() {
-    onShowErrorStub = sinon.stub( RiseVision.Image, "showError", function() {} );
+    onHandleErrorStub = sinon.stub( RiseVision.Image, "handleError", function() {} );
     onLogEventStub = sinon.stub( RiseVision.ImageUtils, "logEvent", function() {} );
   } );
 
@@ -211,7 +211,7 @@ suite( "storage errors", function() {
     delete params.url;
     delete params.event_details;
 
-    RiseVision.Image.showError.restore();
+    RiseVision.Image.handleError.restore();
     RiseVision.ImageUtils.logEvent.restore();
   } );
 
@@ -231,9 +231,7 @@ suite( "storage errors", function() {
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
     assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
-    assert( onShowErrorStub.calledOnce, "showError() called once" );
-    assert( onShowErrorStub.calledWith( "Sorry, there was a problem communicating with Rise Storage." ),
-      "showError() called with correct message" );
+    assert( onHandleErrorStub.calledOnce, "handleError() called once" );
   } );
 
   test( "should handle when 'no file' error occurs", function() {
@@ -252,9 +250,7 @@ suite( "storage errors", function() {
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
     assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
-    assert( onShowErrorStub.calledOnce, "showError() called once" );
-    assert( onShowErrorStub.calledWith( "The selected image does not exist or has been moved to Trash." ),
-      "showError() called with correct message" );
+    assert( onHandleErrorStub.calledOnce, "handleError() called once" );
   } );
 
   test( "should handle when 'file throttled' error occurs", function() {
@@ -269,9 +265,7 @@ suite( "storage errors", function() {
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
     assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
-    assert( onShowErrorStub.calledOnce, "showError() called once" );
-    assert( onShowErrorStub.calledWith( "The selected image is temporarily unavailable." ),
-      "showError() called with correct message" );
+    assert( onHandleErrorStub.calledOnce, "handleError() called once" );
   } );
 
   test( "should handle when a rise storage error occurs", function() {
@@ -292,9 +286,7 @@ suite( "storage errors", function() {
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
     assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
-    assert( onShowErrorStub.calledOnce, "showError() called once" );
-    assert( onShowErrorStub.calledWith( "Sorry, there was a problem communicating with Rise Storage." ),
-      "showError() called with correct message" );
+    assert( onHandleErrorStub.calledOnce, "handleError() called once" );
   } );
 
   test( "should handle when a rise cache error occurs", function() {
@@ -313,9 +305,7 @@ suite( "storage errors", function() {
 
     assert( onLogEventStub.calledOnce, "logEvent() called once" );
     assert( onLogEventStub.calledWith( params ), "logEvent() called with correct params" );
-    assert( onShowErrorStub.calledOnce, "showError() called once" );
-    assert( onShowErrorStub.calledWith( "There was a problem retrieving the file from Rise Cache." ),
-      "showError() called with correct message" );
+    assert( onHandleErrorStub.calledOnce, "handleError() called once" );
   } );
 
   test( "should handle when a 'rise cache not running' occurs", function() {
@@ -338,9 +328,7 @@ suite( "storage errors", function() {
         "bubbles": true
       } ) );
 
-      assert( onShowErrorStub.calledOnce, "showError() called once" );
-      assert( onShowErrorStub.calledWith( "Waiting for Rise Cache" ),
-        "showError() called with correct message" );
+      assert( onHandleErrorStub.calledOnce, "handleError() called once" );
 
     } else {
       storage.dispatchEvent( new CustomEvent( "rise-cache-not-running", {
@@ -362,11 +350,13 @@ suite( "storage errors", function() {
 
 suite( "Network Recovery", function() {
   setup( function() {
+    sinon.stub( RiseVision.Image, "play" );
     refreshSpy = sinon.spy( RiseVision.Image, "onFileRefresh" );
   } )
 
   teardown( function() {
     RiseVision.Image.onFileRefresh.restore();
+    RiseVision.Image.play.restore();
   } );
 
   test( "should call onFileRefresh() if in state of storage error and network recovered", function() {

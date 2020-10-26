@@ -194,25 +194,6 @@
       });
 
     } );
-
-    suite( "startErrorTimer", function() {
-
-      test( "should after 5 seconds send done to Viewer", function() {
-        var sendStub = sinon.stub(imageUtils, "sendDoneToViewer"),
-          clock = sinon.useFakeTimers();
-
-        imageUtils.startErrorTimer( "test-bucket/widget-testing/image-widget/Gone_Girl_Book_Cover.jpg" );
-
-        clock.tick(5000);
-
-        assert( sendStub.calledOnce );
-
-        imageUtils.sendDoneToViewer.restore();
-        clock.restore();
-      } );
-
-    } );
-
   });
 </script>
 

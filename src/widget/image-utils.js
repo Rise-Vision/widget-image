@@ -184,9 +184,14 @@ RiseVision.ImageUtils = ( function() {
     return _usingRLS;
   }
 
-  function logEvent( data ) {
+  function logEvent( data, endpointLoggingFields ) {
     data.configuration = getConfigurationType() || "";
-    RiseVision.Common.LoggerUtils.logEvent( getTableName(), data );
+
+    if ( endpointLoggingFields ) {
+      endpointLoggingFields.eventApp = "image-widget";
+    }
+
+    RiseVision.Common.LoggerUtils.logEvent( getTableName(), data, endpointLoggingFields );
   }
 
   function sendDoneToViewer() {

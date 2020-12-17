@@ -5,7 +5,7 @@ module.exports = {
   },
   "extends": "idiomatic",
   "globals": {
-    "angular": 1
+    "angular": "off"
   },
   "rules": {
     "quotes": [

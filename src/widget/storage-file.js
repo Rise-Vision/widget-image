@@ -52,7 +52,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "error_details": "Response code: " + e.detail.code + ", message: " + e.detail.message
       };
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000013" } );
       RiseVision.Image.handleError();
     } );
 

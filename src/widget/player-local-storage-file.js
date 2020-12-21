@@ -40,7 +40,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "event": "error",
       "event_details": "no connection",
       "file_url": filePath
-    } );
+    }, { severity: "error", errorCode: "E000000026", debugInfo: filePath } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -50,7 +50,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "event": "error",
       "event_details": "required modules unavailable",
       "file_url": filePath
-    } );
+    }, { severity: "error", errorCode: "E000000025", debugInfo: filePath } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -60,7 +60,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "event": "warning",
       "event_details": "unauthorized",
       "file_url": filePath
-    } );
+    }, { severity: "warning", debugInfo: filePath } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -81,7 +81,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "event_details": "authorization error",
       "error_details": ( typeof detail === "string" ) ? detail : JSON.stringify( detail ),
       "file_url": filePath
-    } );
+    }, { severity: "error", errorCode: "E000000024" } );
   }
 
   function _handleFileProcessing() {
@@ -113,7 +113,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": data.filePath
     };
 
-    imageUtils.logEvent( params );
+    imageUtils.logEvent( params, { severity: "warning", debugInfo: data.filePath } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -122,7 +122,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
     imageUtils.logEvent( {
       "event": "file deleted",
       "file_url": data.filePath
-    } );
+    }, { severity: "info", debugInfo: data.filePath } );
 
     RiseVision.ImageRLS.onFileDeleted();
   }
@@ -143,7 +143,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
     }
 
     fileErrorLogParams = _.clone( params );
-    imageUtils.logEvent( params );
+    imageUtils.logEvent( params, { severity: "error", errorCode: "E000000027" } );
 
     /*** Possible error messages from Local Storage ***/
     /*

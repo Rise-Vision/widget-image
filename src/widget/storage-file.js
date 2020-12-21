@@ -67,7 +67,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
       // clear the existing image
       img.style.background = "";
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000014" } );
       RiseVision.Image.handleError();
     } );
 
@@ -78,7 +78,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "file_url": e.detail
       };
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000015" } );
       RiseVision.Image.handleError();
     } );
 
@@ -89,7 +89,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status
       };
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000016" } );
     } );
 
     storage.addEventListener( "rise-storage-subscription-expired", function() {
@@ -98,7 +98,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         "event_details": "storage subscription expired"
       };
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000017" } );
       RiseVision.Image.handleError();
     } );
 
@@ -111,7 +111,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
           "file_url": fileUrl
         };
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000018" } );
       RiseVision.Image.handleError( true );
     } );
 
@@ -125,7 +125,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         };
 
       // log the error
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000019" } );
 
       // handle the error
       RiseVision.Image.handleError();
@@ -149,7 +149,7 @@ RiseVision.Image.StorageFile = function( params, displayId ) {
         }
       }
 
-      imageUtils.logEvent( params );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000020" } );
 
       if ( e.detail && e.detail.isPlayerRunning ) {
         RiseVision.Image.handleError( true );

@@ -188,7 +188,7 @@ RiseVision.ImageUtils = ( function() {
     data.configuration = getConfigurationType() || "";
 
     if ( endpointLoggingFields ) {
-      endpointLoggingFields.eventApp = "image-widget";
+      endpointLoggingFields.eventApp = "widget-image";
     }
 
     RiseVision.Common.LoggerUtils.logEvent( getTableName(), data, endpointLoggingFields );

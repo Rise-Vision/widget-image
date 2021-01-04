@@ -45,7 +45,7 @@ RiseVision.Image = ( function( gadgets ) {
         configParams.file_format = "JPG|JPEG|PNG|BMP|SVG|GIF|WEBP";
       }
 
-      _imageUtils.logEvent( configParams );
+      _imageUtils.logEvent( configParams, { severity: "info", debugInfo: JSON.stringify( configParams ) } );
       _configurationLogged = true;
     }
   }

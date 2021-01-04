@@ -105,7 +105,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
         "event_details": "No files to display",
         "file_url": folderPath,
         "file_format": "unknown"
-      } );
+      }, { severity: "warning", debugInfo: folderPath } );
 
       RiseVision.ImageRLS.onFolderUnavailable();
     } else {
@@ -131,7 +131,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
             "event_details": "No files to display (startup)",
             "file_url": folderPath,
             "file_format": "unknown"
-          } );
+          }, { severity: "warning", debugInfo: folderPath } );
 
           RiseVision.ImageRLS.handleError();
           return;
@@ -154,7 +154,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "event_details": "no connection",
       "file_url": folderPath,
       "file_format": defaultFileFormat
-    } );
+    }, { severity: "error", debugInfo: folderPath, errorCode: "E000000026" } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -165,7 +165,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "event_details": "required modules unavailable",
       "file_url": folderPath,
       "file_format": defaultFileFormat
-    } );
+    }, { severity: "error", debugInfo: folderPath, errorCode: "E000000025" } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -176,7 +176,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "event_details": "unauthorized",
       "file_url": folderPath,
       "file_format": defaultFileFormat
-    } );
+    }, { severity: "warning", debugInfo: folderPath } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -198,7 +198,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "error_details": ( typeof detail === "string" ) ? detail : JSON.stringify( detail ),
       "file_url": folderPath,
       "file_format": defaultFileFormat
-    } );
+    }, { severity: "error", debugInfo: folderPath, errorCode: "E000000024" } );
   }
 
   function _handleFileProcessing() {
@@ -251,7 +251,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     };
 
-    imageUtils.logEvent( params );
+    imageUtils.logEvent( params, { severity: "warning", debugInfo: folderPath } );
 
     RiseVision.ImageRLS.onFolderUnavailable();
   }
@@ -264,7 +264,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     };
 
-    imageUtils.logEvent( params );
+    imageUtils.logEvent( params, { severity: "warning", debugInfo: folderPath } );
 
     RiseVision.ImageRLS.onFolderUnavailable();
   }
@@ -280,7 +280,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
     _manageFile( data, "deleted" );
     _manageFileInError( data, true );
 
-    imageUtils.logEvent( params );
+    imageUtils.logEvent( params, { severity: "info", debugInfo: JSON.stringify( params ) } );
 
     if ( !initialLoad && !initialProcessingTimer ) {
       _onFileRemoved();
@@ -321,7 +321,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "Invalid response with status code [CODE]"
      */
 
-    imageUtils.logEvent( params );
+    imageUtils.logEvent( params, { severity: "error", errorCode: "E000000027", debugInfo: data.filePath } );
 
     if ( !initialLoad && !initialProcessingTimer ) {
       if ( _getFile( data.filePath ) ) {

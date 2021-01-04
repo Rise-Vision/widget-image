@@ -61,6 +61,7 @@
       // provide LoggerUtils the ids to use
       RiseVision.Common.LoggerUtils.setIds( companyId, displayId );
       RiseVision.Common.LoggerUtils.setVersion( version );
+      RiseVision.Common.LoggerUtils.startEndpointHeartbeats( "widget-image" );
 
       // additional params
       if ( names[ 2 ] === "additionalParams" ) {

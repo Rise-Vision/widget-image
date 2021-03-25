@@ -119,7 +119,6 @@ suite( "errors", function() {
       } );
     } );
 
-    params.event = "warning";
     params.event_details = "unauthorized";
 
     assert( logSpy.calledOnce );
@@ -313,9 +312,9 @@ suite( "folder file deleted", function() {
 
     assert( logSpy.calledTwice );
     assert( logSpy.calledWith( table, logParams ) );
-    // no files left to display, should log a warning
+    // no files left to display, should log a error
     assert( logSpy.calledWith( table, {
-      event: "warning",
+      event: "error",
       event_details: "No files to display",
       file_url: params.file_url,
       file_format: "unknown",
@@ -330,7 +329,7 @@ suite( "folder file deleted", function() {
 
 suite( "folder is empty", function() {
 
-  test( "should log a warning when folder does not exist", function() {
+  test( "should log a error when folder does not exist", function() {
     logSpy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
 
     messageHandlers.forEach( function( handler ) {
@@ -341,7 +340,6 @@ suite( "folder is empty", function() {
       } );
     } );
 
-    params.event = "warning";
     params.event_details = "folder does not exist";
 
     assert( logSpy.calledOnce );
@@ -349,7 +347,7 @@ suite( "folder is empty", function() {
 
   } );
 
-  test( "should log a warning when a folder is empty", function() {
+  test( "should log a error when a folder is empty", function() {
     var logParams = JSON.parse( JSON.stringify( params ) );
 
     logSpy = sinon.spy( RiseVision.Common.LoggerUtils, "logEvent" );
@@ -362,7 +360,6 @@ suite( "folder is empty", function() {
       } );
     } );
 
-    logParams.event = "warning";
     logParams.event_details = "folder empty";
     logParams.file_url = params.file_url;
     logParams.file_format = "unknown";

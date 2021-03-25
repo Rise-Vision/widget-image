@@ -112,7 +112,6 @@ suite( "errors", function() {
       } );
     } );
 
-    params.event = "warning";
     params.event_details = "unauthorized";
 
     assert( logSpy.calledOnce );

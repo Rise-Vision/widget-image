@@ -20,12 +20,18 @@ RiseVision.ImageUtils = ( function() {
     var xhr = new XMLHttpRequest();
 
     function handleFailure( type ) {
-      logEvent( {
-        event: "error",
+      var debugInfo = {
         event_details: type,
         file_url: filePath,
         local_url: localUrl
-      } );
+      };
+
+      logEvent( {
+        event: "error",
+        event_details: debugInfo.event_details,
+        file_url: debugInfo.file_url,
+        local_url: debugInfo.local_url
+      }, { severity: "error", errorCode: "E000000012", debugInfo: JSON.stringify( debugInfo ) } );
 
       callback( null );
     }
@@ -141,18 +147,20 @@ RiseVision.ImageUtils = ( function() {
 
   function handleSingleImageLoadError( url ) {
     var params = {
-      "event": "error",
-      "event_details": "image load error"
-    };
+        "event": "error",
+        "event_details": "image load error"
+      },
+      errorCode = "E000000200";
 
     if ( _usingRLS ) {
       params.file_url = RiseVision.ImageUtils.getStorageSingleFilePath();
       params.local_url = url;
     } else {
       params.file_url = url;
+      errorCode = _configurationType === "custom" ? "E000000210" : "E000000011";
     }
 
-    logEvent( params );
+    logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( params ) } );
   }
 
   function handleSingleImageDeletion() {

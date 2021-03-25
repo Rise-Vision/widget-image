@@ -103,7 +103,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "error_details": "Response code: " + e.detail.code + ", message: " + e.detail.message
       };
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000013" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000013", debugInfo: JSON.stringify( params ) } );
       RiseVision.Image.handleError();
     } );
 
@@ -135,7 +135,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "storage folder format(s) invalid"
       };
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000023" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000021" } );
       RiseVision.Image.handleError();
     } );
 
@@ -146,7 +146,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "error_details": "The request failed with status code: " + e.detail.error.currentTarget.status
       };
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000016" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( params ) } );
     } );
 
     storage.addEventListener( "rise-storage-subscription-expired", function() {
@@ -155,7 +155,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "storage subscription expired"
       };
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000017" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( params ) } );
       RiseVision.Image.handleError();
     } );
 
@@ -165,7 +165,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": "The request failed with status code: " + e.detail.error.currentTarget.status + " | error object: " + JSON.stringify( e.detail.error )
       };
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000018" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000011", debugInfo: JSON.stringify( params ) } );
       RiseVision.Image.handleError( true );
     } );
 
@@ -175,7 +175,7 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "event_details": e.detail.error.message
       };
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000019" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000019", debugInfo: JSON.stringify( params ) } );
 
       RiseVision.Image.handleError();
     } );
@@ -188,6 +188,11 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         "error_details": ""
       };
 
+      // only proceed to log and handle error if this is running on player with valid display id
+      if ( !displayId || displayId === "preview" || displayId === "display_id" || displayId === "displayId" ) {
+        return;
+      }
+
       if ( e.detail ) {
         if ( e.detail.error ) {
           // storage v1
@@ -198,11 +203,9 @@ RiseVision.Image.StorageFolder = function( data, displayId ) {
         }
       }
 
-      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000020" } );
+      imageUtils.logEvent( params, { severity: "error", errorCode: "E000000019", debugInfo: JSON.stringify( params ) } );
 
-      if ( e.detail && e.detail.isPlayerRunning ) {
-        RiseVision.Image.handleError( true );
-      }
+      RiseVision.Image.handleError( true );
     } );
 
     storage.setAttribute( "fileType", "image" );

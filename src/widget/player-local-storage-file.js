@@ -40,7 +40,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "event": "error",
       "event_details": "no connection",
       "file_url": filePath
-    }, { severity: "error", errorCode: "E000000026", debugInfo: filePath } );
+    }, { severity: "error", errorCode: "E000000025", debugInfo: filePath } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -57,10 +57,10 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
 
   function _handleUnauthorized() {
     imageUtils.logEvent( {
-      "event": "warning",
+      "event": "error",
       "event_details": "unauthorized",
       "file_url": filePath
-    }, { severity: "warning", debugInfo: filePath } );
+    }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "unauthorized", file_url: filePath } ) } );
 
     RiseVision.ImageRLS.handleError();
   }
@@ -81,7 +81,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "event_details": "authorization error",
       "error_details": ( typeof detail === "string" ) ? detail : JSON.stringify( detail ),
       "file_url": filePath
-    }, { severity: "error", errorCode: "E000000024" } );
+    }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "authorization error", error_details: detail, file_url: filePath } ) } );
   }
 
   function _handleFileProcessing() {
@@ -108,12 +108,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
 
   function _handleFileNoExist( data ) {
     var params = {
-      "event": "warning",
+      "event": "error",
       "event_details": "file does not exist",
       "file_url": data.filePath
     };
 
-    imageUtils.logEvent( params, { severity: "warning", debugInfo: data.filePath } );
+    imageUtils.logEvent( params, { severity: "error", errorCode: "E000000014", debugInfo: data.filePath } );
 
     RiseVision.ImageRLS.handleError();
   }

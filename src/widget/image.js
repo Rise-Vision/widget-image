@@ -46,6 +46,9 @@ RiseVision.Image = ( function( gadgets ) {
       }
 
       _imageUtils.logEvent( configParams, { severity: "info", debugInfo: JSON.stringify( configParams ) } );
+      if ( configParams.file_url.startsWith( "http://" ) ) {
+        _imageUtils.logEvent( configParams, { severity: "error", errorCode: "E000000003", eventDetails: "Unable to show HTTP-based content", debugInfo: JSON.stringify( configParams ) } );
+      }
       _configurationLogged = true;
     }
   }

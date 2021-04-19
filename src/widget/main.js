@@ -3,7 +3,7 @@
   "use strict";
 
   var id = new gadgets.Prefs().getString( "id" ),
-    utils = RiseVision.Common.Utilities,
+    // utils = RiseVision.Common.Utilities,
     useWatch = false;
 
   window.oncontextmenu = function() {

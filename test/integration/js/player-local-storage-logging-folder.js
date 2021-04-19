@@ -19,7 +19,7 @@ var table = "image_events",
   logSpy,
   check = function( done ) {
     if ( ready ) {
-      sinon.stub( RiseVision.ImageRLS, "play" );
+      sinon.stub( RiseVision.ImageWatch, "play" );
       done();
     } else {
       setTimeout( function() {
@@ -33,14 +33,14 @@ suiteSetup( function( done ) {
 } );
 
 setup( function() {
-  sinon.stub( RiseVision.ImageRLS, "onFileInit" );
-  sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+  sinon.stub( RiseVision.ImageWatch, "onFileInit" );
+  sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 } );
 
 teardown( function() {
   logSpy.restore();
-  RiseVision.ImageRLS.onFileInit.restore();
-  RiseVision.ImageRLS.onFileRefresh.restore();
+  RiseVision.ImageWatch.onFileInit.restore();
+  RiseVision.ImageWatch.onFileRefresh.restore();
 } );
 
 suite( "configuration", function() {

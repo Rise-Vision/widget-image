@@ -10,7 +10,7 @@ suite( "initialized with 1 file", function() {
     clock;
 
   suiteSetup( function() {
-    onFileInitSpy = sinon.stub( RiseVision.ImageRLS, "onFileInit" );
+    onFileInitSpy = sinon.stub( RiseVision.ImageWatch, "onFileInit" );
 
     // mock receiving client-list message
     messageHandlers.forEach( function( handler ) {
@@ -23,7 +23,7 @@ suite( "initialized with 1 file", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileInit.restore();
+    RiseVision.ImageWatch.onFileInit.restore();
   } );
 
   setup( function() {
@@ -86,7 +86,7 @@ suite( "file updated", function() {
 
   suiteSetup( function() {
 
-    onFileRefreshStub = sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+    onFileRefreshStub = sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 
     // mock receiving file-update to notify a new file is available in this watched folder
     messageHandlers.forEach( function( handler ) {
@@ -110,7 +110,7 @@ suite( "file updated", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
   } );
 
   test( "should be able to configure slider with an updated version of the one file in folder", function() {

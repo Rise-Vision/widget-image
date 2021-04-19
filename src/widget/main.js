@@ -90,7 +90,7 @@
 
         if ( useWatch ) {
           // proceed with using RLS for single file
-          RiseVision.ImageRLS.setAdditionalParams( additionalParams, mode, companyId );
+          RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId );
           return;
         }
 
@@ -136,7 +136,7 @@
     if ( !useWatch ) {
       RiseVision.Image.pause();
     } else {
-      RiseVision.ImageRLS.pause();
+      RiseVision.ImageWatch.pause();
     }
   }
 
@@ -144,7 +144,7 @@
     if ( !useWatch ) {
       RiseVision.Image.play();
     } else {
-      RiseVision.ImageRLS.play();
+      RiseVision.ImageWatch.play();
     }
   }
 
@@ -152,7 +152,7 @@
     if ( !useWatch ) {
       RiseVision.Image.stop();
     } else {
-      RiseVision.ImageRLS.stop();
+      RiseVision.ImageWatch.stop();
     }
   }
 

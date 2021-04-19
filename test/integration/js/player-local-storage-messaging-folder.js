@@ -30,12 +30,12 @@ suite( "files downloading", function() {
 
   setup( function() {
     clock = sinon.useFakeTimers();
-    sinon.stub( RiseVision.ImageRLS, "play" );
+    sinon.stub( RiseVision.ImageWatch, "play" );
   } );
 
   teardown( function() {
     clock.restore();
-    RiseVision.ImageRLS.play.restore();
+    RiseVision.ImageWatch.play.restore();
   } );
 
   test( "should show message after 15 seconds of processing", function() {
@@ -86,12 +86,12 @@ suite( "files downloading", function() {
 suite( "errors", function() {
   setup( function() {
     clock = sinon.useFakeTimers();
-    sinon.stub( RiseVision.ImageRLS, "play" );
+    sinon.stub( RiseVision.ImageWatch, "play" );
   } );
 
   teardown( function() {
     clock.restore();
-    RiseVision.ImageRLS.play.restore();
+    RiseVision.ImageWatch.play.restore();
   } );
 
   test( "nothing is displayed", function() {

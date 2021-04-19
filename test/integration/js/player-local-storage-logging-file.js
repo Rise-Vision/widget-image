@@ -19,7 +19,7 @@ var table = "image_events",
   logSpy,
   check = function( done ) {
     if ( ready ) {
-      sinon.stub( RiseVision.ImageRLS, "play" );
+      sinon.stub( RiseVision.ImageWatch, "play" );
       done();
     } else {
       setTimeout( function() {

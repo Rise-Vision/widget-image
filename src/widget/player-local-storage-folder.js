@@ -2,9 +2,9 @@
 
 var RiseVision = RiseVision || {};
 
-RiseVision.ImageRLS = RiseVision.ImageRLS || {};
+RiseVision.ImageWatch = RiseVision.ImageWatch || {};
 
-RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
+RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
   "use strict";
 
   var INITIAL_PROCESSING_DELAY = 15000,
@@ -107,9 +107,9 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
         "file_format": "unknown"
       }, { severity: "error", errorCode: "E000000021", debugInfo: folderPath } );
 
-      RiseVision.ImageRLS.onFolderUnavailable();
+      RiseVision.ImageWatch.onFolderUnavailable();
     } else {
-      RiseVision.ImageRLS.onFileRefresh( files );
+      RiseVision.ImageWatch.onFileRefresh( files );
     }
   }
 
@@ -133,18 +133,18 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
             "file_format": "unknown"
           }, { severity: "warning", debugInfo: folderPath } );
 
-          RiseVision.ImageRLS.handleError();
+          RiseVision.ImageWatch.handleError();
           return;
         }
 
         // files are still processing/downloading
-        RiseVision.ImageRLS.onFileUnavailable( "Files are downloading." );
+        RiseVision.ImageWatch.onFileUnavailable( "Files are downloading." );
         return;
       }
 
       // settling with 1 file in case the folder only has 1 file
       initialLoad = false;
-      RiseVision.ImageRLS.onFileInit( files );
+      RiseVision.ImageWatch.onFileInit( files );
     }, INITIAL_PROCESSING_DELAY );
   }
 
@@ -156,7 +156,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     }, { severity: "error", debugInfo: folderPath, errorCode: "E000000025" } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleRequiredModulesUnavailable() {
@@ -167,7 +167,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     }, { severity: "error", debugInfo: folderPath, errorCode: "E000000025" } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleUnauthorized() {
@@ -178,7 +178,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       "file_format": defaultFileFormat
     }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "unauthorized", file_url: folderPath } ) } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleAuthorized() {
@@ -215,7 +215,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       _clearInitialProcessingTimer();
       initialLoad = false;
 
-      RiseVision.ImageRLS.onFileInit( files );
+      RiseVision.ImageWatch.onFileInit( files );
     }
 
     if ( initialLoad ) {
@@ -240,7 +240,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
       return;
     }
 
-    RiseVision.ImageRLS.onFileRefresh( files );
+    RiseVision.ImageWatch.onFileRefresh( files );
   }
 
   function _handleFolderNoExist() {
@@ -253,7 +253,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
     imageUtils.logEvent( params, { severity: "error", errorCode: "E000000022", debugInfo: folderPath } );
 
-    RiseVision.ImageRLS.onFolderUnavailable();
+    RiseVision.ImageWatch.onFolderUnavailable();
   }
 
   function _handleFolderEmpty() {
@@ -266,7 +266,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFolder = function() {
 
     imageUtils.logEvent( params, { severity: "error", errorCode: "E000000021", debugInfo: folderPath } );
 
-    RiseVision.ImageRLS.onFolderUnavailable();
+    RiseVision.ImageWatch.onFolderUnavailable();
   }
 
   function _handleFileDeleted( data ) {

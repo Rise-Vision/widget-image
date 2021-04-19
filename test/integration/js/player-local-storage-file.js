@@ -9,7 +9,7 @@ suite( "file added", function() {
   var onFileInitSpy;
 
   suiteSetup( function() {
-    onFileInitSpy = sinon.spy( RiseVision.ImageRLS, "onFileInit" );
+    onFileInitSpy = sinon.spy( RiseVision.ImageWatch, "onFileInit" );
 
     // mock receiving client-list message
     messageHandlers.forEach( function( handler ) {
@@ -50,7 +50,7 @@ suite( "file added", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileInit.restore();
+    RiseVision.ImageWatch.onFileInit.restore();
   } );
 
   test( "should be able to set single image with correct url", function() {
@@ -71,11 +71,11 @@ suite( "file changed", function() {
   var refreshSpy;
 
   setup( function() {
-    refreshSpy = sinon.spy( RiseVision.ImageRLS, "onFileRefresh" );
+    refreshSpy = sinon.spy( RiseVision.ImageWatch, "onFileRefresh" );
   } );
 
   teardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
   } );
 
   test( "should call onFileRefresh() and set background image", function() {
@@ -108,7 +108,7 @@ suite( "file deleted", function() {
   var onFileDeletedStub;
 
   suiteSetup( function() {
-    onFileDeletedStub = sinon.stub( RiseVision.ImageRLS, "onFileDeleted" );
+    onFileDeletedStub = sinon.stub( RiseVision.ImageWatch, "onFileDeleted" );
 
     messageHandlers.forEach( function( handler ) {
       handler( {
@@ -121,7 +121,7 @@ suite( "file deleted", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileDeleted.restore();
+    RiseVision.ImageWatch.onFileDeleted.restore();
   } );
 
   test( "should display error and clear image", function() {

@@ -2,9 +2,9 @@
 
 var RiseVision = RiseVision || {};
 
-RiseVision.ImageRLS = {};
+RiseVision.ImageWatch = {};
 
-RiseVision.ImageRLS = ( function( gadgets ) {
+RiseVision.ImageWatch = ( function( gadgets ) {
   "use strict";
 
   var _prefs = new gadgets.Prefs(),
@@ -71,7 +71,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _imageUtils.setConfigurationType( "storage file (rls)" );
 
       // create and initialize the Storage file instance
-      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile();
+      _storage = new RiseVision.ImageWatch.PlayerLocalStorageFile();
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create the slider container <div> within the container <div>
       el.className = "tp-banner-container";
@@ -82,7 +82,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       _imageUtils.setConfigurationType( "storage folder (rls)" );
 
       // create and initialize the Storage folder instance
-      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFolder();
+      _storage = new RiseVision.ImageWatch.PlayerLocalStorageFolder();
     }
 
     _storage.init();
@@ -133,7 +133,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       setSingleImage( urls );
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create slider instance
-      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.ImageRLS );
+      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.ImageWatch );
       _slider.init( urls );
     }
   }

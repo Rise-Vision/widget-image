@@ -9,7 +9,7 @@ suite( "files initialized", function() {
   var onFileInitSpy;
 
   suiteSetup( function() {
-    onFileInitSpy = sinon.stub( RiseVision.ImageRLS, "onFileInit" );
+    onFileInitSpy = sinon.stub( RiseVision.ImageWatch, "onFileInit" );
 
     // mock receiving client-list message
     messageHandlers.forEach( function( handler ) {
@@ -66,7 +66,7 @@ suite( "files initialized", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileInit.restore();
+    RiseVision.ImageWatch.onFileInit.restore();
   } );
 
   test( "should be able to configure slider with correct urls", function() {
@@ -83,7 +83,7 @@ suite( "file added", function() {
 
   suiteSetup( function() {
 
-    onFileRefreshStub = sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+    onFileRefreshStub = sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 
     // mock receiving file-update to notify a new file is available in this watched folder
     messageHandlers.forEach( function( handler ) {
@@ -107,7 +107,7 @@ suite( "file added", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
   } );
 
   test( "should be able to configure slider with an additional image", function() {
@@ -123,7 +123,7 @@ suite( "file updated", function() {
 
   suiteSetup( function() {
 
-    onFileRefreshStub = sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+    onFileRefreshStub = sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 
     // mock receiving file-update to notify a new file is available in this watched folder
     messageHandlers.forEach( function( handler ) {
@@ -147,7 +147,7 @@ suite( "file updated", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
   } );
 
   test( "should be able to configure slider with an updated image", function() {
@@ -163,7 +163,7 @@ suite( "file deleted", function() {
 
   suiteSetup( function() {
 
-    onFileRefreshStub = sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+    onFileRefreshStub = sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 
     // mock receiving file-update to notify a new file is available in this watched folder
     messageHandlers.forEach( function( handler ) {
@@ -177,7 +177,7 @@ suite( "file deleted", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
   } );
 
   test( "should be able to configure slider after an image was deleted", function() {
@@ -192,7 +192,7 @@ suite( "file error from update", function() {
 
   suiteSetup( function() {
 
-    onFileRefreshStub = sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+    onFileRefreshStub = sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 
     // mock adding this file
     messageHandlers.forEach( function( handler ) {
@@ -216,7 +216,7 @@ suite( "file error from update", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
   } );
 
   test( "should be able to configure slider after file error received for one of the images in list", function() {

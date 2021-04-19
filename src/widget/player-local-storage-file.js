@@ -3,9 +3,9 @@
 
 var RiseVision = RiseVision || {};
 
-RiseVision.ImageRLS = RiseVision.ImageRLS || {};
+RiseVision.ImageWatch = RiseVision.ImageWatch || {};
 
-RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
+RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
   "use strict";
 
   var INITIAL_PROCESSING_DELAY = 10000,
@@ -27,7 +27,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
   function _startInitialProcessingTimer() {
     initialProcessingTimer = setTimeout( function() {
       // file is still processing/downloading
-      RiseVision.ImageRLS.onFileUnavailable( "File is downloading." );
+      RiseVision.ImageWatch.onFileUnavailable( "File is downloading." );
     }, INITIAL_PROCESSING_DELAY );
   }
 
@@ -42,7 +42,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": filePath
     }, { severity: "error", errorCode: "E000000025", debugInfo: filePath } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleRequiredModulesUnavailable() {
@@ -52,7 +52,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": filePath
     }, { severity: "error", errorCode: "E000000025", debugInfo: filePath } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleUnauthorized() {
@@ -62,7 +62,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": filePath
     }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "unauthorized", file_url: filePath } ) } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleAuthorized() {
@@ -98,12 +98,12 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
 
     if ( initialLoad ) {
       initialLoad = false;
-      RiseVision.ImageRLS.onFileInit( data.fileUrl );
+      RiseVision.ImageWatch.onFileInit( data.fileUrl );
 
       return;
     }
 
-    RiseVision.ImageRLS.onFileRefresh( data.fileUrl );
+    RiseVision.ImageWatch.onFileRefresh( data.fileUrl );
   }
 
   function _handleFileNoExist( data ) {
@@ -115,7 +115,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
 
     imageUtils.logEvent( params, { severity: "error", errorCode: "E000000014", debugInfo: data.filePath } );
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleFileDeleted( data ) {
@@ -124,7 +124,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "file_url": data.filePath
     }, { severity: "info", debugInfo: data.filePath } );
 
-    RiseVision.ImageRLS.onFileDeleted();
+    RiseVision.ImageWatch.onFileDeleted();
   }
 
   function _handleFileError( data ) {
@@ -158,7 +158,7 @@ RiseVision.ImageRLS.PlayerLocalStorageFile = function() {
       "Invalid response with status code [CODE]"
      */
 
-    RiseVision.ImageRLS.handleError();
+    RiseVision.ImageWatch.handleError();
   }
 
   function _handleEvents( data ) {

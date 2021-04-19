@@ -3,7 +3,8 @@
   "use strict";
 
   var id = new gadgets.Prefs().getString( "id" ),
-    useRLS = false;
+    utils = RiseVision.Common.Utilities,
+    useWatch = false;
 
   window.oncontextmenu = function() {
     return false;
@@ -74,20 +75,20 @@
             mode = "folder";
 
             // integration tests set TEST_USE_RLS to true
-            useRLS = config.TEST_USE_RLS || canUseRLSFolder();
+            useWatch = config.TEST_USE_RLS || canUseRLSFolder();
           } else {
             // file was selected
             mode = "file";
 
             // integration tests set TEST_USE_RLS to true
-            useRLS = config.TEST_USE_RLS || canUseRLSSingleFile();
+            useWatch = config.TEST_USE_RLS || canUseRLSSingleFile();
           }
         } else {
           // non-storage file was selected
           mode = "file";
         }
 
-        if ( useRLS ) {
+        if ( useWatch ) {
           // proceed with using RLS for single file
           RiseVision.ImageRLS.setAdditionalParams( additionalParams, mode, companyId );
           return;
@@ -132,7 +133,7 @@
   }
 
   function pause() {
-    if ( !useRLS ) {
+    if ( !useWatch ) {
       RiseVision.Image.pause();
     } else {
       RiseVision.ImageRLS.pause();
@@ -140,7 +141,7 @@
   }
 
   function play() {
-    if ( !useRLS ) {
+    if ( !useWatch ) {
       RiseVision.Image.play();
     } else {
       RiseVision.ImageRLS.play();
@@ -148,7 +149,7 @@
   }
 
   function stop() {
-    if ( !useRLS ) {
+    if ( !useWatch ) {
       RiseVision.Image.stop();
     } else {
       RiseVision.ImageRLS.stop();

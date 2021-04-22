@@ -68,12 +68,12 @@ suite( "initialized with 1 file", function() {
       } );
     } );
 
-    clock.tick( 7000 );
+    clock.tick( 1000 );
 
     assert( !onFileInitSpy.called, "onFileInit() is not called, processing timer still running to try and get at least 2 files" );
 
     // 15 seconds is up
-    clock.tick( 1000 );
+    clock.tick( 7000 );
 
     assert( onFileInitSpy.calledOnce, "onFileInit() called once" );
     assert.equal( onFileInitSpy.args[ 0 ][ 0 ].length, 1, "intialized with 1 file" );

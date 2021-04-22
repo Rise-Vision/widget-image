@@ -30,5 +30,5 @@ sinon.stub( RiseVision.ImageWatch, "setAdditionalParams", function( params, mode
 
   RiseVision.ImageWatch.setAdditionalParams.restore();
   // override company id to be the same company from the test data to bypass making direct licensing authorization request
-  RiseVision.ImageWatch.setAdditionalParams( params, mode, "30007b45-3df0-4c7b-9f7f-7d8ce6443013" );
+  RiseVision.ImageWatch.setAdditionalParams( params, mode, "30007b45-3df0-4c7b-9f7f-7d8ce6443013", "rls" );
 } );

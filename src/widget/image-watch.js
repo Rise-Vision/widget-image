@@ -203,11 +203,11 @@ RiseVision.ImageWatch = ( function( gadgets ) {
     _imageUtils.sendDoneToViewer();
   }
 
-  function setAdditionalParams( additionalParams, modeType, companyId ) {
+  function setAdditionalParams( additionalParams, modeType, companyId, watchType ) {
     var data = _.clone( additionalParams );
 
     _imageUtils.setMode( modeType );
-    _imageUtils.setUsingRLS();
+    _imageUtils.setUsingWatch( watchType );
 
     data.width = _prefs.getInt( "rsW" );
     data.height = _prefs.getInt( "rsH" );

@@ -32,7 +32,7 @@
 
     if ( _canUseRLS( mode ) ) {
       useWatch = true;
-      return RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId );
+      return RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId, "rls" );
     }
 
     _processStorageNonWatch( additionalParams, mode, displayId )

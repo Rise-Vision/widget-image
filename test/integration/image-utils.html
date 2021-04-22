@@ -177,7 +177,7 @@
       });
 
       test( "should apply file_url and local_url (RLS)", function() {
-        imageUtils.setUsingRLS();
+        imageUtils.setUsingWatch( "rls" );
         imageUtils.setParams( {
           storage: {
             companyId: "abc123",

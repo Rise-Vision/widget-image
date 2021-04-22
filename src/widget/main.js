@@ -101,7 +101,6 @@
 
   function configure( names, values ) {
     var additionalParams,
-      mode,
       companyId = "",
       displayId = "";
 

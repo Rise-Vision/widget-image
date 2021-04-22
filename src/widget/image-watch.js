@@ -10,7 +10,7 @@ RiseVision.ImageWatch = ( function( gadgets ) {
   var _prefs = new gadgets.Prefs(),
     _message = null,
     _imageUtils = RiseVision.ImageUtils,
-    _storage = null,
+    _watch = null,
     _slider = null,
     _errorFlag = false,
     _viewerPaused = true,
@@ -44,6 +44,7 @@ RiseVision.ImageWatch = ( function( gadgets ) {
 
   function _init() {
     var params = _imageUtils.getParams(),
+      watchType = _imageUtils.getWatchType(),
       container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
       el = document.createElement( "div" );
@@ -68,10 +69,13 @@ RiseVision.ImageWatch = ( function( gadgets ) {
 
       _img = new Image();
 
-      _imageUtils.setConfigurationType( "storage file (rls)" );
+      _imageUtils.setConfigurationType( "storage file (" + watchType + ")" );
 
-      // create and initialize the Storage file instance
-      _storage = new RiseVision.ImageWatch.PlayerLocalStorageFile();
+      if ( watchType.toUpperCase() === "RLS" ) {
+        _watch = new RiseVision.ImageWatch.PlayerLocalStorageFile();
+      } else if ( watchType.toUpperCase() === "SENTINEL" ) {
+        _watch = new RiseVision.ImageWatch.RiseContentSentinelFile();
+      }
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create the slider container <div> within the container <div>
       el.className = "tp-banner-container";
@@ -79,13 +83,16 @@ RiseVision.ImageWatch = ( function( gadgets ) {
       fragment.appendChild( el );
       container.appendChild( fragment );
 
-      _imageUtils.setConfigurationType( "storage folder (rls)" );
+      _imageUtils.setConfigurationType( "storage folder (" + watchType + ")" );
 
-      // create and initialize the Storage folder instance
-      _storage = new RiseVision.ImageWatch.PlayerLocalStorageFolder();
+      if ( watchType.toUpperCase() === "RLS" ) {
+        _watch = new RiseVision.ImageWatch.PlayerLocalStorageFolder();
+      } else if ( watchType.toUpperCase() === "SENTINEL" ) {
+        _watch = new RiseVision.ImageWatch.RiseContentSentinelFolder();
+      }
     }
 
-    _storage.init();
+    _watch.init();
     _logConfiguration( _imageUtils.getConfigurationType() );
     _imageUtils.sendReadyToViewer();
   }
@@ -241,8 +248,8 @@ RiseVision.ImageWatch = ( function( gadgets ) {
       return;
     }
 
-    if ( _unavailableFlag && _storage ) {
-      _storage.retry();
+    if ( _unavailableFlag && _watch ) {
+      _watch.retry();
 
       return;
     }

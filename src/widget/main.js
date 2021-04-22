@@ -3,7 +3,7 @@
   "use strict";
 
   var id = new gadgets.Prefs().getString( "id" ),
-    // utils = RiseVision.Common.Utilities,
+    utils = RiseVision.Common.Utilities,
     useWatch = false;
 
   window.oncontextmenu = function() {
@@ -29,6 +29,18 @@
 
   function _configureStorageUsage( additionalParams, displayId, companyId ) {
     var mode = _isFolder( additionalParams ) ? "folder" : "file";
+
+    // integration tests will set TEST_USE_SENTINEL to true
+    if ( utils.useContentSentinel() || config.TEST_USE_SENTINEL ) {
+      return utils.isServiceWorkerRegistered()
+        .then( function() {
+          useWatch = true;
+          RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId, "sentinel" );
+        } )
+        .catch( function( err ) {
+          console.log( err ); // eslint-disable-line no-console
+        } );
+    }
 
     if ( _canUseRLS( mode ) ) {
       useWatch = true;

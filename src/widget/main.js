@@ -131,10 +131,10 @@
         additionalParams = JSON.parse( values[ 2 ] );
 
         if ( Object.keys( additionalParams.storage ).length !== 0 ) {
-          _configureStorageUsage( additionalParams, displayid, companyId );
+          _configureStorageUsage( additionalParams, displayId, companyId );
         } else {
           // non-storage file was selected
-          RiseVision.Image.setAdditionalParams( additionalParams, "file", displayId );
+          _processStorageNonWatch( additionalParams, "file", displayId )
         }
       }
     }

@@ -31,9 +31,8 @@
     var mode = _isFolder( additionalParams ) ? "folder" : "file";
 
     if ( _canUseRLS( mode ) ) {
-      // proceed with using RLS for single file
-      RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId );
-      return;
+      useWatch = true;
+      return RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId );
     }
 
     _processStorageNonWatch( additionalParams, mode, displayId )

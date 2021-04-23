@@ -144,6 +144,7 @@
           _configureStorageUsage( additionalParams, displayId, companyId );
         } else {
           // non-storage file was selected
+          // RiseVision.Image.setAdditionalParams( additionalParams, "file", displayId );
           _processStorageNonWatch( additionalParams, "file", displayId )
         }
       }

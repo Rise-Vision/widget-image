@@ -297,7 +297,7 @@ RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
     contentSentinel = new riseContentSentinel.default( _handleEvents );
 
     // start watching the folder
-    contentSentinel.watchFiles( folderPath, "video" );
+    contentSentinel.watchFiles( folderPath, "image" );
   }
 
   function retry() {

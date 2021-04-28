@@ -55,18 +55,18 @@ suite( "errors", function() {
     logParams.file_format = "jpg";
     logParams.event = "error";
     logParams.event_details = "Could not retrieve signed URL";
-    logParams.error_details = "error details";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-content-sentinel",
+      file_url: params.file_url + "test-file-in-error.jpg",
+      detail: "error details"
+    } );
 
     // once for configuration event and once for error
     assert( logSpy.calledTwice );
     assert( logSpy.calledWith( table, logParams, {
       severity: "error",
       errorCode: "E000000215",
-      eventApp: "widget-image",
-      debugInfo: JSON.stringify( {
-        "watchType": "rise-content-sentinel",
-        "file_url": params.file_url + "test-file-in-error.jpg"
-      } )
+      eventApp: "widget-image"
     } ) );
   } );
 

@@ -239,7 +239,11 @@ RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
       params = {
         "event": "error",
         "event_details": msg,
-        "error_details": detail,
+        "error_details": JSON.stringify( {
+          watchType: "rise-content-sentinel",
+          file_url: data.filePath,
+          detail: detail
+        } ),
         "file_url": data.filePath
       },
       fileInError = _getFileInError( data.filePath ),
@@ -255,7 +259,7 @@ RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
       params: _.clone( params )
     } );
 
-    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( { watchType: "rise-content-sentinel", file_url: data.filePath } ) } );
+    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode } );
 
     if ( !initialLoad && !initialProcessingTimer ) {
       if ( _getFile( data.filePath ) ) {

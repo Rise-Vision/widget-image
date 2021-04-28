@@ -82,7 +82,11 @@ RiseVision.ImageWatch.RiseContentSentinelFile = function() {
       params = {
         "event": "error",
         "event_details": msg,
-        "error_details": detail,
+        "error_details": JSON.stringify( {
+          watchType: "rise-content-sentinel",
+          file_url: data.filePath,
+          detail: detail
+        } ),
         "file_url": data.filePath
       },
       errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000215";
@@ -93,7 +97,7 @@ RiseVision.ImageWatch.RiseContentSentinelFile = function() {
     }
 
     fileErrorLogParams = _.clone( params );
-    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( { watchType: "rise-content-sentinel", file_url: params.file_url } ) } );
+    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode } );
 
     RiseVision.ImageWatch.handleError();
   }

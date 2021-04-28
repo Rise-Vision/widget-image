@@ -57,18 +57,18 @@ suite( "errors", function() {
   test( "file error", function() {
     params.event = "error";
     params.event_details = "File's host server could not be reached";
-    params.error_details = "error details";
+    params.error_details = JSON.stringify( {
+      watchType: "rise-content-sentinel",
+      file_url: params.file_url,
+      detail: "error details"
+    } );
 
     // configuration event and one error event
     assert.equal( logSpy.callCount, 2 );
     assert( logSpy.calledWith( table, params, {
       severity: "error",
       errorCode: "E000000215",
-      eventApp: "widget-image",
-      debugInfo: JSON.stringify( {
-        "watchType": "rise-content-sentinel",
-        file_url: params.file_url
-      } )
+      eventApp: "widget-image"
     } ) );
   } );
 

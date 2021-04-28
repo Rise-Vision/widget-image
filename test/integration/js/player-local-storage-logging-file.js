@@ -171,7 +171,14 @@ suite( "errors", function() {
     params.error_details = "error details";
 
     assert( logSpy.calledOnce );
-    assert( logSpy.calledWith( table, params ) );
+    assert( logSpy.calledWith( table, params, {
+      severity: "error",
+      errorCode: "E000000027",
+      eventApp: "widget-image",
+      debugInfo: JSON.stringify( {
+        "watchType": "rise-local-storage"
+      } )
+    } ) );
 
     messageHandlers.forEach( function( handler ) {
       handler( {

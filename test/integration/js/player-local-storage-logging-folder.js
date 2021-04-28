@@ -165,7 +165,15 @@ suite( "errors", function() {
     logParams.error_details = "error details";
 
     assert( logSpy.calledOnce );
-    assert( logSpy.calledWith( table, logParams ) );
+    assert( logSpy.calledWith( table, logParams, {
+      severity: "error",
+      errorCode: "E000000027",
+      eventApp: "widget-image",
+      debugInfo: JSON.stringify( {
+        "watchType": "rise-local-storage",
+        "filePath": params.file_url + "test-file-in-error.jpg"
+      } )
+    } ) );
 
     // file is getting processed, starts the initial processing timer
     messageHandlers.forEach( function( handler ) {

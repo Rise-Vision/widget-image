@@ -171,7 +171,7 @@ suite( "errors", function() {
       eventApp: "widget-image",
       debugInfo: JSON.stringify( {
         "watchType": "rise-local-storage",
-        "filePath": params.file_url + "test-file-in-error.jpg"
+        "file_url": params.file_url + "test-file-in-error.jpg"
       } )
     } ) );
 

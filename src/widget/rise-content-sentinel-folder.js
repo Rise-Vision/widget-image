@@ -255,7 +255,7 @@ RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
       params: _.clone( params )
     } );
 
-    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( { watchType: "rise-content-sentinel", filePath: data.filePath } ) } );
+    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( { watchType: "rise-content-sentinel", file_url: data.filePath } ) } );
 
     if ( !initialLoad && !initialProcessingTimer ) {
       if ( _getFile( data.filePath ) ) {

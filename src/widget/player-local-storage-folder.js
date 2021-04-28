@@ -322,7 +322,7 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
       "Invalid response with status code [CODE]"
      */
 
-    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( { watchType: "rise-local-storage", filePath: data.filePath } ) } );
+    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode, debugInfo: JSON.stringify( { watchType: "rise-local-storage", file_url: data.filePath } ) } );
 
     if ( !initialLoad && !initialProcessingTimer ) {
       if ( _getFile( data.filePath ) ) {

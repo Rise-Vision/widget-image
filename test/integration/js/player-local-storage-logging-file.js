@@ -168,16 +168,17 @@ suite( "errors", function() {
 
     params.event = "error";
     params.event_details = "File's host server could not be reached";
-    params.error_details = "error details";
+    params.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url,
+      detail: "error details"
+    } );
 
     assert( logSpy.calledOnce );
     assert( logSpy.calledWith( table, params, {
       severity: "error",
       errorCode: "E000000027",
-      eventApp: "widget-image",
-      debugInfo: JSON.stringify( {
-        "watchType": "rise-local-storage"
-      } )
+      eventApp: "widget-image"
     } ) );
 
     messageHandlers.forEach( function( handler ) {

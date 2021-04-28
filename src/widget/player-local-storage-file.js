@@ -133,9 +133,14 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
       params = {
         "event": "error",
         "event_details": msg,
-        "error_details": detail,
+        "error_details": JSON.stringify( {
+          watchType: "rise-local-storage",
+          file_url: data.filePath,
+          detail: detail
+        } ),
         "file_url": data.filePath
-      };
+      },
+      errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000027";
 
     // prevent repetitive logging when widget is receiving messages from other potential widget instances watching same file
     if ( _.isEqual( params, fileErrorLogParams ) ) {
@@ -143,7 +148,8 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
     }
 
     fileErrorLogParams = _.clone( params );
-    imageUtils.logEvent( params, { severity: "error", errorCode: "E000000027" } );
+
+    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode } );
 
     /*** Possible error messages from Local Storage ***/
     /*

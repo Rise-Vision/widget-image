@@ -162,10 +162,18 @@ suite( "errors", function() {
     logParams.file_format = "jpg";
     logParams.event = "error";
     logParams.event_details = "Could not retrieve signed URL";
-    logParams.error_details = "error details";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url + "test-file-in-error.jpg",
+      detail: "error details"
+    } );
 
     assert( logSpy.calledOnce );
-    assert( logSpy.calledWith( table, logParams ) );
+    assert( logSpy.calledWith( table, logParams, {
+      severity: "error",
+      errorCode: "E000000027",
+      eventApp: "widget-image"
+    } ) );
 
     // file is getting processed, starts the initial processing timer
     messageHandlers.forEach( function( handler ) {
@@ -186,6 +194,11 @@ suite( "errors", function() {
     } );
 
     logParams.file_url = params.file_url + "test-file-in-error-2.jpg";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url + "test-file-in-error-2.jpg",
+      detail: "error details"
+    } );
 
     assert( logSpy.calledTwice );
     assert( logSpy.calledWith( table, logParams ) );
@@ -260,7 +273,11 @@ suite( "errors", function() {
     logParams.file_url = params.file_url + "test-file-in-error-2.jpg";
     logParams.file_format = "jpg";
     logParams.event_details = "Could not retrieve signed URL";
-    logParams.error_details = "error details";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url + "test-file-in-error-2.jpg",
+      detail: "error details"
+    } );
 
     assert.equal( logSpy.callCount, 5 );
     assert( logSpy.calledWith( table, logParams ) );

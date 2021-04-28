@@ -239,10 +239,15 @@ RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
       params = {
         "event": "error",
         "event_details": msg,
-        "error_details": detail,
+        "error_details": JSON.stringify( {
+          watchType: "rise-content-sentinel",
+          file_url: data.filePath,
+          detail: detail
+        } ),
         "file_url": data.filePath
       },
-      fileInError = _getFileInError( data.filePath );
+      fileInError = _getFileInError( data.filePath ),
+      errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000215";
 
     // prevent repetitive logging when widget is receiving messages from other potential widget instances watching same file
     if ( fileInError && _.isEqual( params, fileInError.params ) ) {
@@ -254,7 +259,7 @@ RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
       params: _.clone( params )
     } );
 
-    imageUtils.logEvent( params, { severity: "error", errorCode: "E000000027", debugInfo: data.filePath } );
+    imageUtils.logEvent( params, { severity: "error", errorCode: errorCode } );
 
     if ( !initialLoad && !initialProcessingTimer ) {
       if ( _getFile( data.filePath ) ) {

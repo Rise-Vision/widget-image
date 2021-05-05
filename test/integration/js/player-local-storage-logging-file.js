@@ -19,7 +19,7 @@ var table = "image_events",
   logSpy,
   check = function( done ) {
     if ( ready ) {
-      sinon.stub( RiseVision.ImageRLS, "play" );
+      sinon.stub( RiseVision.ImageWatch, "play" );
       done();
     } else {
       setTimeout( function() {
@@ -168,10 +168,18 @@ suite( "errors", function() {
 
     params.event = "error";
     params.event_details = "File's host server could not be reached";
-    params.error_details = "error details";
+    params.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url,
+      detail: "error details"
+    } );
 
     assert( logSpy.calledOnce );
-    assert( logSpy.calledWith( table, params ) );
+    assert( logSpy.calledWith( table, params, {
+      severity: "error",
+      errorCode: "E000000027",
+      eventApp: "widget-image"
+    } ) );
 
     messageHandlers.forEach( function( handler ) {
       handler( {

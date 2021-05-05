@@ -3,7 +3,8 @@
   "use strict";
 
   var id = new gadgets.Prefs().getString( "id" ),
-    useRLS = false;
+    utils = RiseVision.Common.Utilities,
+    useWatch = false;
 
   window.oncontextmenu = function() {
     return false;
@@ -12,6 +13,79 @@
   document.body.onmousedown = function() {
     return false;
   };
+
+  function _isFolder( additionalParams ) {
+    return !additionalParams.storage.fileName;
+  }
+
+  function _canUseRLS( mode ) {
+    // integration tests will set TEST_USE_RLS to true
+    if ( mode === "folder" ) {
+      return config.TEST_USE_RLS || canUseRLSFolder();
+    }
+
+    return config.TEST_USE_RLS || canUseRLSSingleFile();
+  }
+
+  function _configureStorageUsage( additionalParams, displayId, companyId ) {
+    var mode = _isFolder( additionalParams ) ? "folder" : "file";
+
+    // integration tests will set TEST_USE_SENTINEL to true
+    if ( utils.useContentSentinel() || config.TEST_USE_SENTINEL ) {
+      return utils.isServiceWorkerRegistered()
+        .then( function() {
+          useWatch = true;
+          RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId, "sentinel" );
+        } )
+        .catch( function( err ) {
+          console.log( err ); // eslint-disable-line no-console
+        } );
+    }
+
+    if ( _canUseRLS( mode ) ) {
+      useWatch = true;
+      return RiseVision.ImageWatch.setAdditionalParams( additionalParams, mode, companyId, "rls" );
+    }
+
+    _processStorageNonWatch( additionalParams, mode, displayId )
+  }
+
+  function _processStorageNonWatch( additionalParams, mode, displayId ) {
+    // check which version of Rise Cache is running and dynamically add rise-storage dependencies
+    RiseVision.Common.RiseCache.isRCV2Player( function( isV2 ) {
+      var fragment = document.createDocumentFragment(),
+        link = document.createElement( "link" ),
+        href = config.COMPONENTS_PATH + ( ( isV2 ) ? "rise-storage-v2" : "rise-storage" ) + "/rise-storage.html",
+        storage = document.createElement( "rise-storage" );
+
+      function init() {
+        RiseVision.Image.setAdditionalParams( additionalParams, mode, displayId );
+      }
+
+      function onStorageReady() {
+        storage.removeEventListener( "rise-storage-ready", onStorageReady );
+        init();
+      }
+
+      link.setAttribute( "rel", "import" );
+      link.setAttribute( "href", href );
+
+      // add the rise-storage <link> element to document head
+      document.getElementsByTagName( "head" )[ 0 ].appendChild( link );
+
+      storage.setAttribute( "refresh", 5 );
+
+      if ( isV2 ) {
+        storage.setAttribute( "usage", "widget" );
+      }
+
+      storage.addEventListener( "rise-storage-ready", onStorageReady );
+      fragment.appendChild( storage );
+
+      // add the <rise-storage> element to the body
+      document.body.appendChild( fragment );
+    } );
+  }
 
   function canUseRLSSingleFile() {
     try {
@@ -39,7 +113,6 @@
 
   function configure( names, values ) {
     var additionalParams,
-      mode,
       companyId = "",
       displayId = "";
 
@@ -68,90 +141,36 @@
         additionalParams = JSON.parse( values[ 2 ] );
 
         if ( Object.keys( additionalParams.storage ).length !== 0 ) {
-          // storage file or folder selected
-          if ( !additionalParams.storage.fileName ) {
-            // folder was selected
-            mode = "folder";
-
-            // integration tests set TEST_USE_RLS to true
-            useRLS = config.TEST_USE_RLS || canUseRLSFolder();
-          } else {
-            // file was selected
-            mode = "file";
-
-            // integration tests set TEST_USE_RLS to true
-            useRLS = config.TEST_USE_RLS || canUseRLSSingleFile();
-          }
+          _configureStorageUsage( additionalParams, displayId, companyId );
         } else {
           // non-storage file was selected
-          mode = "file";
+          RiseVision.Image.setAdditionalParams( additionalParams, "file", displayId );
         }
-
-        if ( useRLS ) {
-          // proceed with using RLS for single file
-          RiseVision.ImageRLS.setAdditionalParams( additionalParams, mode, companyId );
-          return;
-        }
-
-        // check which version of Rise Cache is running and dynamically add rise-storage dependencies
-        RiseVision.Common.RiseCache.isRCV2Player( function( isV2 ) {
-          var fragment = document.createDocumentFragment(),
-            link = document.createElement( "link" ),
-            href = config.COMPONENTS_PATH + ( ( isV2 ) ? "rise-storage-v2" : "rise-storage" ) + "/rise-storage.html",
-            storage = document.createElement( "rise-storage" );
-
-          function init() {
-            RiseVision.Image.setAdditionalParams( additionalParams, mode, displayId );
-          }
-
-          function onStorageReady() {
-            storage.removeEventListener( "rise-storage-ready", onStorageReady );
-            init();
-          }
-
-          link.setAttribute( "rel", "import" );
-          link.setAttribute( "href", href );
-
-          // add the rise-storage <link> element to document head
-          document.getElementsByTagName( "head" )[ 0 ].appendChild( link );
-
-          storage.setAttribute( "refresh", 5 );
-
-          if ( isV2 ) {
-            storage.setAttribute( "usage", "widget" );
-          }
-
-          storage.addEventListener( "rise-storage-ready", onStorageReady );
-          fragment.appendChild( storage );
-
-          // add the <rise-storage> element to the body
-          document.body.appendChild( fragment );
-        } );
       }
     }
   }
 
   function pause() {
-    if ( !useRLS ) {
+    if ( !useWatch ) {
       RiseVision.Image.pause();
     } else {
-      RiseVision.ImageRLS.pause();
+      RiseVision.ImageWatch.pause();
     }
   }
 
   function play() {
-    if ( !useRLS ) {
+    if ( !useWatch ) {
       RiseVision.Image.play();
     } else {
-      RiseVision.ImageRLS.play();
+      RiseVision.ImageWatch.play();
     }
   }
 
   function stop() {
-    if ( !useRLS ) {
+    if ( !useWatch ) {
       RiseVision.Image.stop();
     } else {
-      RiseVision.ImageRLS.stop();
+      RiseVision.ImageWatch.stop();
     }
   }
 

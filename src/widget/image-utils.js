@@ -9,7 +9,8 @@ RiseVision.ImageUtils = ( function() {
     _params = null,
     _mode = null,
     _configurationType = null,
-    _usingRLS = false,
+    _usingWatch = false,
+    _watchType = null,
     _isSingleImageGIF = false;
 
   /*
@@ -152,7 +153,7 @@ RiseVision.ImageUtils = ( function() {
       },
       errorCode = "E000000200";
 
-    if ( _usingRLS ) {
+    if ( _usingWatch ) {
       params.file_url = RiseVision.ImageUtils.getStorageSingleFilePath();
       params.local_url = url;
     } else {
@@ -188,8 +189,12 @@ RiseVision.ImageUtils = ( function() {
     return filePath.toLowerCase().split( "." ).pop().split( /\#|\?/ )[ 0 ] === "svg";
   }
 
-  function isUsingRLS() {
-    return _usingRLS;
+  function getUsingWatch() {
+    return _usingWatch;
+  }
+
+  function getWatchType() {
+    return _watchType;
   }
 
   function logEvent( data, endpointLoggingFields ) {
@@ -223,8 +228,9 @@ RiseVision.ImageUtils = ( function() {
     _params = params;
   }
 
-  function setUsingRLS() {
-    _usingRLS = true;
+  function setUsingWatch( watchType ) {
+    _usingWatch = true;
+    _watchType = watchType;
   }
 
   return {
@@ -238,7 +244,8 @@ RiseVision.ImageUtils = ( function() {
     "setSingleImageGIF": setSingleImageGIF,
     "isSingleImageGIF": isSingleImageGIF,
     "isSVGImage": isSVGImage,
-    "isUsingRLS": isUsingRLS,
+    "getUsingWatch": getUsingWatch,
+    "getWatchType": getWatchType,
     "getImageElement": getImageElement,
     "getStorageFileName": getStorageFileName,
     "getStorageSingleFilePath": getStorageSingleFilePath,
@@ -250,7 +257,7 @@ RiseVision.ImageUtils = ( function() {
     "sendReadyToViewer": sendReadyToViewer,
     "setMode": setMode,
     "setParams": setParams,
-    "setUsingRLS": setUsingRLS
+    "setUsingWatch": setUsingWatch
   };
 
 } )();

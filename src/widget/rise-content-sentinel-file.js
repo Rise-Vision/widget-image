@@ -1,21 +1,18 @@
-/* global localMessaging, playerLocalStorage, playerLocalStorageLicensing, config _ */
+/* global riseContentSentinel, _ */
 /* eslint-disable no-console */
 
 var RiseVision = RiseVision || {};
 
 RiseVision.ImageWatch = RiseVision.ImageWatch || {};
 
-RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
+RiseVision.ImageWatch.RiseContentSentinelFile = function() {
   "use strict";
 
   var INITIAL_PROCESSING_DELAY = 10000,
     imageUtils = RiseVision.ImageUtils,
-    messaging = new localMessaging.default(),
     filePath = "",
-    licensing = null,
-    storage = null,
+    contentSentinel = null,
     initialProcessingTimer = null,
-    watchInitiated = false,
     initialLoad = true,
     fileErrorLogParams = null;
 
@@ -33,55 +30,6 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
 
   function _resetFileErrorLogParams() {
     fileErrorLogParams = null;
-  }
-
-  function _handleNoConnection() {
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "no connection",
-      "file_url": filePath
-    }, { severity: "error", errorCode: "E000000025", debugInfo: filePath } );
-
-    RiseVision.ImageWatch.handleError();
-  }
-
-  function _handleRequiredModulesUnavailable() {
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "required modules unavailable",
-      "file_url": filePath
-    }, { severity: "error", errorCode: "E000000025", debugInfo: filePath } );
-
-    RiseVision.ImageWatch.handleError();
-  }
-
-  function _handleUnauthorized() {
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "unauthorized",
-      "file_url": filePath
-    }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "unauthorized", file_url: filePath } ) } );
-
-    RiseVision.ImageWatch.handleError();
-  }
-
-  function _handleAuthorized() {
-    if ( !watchInitiated ) {
-      // start watching the file
-      storage.watchFiles( filePath );
-      watchInitiated = true;
-    }
-  }
-
-  function _handleAuthorizationError( data ) {
-    var detail = data.detail || "";
-
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "authorization error",
-      "error_details": ( typeof detail === "string" ) ? detail : JSON.stringify( detail ),
-      "file_url": filePath
-    }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "authorization error", error_details: detail, file_url: filePath } ) } );
   }
 
   function _handleFileProcessing() {
@@ -120,7 +68,8 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
 
   function _handleFileDeleted( data ) {
     imageUtils.logEvent( {
-      "event": "file deleted",
+      "event": "info",
+      "event_details": "file deleted",
       "file_url": data.filePath
     }, { severity: "info", debugInfo: data.filePath } );
 
@@ -134,13 +83,13 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
         "event": "error",
         "event_details": msg,
         "error_details": JSON.stringify( {
-          watchType: "rise-local-storage",
+          watchType: "rise-content-sentinel",
           file_url: data.filePath,
           detail: detail
         } ),
         "file_url": data.filePath
       },
-      errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000027";
+      errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000215";
 
     // prevent repetitive logging when widget is receiving messages from other potential widget instances watching same file
     if ( _.isEqual( params, fileErrorLogParams ) ) {
@@ -148,21 +97,7 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
     }
 
     fileErrorLogParams = _.clone( params );
-
     imageUtils.logEvent( params, { severity: "error", errorCode: errorCode } );
-
-    /*** Possible error messages from Local Storage ***/
-    /*
-      "File's host server could not be reached"
-
-      "File I/O Error"
-
-      "Could not retrieve signed URL"
-
-      "Insufficient disk space"
-
-      "Invalid response with status code [CODE]"
-     */
 
     RiseVision.ImageWatch.handleError();
   }
@@ -173,21 +108,6 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
     }
 
     switch ( data.event.toUpperCase() ) {
-    case "NO-CONNECTION":
-      _handleNoConnection();
-      break;
-    case "REQUIRED-MODULES-UNAVAILABLE":
-      _handleRequiredModulesUnavailable();
-      break;
-    case "AUTHORIZED":
-      _handleAuthorized();
-      break;
-    case "UNAUTHORIZED":
-      _handleUnauthorized();
-      break;
-    case "AUTHORIZATION-ERROR":
-      _handleAuthorizationError;
-      break;
     case "FILE-AVAILABLE":
       _handleFileAvailable( data );
       break;
@@ -207,12 +127,11 @@ RiseVision.ImageWatch.PlayerLocalStorageFile = function() {
   }
 
   function init() {
-    var params = imageUtils.getParams(),
-      companyId = ( params.storage.companyId !== params.companyId ) ? params.storage.companyId : "";
-
     filePath = imageUtils.getStorageSingleFilePath();
-    licensing = new playerLocalStorageLicensing.default( messaging, _handleEvents, companyId, config.STORAGE_ENV );
-    storage = new playerLocalStorage.default( messaging, licensing, _handleEvents );
+    contentSentinel = new riseContentSentinel.default( _handleEvents );
+
+    // start watching the file
+    contentSentinel.watchFiles( filePath );
   }
 
   function retry() {

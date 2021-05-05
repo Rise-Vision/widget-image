@@ -41,38 +41,6 @@
 <script>
   suite("messaging", function() {
 
-    var ready = false;
-
-    var storage;
-
-    var check = function(done) {
-      if (ready) {
-        done();
-      }
-      else {
-        setTimeout(function() {
-          check(done)
-        }, 1000);
-      }
-    };
-
-    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode, displayId) {
-      ready = true;
-
-      storage = document.querySelector("rise-storage");
-      sinon.stub(storage, "_getStorageSubscription", function () {});
-
-      // restore the function
-      RiseVision.Image.setAdditionalParams.restore();
-
-      // call it again with the params
-      RiseVision.Image.setAdditionalParams(params, mode, displayId);
-    });
-
-    suiteSetup(function (done) {
-      check(done);
-    });
-
     suite("downloading message", function() {
       sinon.stub(RiseVision.Image, "onFileInit", function(){});
 

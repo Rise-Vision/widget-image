@@ -19,7 +19,7 @@ var table = "image_events",
   logSpy,
   check = function( done ) {
     if ( ready ) {
-      sinon.stub( RiseVision.ImageRLS, "play" );
+      sinon.stub( RiseVision.ImageWatch, "play" );
       done();
     } else {
       setTimeout( function() {
@@ -33,14 +33,14 @@ suiteSetup( function( done ) {
 } );
 
 setup( function() {
-  sinon.stub( RiseVision.ImageRLS, "onFileInit" );
-  sinon.stub( RiseVision.ImageRLS, "onFileRefresh" );
+  sinon.stub( RiseVision.ImageWatch, "onFileInit" );
+  sinon.stub( RiseVision.ImageWatch, "onFileRefresh" );
 } );
 
 teardown( function() {
   logSpy.restore();
-  RiseVision.ImageRLS.onFileInit.restore();
-  RiseVision.ImageRLS.onFileRefresh.restore();
+  RiseVision.ImageWatch.onFileInit.restore();
+  RiseVision.ImageWatch.onFileRefresh.restore();
 } );
 
 suite( "configuration", function() {
@@ -162,10 +162,18 @@ suite( "errors", function() {
     logParams.file_format = "jpg";
     logParams.event = "error";
     logParams.event_details = "Could not retrieve signed URL";
-    logParams.error_details = "error details";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url + "test-file-in-error.jpg",
+      detail: "error details"
+    } );
 
     assert( logSpy.calledOnce );
-    assert( logSpy.calledWith( table, logParams ) );
+    assert( logSpy.calledWith( table, logParams, {
+      severity: "error",
+      errorCode: "E000000027",
+      eventApp: "widget-image"
+    } ) );
 
     // file is getting processed, starts the initial processing timer
     messageHandlers.forEach( function( handler ) {
@@ -186,6 +194,11 @@ suite( "errors", function() {
     } );
 
     logParams.file_url = params.file_url + "test-file-in-error-2.jpg";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url + "test-file-in-error-2.jpg",
+      detail: "error details"
+    } );
 
     assert( logSpy.calledTwice );
     assert( logSpy.calledWith( table, logParams ) );
@@ -260,7 +273,11 @@ suite( "errors", function() {
     logParams.file_url = params.file_url + "test-file-in-error-2.jpg";
     logParams.file_format = "jpg";
     logParams.event_details = "Could not retrieve signed URL";
-    logParams.error_details = "error details";
+    logParams.error_details = JSON.stringify( {
+      watchType: "rise-local-storage",
+      file_url: params.file_url + "test-file-in-error-2.jpg",
+      detail: "error details"
+    } );
 
     assert.equal( logSpy.callCount, 5 );
     assert( logSpy.calledWith( table, logParams ) );

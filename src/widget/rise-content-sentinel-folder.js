@@ -1,20 +1,18 @@
-/* global localMessaging, playerLocalStorage, playerLocalStorageLicensing, config _ */
+/* global riseContentSentinel, _ */
+/* eslint-disable no-console */
 
 var RiseVision = RiseVision || {};
 
 RiseVision.ImageWatch = RiseVision.ImageWatch || {};
 
-RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
+RiseVision.ImageWatch.RiseContentSentinelFolder = function() {
   "use strict";
 
   var INITIAL_PROCESSING_DELAY = 15000,
     imageUtils = RiseVision.ImageUtils,
-    messaging = new localMessaging.default(),
     defaultFileFormat = "unknown",
     folderPath = "",
-    licensing = null,
-    storage = null,
-    watchInitiated = false,
+    contentSentinel = null,
     files = [],
     filesInError = [],
     initialProcessingTimer = null,
@@ -148,59 +146,6 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
     }, INITIAL_PROCESSING_DELAY );
   }
 
-  function _handleNoConnection() {
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "no connection",
-      "file_url": folderPath,
-      "file_format": defaultFileFormat
-    }, { severity: "error", debugInfo: folderPath, errorCode: "E000000025" } );
-
-    RiseVision.ImageWatch.handleError();
-  }
-
-  function _handleRequiredModulesUnavailable() {
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "required modules unavailable",
-      "file_url": folderPath,
-      "file_format": defaultFileFormat
-    }, { severity: "error", debugInfo: folderPath, errorCode: "E000000025" } );
-
-    RiseVision.ImageWatch.handleError();
-  }
-
-  function _handleUnauthorized() {
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "unauthorized",
-      "file_url": folderPath,
-      "file_format": defaultFileFormat
-    }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "unauthorized", file_url: folderPath } ) } );
-
-    RiseVision.ImageWatch.handleError();
-  }
-
-  function _handleAuthorized() {
-    if ( !watchInitiated ) {
-      // start watching the folder
-      storage.watchFiles( folderPath, "image" );
-      watchInitiated = true;
-    }
-  }
-
-  function _handleAuthorizationError( data ) {
-    var detail = data.detail || "";
-
-    imageUtils.logEvent( {
-      "event": "error",
-      "event_details": "authorization error",
-      "error_details": ( typeof detail === "string" ) ? detail : JSON.stringify( detail ),
-      "file_url": folderPath,
-      "file_format": defaultFileFormat
-    }, { severity: "error", errorCode: "E000000016", debugInfo: JSON.stringify( { event_details: "authorization error", error_details: detail, file_url: folderPath } ) } );
-  }
-
   function _handleFileProcessing() {
     if ( initialLoad && !initialProcessingTimer ) {
       _startInitialProcessingTimer();
@@ -272,7 +217,8 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
   function _handleFileDeleted( data ) {
     var file = _getFile( data.filePath ),
       params = {
-        "event": "file deleted",
+        "event": "info",
+        "event_details": "file deleted",
         "file_url": data.filePath,
         "local_url": ( file && file.url ) ? file.url : ""
       };
@@ -294,14 +240,14 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
         "event": "error",
         "event_details": msg,
         "error_details": JSON.stringify( {
-          watchType: "rise-local-storage",
+          watchType: "rise-content-sentinel",
           file_url: data.filePath,
           detail: detail
         } ),
         "file_url": data.filePath
       },
       fileInError = _getFileInError( data.filePath ),
-      errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000027";
+      errorCode = msg && msg.toLowerCase().includes( "insufficient disk space" ) ? "E000000040" : "E000000215";
 
     // prevent repetitive logging when widget is receiving messages from other potential widget instances watching same file
     if ( fileInError && _.isEqual( params, fileInError.params ) ) {
@@ -312,19 +258,6 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
       filePath: data.filePath,
       params: _.clone( params )
     } );
-
-    /*** Possible error messages from Local Storage ***/
-    /*
-      "File's host server could not be reached"
-
-      "File I/O Error"
-
-      "Could not retrieve signed URL"
-
-      "Insufficient disk space"
-
-      "Invalid response with status code [CODE]"
-     */
 
     imageUtils.logEvent( params, { severity: "error", errorCode: errorCode } );
 
@@ -343,21 +276,6 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
     }
 
     switch ( data.event.toUpperCase() ) {
-    case "NO-CONNECTION":
-      _handleNoConnection();
-      break;
-    case "REQUIRED-MODULES-UNAVAILABLE":
-      _handleRequiredModulesUnavailable();
-      break;
-    case "AUTHORIZED":
-      _handleAuthorized();
-      break;
-    case "UNAUTHORIZED":
-      _handleUnauthorized();
-      break;
-    case "AUTHORIZATION-ERROR":
-      _handleAuthorizationError;
-      break;
     case "FILE-AVAILABLE":
       _handleFileAvailable( data );
       break;
@@ -380,12 +298,11 @@ RiseVision.ImageWatch.PlayerLocalStorageFolder = function() {
   }
 
   function init() {
-    var params = imageUtils.getParams(),
-      companyId = ( params.storage.companyId !== params.companyId ) ? params.storage.companyId : "";
-
     folderPath = imageUtils.getStorageFolderPath();
-    licensing = new playerLocalStorageLicensing.default( messaging, _handleEvents, companyId, config.STORAGE_ENV );
-    storage = new playerLocalStorage.default( messaging, licensing, _handleEvents );
+    contentSentinel = new riseContentSentinel.default( _handleEvents );
+
+    // start watching the folder
+    contentSentinel.watchFiles( folderPath, "image" );
   }
 
   function retry() {

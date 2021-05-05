@@ -41,46 +41,7 @@
 
   suite("non-storage", function() {
 
-    var ready = false;
-
-    var storage, clock;
-
-    var check = function(done) {
-      if (ready) {
-        done();
-      }
-      else {
-        setTimeout(function() {
-          check(done)
-        }, 1000);
-      }
-    };
-
-    sinon.stub(RiseVision.Image, "setAdditionalParams", function (params, mode, displayId) {
-      ready = true;
-
-      storage = document.querySelector("rise-storage");
-      // No need to make requests to Storage via the component since events are triggered manually
-      // for these test cases.
-      sinon.stub(storage, "_getStorageSubscription", function () {});
-
-      // need to set the fake timer clock before any of the code within setAdditionalParams is executed
-      clock = sinon.useFakeTimers();
-
-      // restore the function
-      RiseVision.Image.setAdditionalParams.restore();
-
-      // call it again with the params
-      RiseVision.Image.setAdditionalParams(params, mode, displayId);
-    });
-
-    suiteSetup(function (done) {
-      check(done);
-    });
-
-    teardown(function () {
-      clock.restore();
-    });
+    var clock;
 
     suite("file added", function () {
       test("should align image at top left", function() {
@@ -105,23 +66,33 @@
     });
 
     suite("file refresh", function() {
-      var onRefreshSpy = sinon.spy(RiseVision.Image, "onFileRefresh");
+      suiteSetup(function() {
+        clock = sinon.useFakeTimers();
+      })
 
       suiteTeardown(function() {
+        RiseVision.Image.onFileInit.restore();
         RiseVision.Image.onFileRefresh.restore();
+        clock.restore();
       });
 
-      test("onFileRefresh() called when file changed", function(done) {
+      test("onFileRefresh() called when file changed", function() {
+        var testNonStorageInstance = new RiseVision.Image.NonStorage(RiseVision.ImageUtils.getParams());
+        sinon.stub(RiseVision.Image, "onFileInit");
+        sinon.stub(RiseVision.Image, "onFileRefresh");
+
+
+        testNonStorageInstance.init();
+
+        assert(RiseVision.Image.onFileInit.calledOnce, "onFileRefresh called once");
+
+        clock.tick(5000);
+        assert.equal(RiseVision.Image.onFileRefresh.callCount, 0, "onFileRefresh not called yet");
+
         // advance clock the refresh interval duration amount
         clock.tick(300000);
-
-        assert(onRefreshSpy.calledOnce, "onFileRefresh called once");
-
-        setTimeout(function() {
-          assert.include(onRefreshSpy.args[0][0], "http://s3.amazonaws.com/rise-common/images/logo-small.png",
-            "onFileRefresh called with correct url");
-          done();
-        }, 3000);
+        assert(RiseVision.Image.onFileRefresh.calledOnce, "onFileRefresh called once");
+        assert(RiseVision.Image.onFileRefresh.calledWith("http://s3.amazonaws.com/rise-common/images/logo-small.png"), "onFileRefresh called with correct url");
       });
 
     });

@@ -37,7 +37,7 @@ RiseVision.Slider = function( params, imageRef ) {
     }
 
     for ( i = 0; i < currentFiles.length; i += 1 ) {
-      if ( imageUtils.isUsingRLS() && imageUtils.isSVGImage( currentFiles[ i ].filePath ) ) {
+      if ( imageUtils.getUsingWatch() && imageUtils.isSVGImage( currentFiles[ i ].filePath ) ) {
         imageUtils.convertSVGToDataURL( currentFiles[ i ].filePath, currentFiles[ i ].url, function( dataUrl ) {
           if ( dataUrl ) {
             urls.push( dataUrl );

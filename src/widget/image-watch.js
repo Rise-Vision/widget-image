@@ -2,15 +2,15 @@
 
 var RiseVision = RiseVision || {};
 
-RiseVision.ImageRLS = {};
+RiseVision.ImageWatch = {};
 
-RiseVision.ImageRLS = ( function( gadgets ) {
+RiseVision.ImageWatch = ( function( gadgets ) {
   "use strict";
 
   var _prefs = new gadgets.Prefs(),
     _message = null,
     _imageUtils = RiseVision.ImageUtils,
-    _storage = null,
+    _watch = null,
     _slider = null,
     _errorFlag = false,
     _viewerPaused = true,
@@ -44,6 +44,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
   function _init() {
     var params = _imageUtils.getParams(),
+      watchType = _imageUtils.getWatchType(),
       container = document.getElementById( "container" ),
       fragment = document.createDocumentFragment(),
       el = document.createElement( "div" );
@@ -68,10 +69,13 @@ RiseVision.ImageRLS = ( function( gadgets ) {
 
       _img = new Image();
 
-      _imageUtils.setConfigurationType( "storage file (rls)" );
+      _imageUtils.setConfigurationType( "storage file (" + watchType + ")" );
 
-      // create and initialize the Storage file instance
-      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFile();
+      if ( watchType.toUpperCase() === "RLS" ) {
+        _watch = new RiseVision.ImageWatch.PlayerLocalStorageFile();
+      } else if ( watchType.toUpperCase() === "SENTINEL" ) {
+        _watch = new RiseVision.ImageWatch.RiseContentSentinelFile();
+      }
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create the slider container <div> within the container <div>
       el.className = "tp-banner-container";
@@ -79,13 +83,16 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       fragment.appendChild( el );
       container.appendChild( fragment );
 
-      _imageUtils.setConfigurationType( "storage folder (rls)" );
+      _imageUtils.setConfigurationType( "storage folder (" + watchType + ")" );
 
-      // create and initialize the Storage folder instance
-      _storage = new RiseVision.ImageRLS.PlayerLocalStorageFolder();
+      if ( watchType.toUpperCase() === "RLS" ) {
+        _watch = new RiseVision.ImageWatch.PlayerLocalStorageFolder();
+      } else if ( watchType.toUpperCase() === "SENTINEL" ) {
+        _watch = new RiseVision.ImageWatch.RiseContentSentinelFolder();
+      }
     }
 
-    _storage.init();
+    _watch.init();
     _logConfiguration( _imageUtils.getConfigurationType() );
     _imageUtils.sendReadyToViewer();
   }
@@ -133,7 +140,7 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       setSingleImage( urls );
     } else if ( _imageUtils.getMode() === "folder" ) {
       // create slider instance
-      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.ImageRLS );
+      _slider = new RiseVision.Slider( _imageUtils.getParams(), RiseVision.ImageWatch );
       _slider.init( urls );
     }
   }
@@ -203,11 +210,11 @@ RiseVision.ImageRLS = ( function( gadgets ) {
     _imageUtils.sendDoneToViewer();
   }
 
-  function setAdditionalParams( additionalParams, modeType, companyId ) {
+  function setAdditionalParams( additionalParams, modeType, companyId, watchType ) {
     var data = _.clone( additionalParams );
 
     _imageUtils.setMode( modeType );
-    _imageUtils.setUsingRLS();
+    _imageUtils.setUsingWatch( watchType );
 
     data.width = _prefs.getInt( "rsW" );
     data.height = _prefs.getInt( "rsH" );
@@ -241,8 +248,8 @@ RiseVision.ImageRLS = ( function( gadgets ) {
       return;
     }
 
-    if ( _unavailableFlag && _storage ) {
-      _storage.retry();
+    if ( _unavailableFlag && _watch ) {
+      _watch.retry();
 
       return;
     }

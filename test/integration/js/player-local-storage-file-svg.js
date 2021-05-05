@@ -11,7 +11,7 @@ suite( "file added", function() {
     convertStub;
 
   suiteSetup( function() {
-    onFileInitSpy = sinon.spy( RiseVision.ImageRLS, "onFileInit" );
+    onFileInitSpy = sinon.spy( RiseVision.ImageWatch, "onFileInit" );
     handleImageSpy = sinon.spy( RiseVision.ImageUtils, "handleSingleImageLoad" );
     convertStub = sinon.stub( RiseVision.ImageUtils, "convertSVGToDataURL", function( filePath, localUrl, callback ) {
       callback( "data:image/svg+xml;base64,ABC123def456" );
@@ -56,7 +56,7 @@ suite( "file added", function() {
   } );
 
   suiteTeardown( function() {
-    RiseVision.ImageRLS.onFileInit.restore();
+    RiseVision.ImageWatch.onFileInit.restore();
     RiseVision.ImageUtils.handleSingleImageLoad.restore();
     RiseVision.ImageUtils.convertSVGToDataURL.restore();
   } );
@@ -85,7 +85,7 @@ suite( "file changed", function() {
     convertStub;
 
   setup( function() {
-    refreshSpy = sinon.spy( RiseVision.ImageRLS, "onFileRefresh" );
+    refreshSpy = sinon.spy( RiseVision.ImageWatch, "onFileRefresh" );
     handleImageSpy = sinon.spy( RiseVision.ImageUtils, "handleSingleImageLoad" );
     convertStub = sinon.stub( RiseVision.ImageUtils, "convertSVGToDataURL", function( filePath, localUrl, callback ) {
       callback( "data:image/svg+xml;base64,ABC123def456" );
@@ -93,7 +93,7 @@ suite( "file changed", function() {
   } );
 
   teardown( function() {
-    RiseVision.ImageRLS.onFileRefresh.restore();
+    RiseVision.ImageWatch.onFileRefresh.restore();
     RiseVision.ImageUtils.handleSingleImageLoad.restore();
     RiseVision.ImageUtils.convertSVGToDataURL.restore();
   } );

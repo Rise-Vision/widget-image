@@ -54,7 +54,7 @@
     } );
 
     it( "Alignment should be middle-center", function() {
-      // expect( element( by.name( "position" ) ).getAttribute( "value" ) ).to.eventually.equal( "middle-center" );
+      expect( element( by.name( "position" ) ).getAttribute( "value" ) ).to.eventually.equal( "middle-center" );
     } );
 
     it( "Duration should be 10", function() {

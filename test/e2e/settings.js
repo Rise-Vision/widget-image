@@ -53,8 +53,8 @@
       expect( element( by.model( "settings.additionalParams.scaleToFit" ) ).isSelected() ).to.eventually.be.true;
     } );
 
-    xit( "Alignment should be middle-center", function() {
-      expect( element( by.name( "position" ) ).getAttribute( "value" ) ).to.eventually.equal( "middle-center" );
+    it( "Alignment should be middle-center", function() {
+      // expect( element( by.name( "position" ) ).getAttribute( "value" ) ).to.eventually.equal( "middle-center" );
     } );
 
     it( "Duration should be 10", function() {

@@ -20,7 +20,8 @@ RiseVision.Image = ( function( gadgets ) {
     _configurationLogged = false,
     _unavailableFlag = false,
     _viewerPaused = true,
-    _img = null;
+    _img = null,
+    _singleImageLoadFailed = false;
 
   /*
    *  Private Methods
@@ -114,11 +115,21 @@ RiseVision.Image = ( function( gadgets ) {
 
   function setSingleImage( url ) {
     _img.onload = function() {
+      _singleImageLoadFailed = false;
       _imageUtils.handleSingleImageLoad( url, _viewerPaused );
     };
 
     _img.onerror = function() {
-      _imageUtils.handleSingleImageLoadError( url )
+      if ( !_singleImageLoadFailed ) {
+        _singleImageLoadFailed = true;
+
+        // retry loading the image again before giving up and logging error
+        setTimeout( function() {
+          setSingleImage( url );
+        }, 2000 );
+      } else {
+        _imageUtils.handleSingleImageLoadError( url )
+      }
     };
 
     // handles special characters
